@@ -4988,10 +4988,25 @@ function recommendLotto(data, cfg) {
     coldReds.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
     // 拖码数量 = 选号总数 - 胆码数
     var tuoCount = rC - danCount;
+
+    // 蓝球胆拖（仅当有蓝球时）
+    var blueDan = [];
+    var blueTuo = [];
+    if (bC > 0) {
+      // 双色球(1蓝)：1个蓝球推荐，无拖码
+      // 大乐透(2蓝)：前bC-1个热蓝作胆 + 剩余热蓝作拖
+      var bDanCount = Math.max(1, bC - 1);
+      blueDan = hotBlues.slice(0, bDanCount).sort(function(a,b){return a-b;});
+      blueTuo = hotBlues.slice(bDanCount, bDanCount + 3).sort(function(a,b){return a-b;});
+    }
+
     return {
       dan: dan.sort(function(a, b) { return a - b; }),
       tuo: tuoPool.slice(0, tuoCount * 2).sort(function(a, b) { return a - b; }),
-      count: rC
+      count: rC,
+      blueDan: blueDan,
+      blueTuo: blueTuo,
+      bC: bC
     };
   }
 
@@ -5016,9 +5031,9 @@ function recommendLotto(data, cfg) {
       { nums: basic2, blues: bRec2, reason: reason(basic2, '冷号回补+区间均衡') }
     ],
     dantuo: [
-      { dan: dt2.dan, tuo: dt2.tuo, count: rC, reason: '2胆' + dt2.dan.join(',') + ' | 拖码' + dt2.tuo.length + '个可选 | 热号胆+遗漏拖' },
-      { dan: dt3.dan, tuo: dt3.tuo, count: rC, reason: '3胆' + dt3.dan.join(',') + ' | 拖码' + dt3.tuo.length + '个可选 | 冷热结合' },
-      { dan: dt4.dan, tuo: dt4.tuo, count: rC, reason: '4胆' + dt4.dan.join(',') + ' | 拖码' + dt4.tuo.length + '个可选 | 热号集中' }
+      { dan: dt2.dan, tuo: dt2.tuo, count: rC, blueDan: dt2.blueDan, blueTuo: dt2.blueTuo, bC: bC, reason: '2胆' + dt2.dan.join(',') + ' | 拖码' + dt2.tuo.length + '个可选 | 热号胆+遗漏拖' + (bC>0?' | 蓝球':'') },
+      { dan: dt3.dan, tuo: dt3.tuo, count: rC, blueDan: dt3.blueDan, blueTuo: dt3.blueTuo, bC: bC, reason: '3胆' + dt3.dan.join(',') + ' | 拖码' + dt3.tuo.length + '个可选 | 冷热结合' + (bC>0?' | 蓝球':'') },
+      { dan: dt4.dan, tuo: dt4.tuo, count: rC, blueDan: dt4.blueDan, blueTuo: dt4.blueTuo, bC: bC, reason: '4胆' + dt4.dan.join(',') + ' | 拖码' + dt4.tuo.length + '个可选 | 热号集中' + (bC>0?' | 蓝球':'') }
     ],
     analysis: {
       hotReds: hotReds.slice(0, 10),
@@ -5947,16 +5962,33 @@ function renderRecommend(type, data) {
       var dans = item.dan || [];
       var tuos = item.tuo || [];
       if (dans.length > 0) {
-        dtHtml += '<div class="dt-row"><span class="dt-label">胆码</span><div class="dt-balls">';
+        dtHtml += '<div class="dt-row"><span class="dt-label">红胆</span><div class="dt-balls">';
         dans.forEach(function(n) {
           dtHtml += '<span class="dt-ball dan">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
         });
         dtHtml += '</div></div>';
       }
       if (tuos.length > 0) {
-        dtHtml += '<div class="dt-row"><span class="dt-label">拖码</span><div class="dt-balls">';
+        dtHtml += '<div class="dt-row"><span class="dt-label">红拖</span><div class="dt-balls">';
         tuos.forEach(function(n) {
           dtHtml += '<span class="dt-ball tuo">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
+        });
+        dtHtml += '</div></div>';
+      }
+      // 蓝球胆拖
+      var bDan = item.blueDan || [];
+      var bTuo = item.blueTuo || [];
+      if (bDan.length > 0) {
+        dtHtml += '<div class="dt-row"><span class="dt-label">蓝胆</span><div class="dt-balls">';
+        bDan.forEach(function(n) {
+          dtHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5)">' + String(n).padStart(2,"0") + '</span>';
+        });
+        dtHtml += '</div></div>';
+      }
+      if (bTuo.length > 0) {
+        dtHtml += '<div class="dt-row"><span class="dt-label">蓝拖</span><div class="dt-balls">';
+        bTuo.forEach(function(n) {
+          dtHtml += '<span class="dt-ball tuo" style="background:linear-gradient(135deg,#64b5f6,#bbdefb);color:#1565c0">' + String(n).padStart(2,"0") + '</span>';
         });
         dtHtml += '</div></div>';
       }
@@ -6041,7 +6073,7 @@ function renderHitRate(type, data, rec) {
     saveRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
   });
   rec.dantuo.forEach(function(item) {
-    saveRec.dantuo.push({ dans: item.dans || [], tuos: item.tuos || [], blues: item.blues || [] });
+    saveRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
   });
 
   
@@ -6131,22 +6163,37 @@ function renderHitRate(type, data, rec) {
   if (lastRec.dantuo && lastRec.dantuo.length > 0) {
     html += '<div class="hit-label">上期胆拖推荐</div>';
     lastRec.dantuo.forEach(function(item, idx) {
-      html += '<div class="rec-card hit-card"><div class="rec-header">' + ((item.dans||[]).length) + '胆拖</div>';
+      var dans = item.dan || item.dans || [];
+      var tuos = item.tuo || item.tuos || [];
+      html += '<div class="rec-card hit-card"><div class="rec-header">' + dans.length + '胆拖</div>';
       html += '<div class="rec-balls">';
-      (item.dans || []).forEach(function(n) {
+      dans.forEach(function(n) {
         var cls = isHit(n) ? "r hit" : "r miss";
         html += '<span class="ball ' + cls + '" style="font-size:11px">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
       });
-      html += '<span style="margin:0 4px;color:#999;font-size:10px">|</span>';
-      (item.tuos || []).forEach(function(n) {
-        var cls = isHit(n) ? "r hit" : "r miss";
-        html += '<span class="ball ' + cls + '" style="font-size:11px">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-      });
-      if (item.blues && item.blues.length > 0) {
-        html += '<span style="width:4px;display:inline-block"></span>';
-        item.blues.forEach(function(n) {
+      if (tuos.length > 0) {
+        html += '<span style="margin:0 4px;color:#999;font-size:10px">|</span>';
+        tuos.forEach(function(n) {
+          var cls = isHit(n) ? "r hit" : "r miss";
+          html += '<span class="ball ' + cls + '" style="font-size:11px">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
+        });
+      }
+      // 蓝球胆
+      var bDans = item.blueDan || [];
+      if (bDans.length > 0) {
+        html += '<span style="width:6px;display:inline-block"></span>';
+        bDans.forEach(function(n) {
           var cls = isBlueHit(n) ? "b hit" : "b miss";
-          html += '<span class="ball ' + cls + '">' + String(n).padStart(2,"0") + '</span>';
+          html += '<span class="ball ' + cls + '" style="font-size:10px">' + String(n).padStart(2,"0") + '</span>';
+        });
+      }
+      // 蓝球拖
+      var bTuos = item.blueTuo || [];
+      if (bTuos.length > 0) {
+        html += '<span style="margin:0 4px;color:#999;font-size:9px">蓝拖</span>';
+        bTuos.forEach(function(n) {
+          var cls = isBlueHit(n) ? "b hit" : "b miss";
+          html += '<span class="ball ' + cls + '" style="font-size:10px;opacity:.7">' + String(n).padStart(2,"0") + '</span>';
         });
       }
       html += '</div></div>';
