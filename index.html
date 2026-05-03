@@ -5457,6 +5457,8 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .matrix-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .matrix-item{background:#fff;padding:4px 8px;border-radius:8px;font-size:11px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;flex-wrap:wrap;align-items:center;gap:2px;max-width:100%}
 .matrix-item .mb{display:inline-block;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;color:#fff;text-align:center;line-height:22px;background:radial-gradient(circle at 35% 35%,#ff6b6b,#e53935);flex-shrink:0}
+.loading-skeleton{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0f172a;font-family:sans-serif}
+@keyframes pulse-skel{0%,100%{opacity:.5}50%{opacity:1}}
 .btn{padding:8px 16px;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
 .btn:active{transform:scale(.96)}
 .btn-sm{padding:6px 12px;font-size:12px}
@@ -5493,7 +5495,16 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 </style>
 </head>
 <body>
-<div class="header">
+<div class="loading-skeleton" id="loadingSkeleton">
+  <div style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:400px;margin:0 auto">
+    <div style="font-size:18px;font-weight:700;color:#fff">福彩数据分析师</div>
+    <div style="display:flex;gap:8px;width:100%"><div style="flex:1;height:34px;border-radius:8px;background:rgba(255,255,255,.08);animation:pulse-skel 1.5s infinite"></div><div style="flex:1;height:34px;border-radius:8px;background:rgba(255,255,255,.05);animation:pulse-skel 1.5s .2s infinite"></div><div style="flex:1;height:34px;border-radius:8px;background:rgba(255,255,255,.05);animation:pulse-skel 1.5s .4s infinite"></div></div>
+    <div style="width:100%;height:60px;border-radius:12px;background:rgba(255,255,255,.04);animation:pulse-skel 1.5s .1s infinite"></div>
+    <div style="width:65%;height:44px;border-radius:10px;background:rgba(255,255,255,.03);animation:pulse-skel 1.5s .3s infinite"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:8px">加载数据中...</div>
+  </div>
+</div>
+<div class="header" style="position:relative;z-index:1">
   <div class="header-top"><h1>福彩数据分析师</h1><span class="badge" id="dataBadge">加载中</span></div>
   <div class="sub">数据分析 · 智能推荐 · 走势追踪</div>
   <div id="statusBar" style="font-size:10px;margin-top:4px;color:rgba(255,255,255,0.6)">正在连接数据源...</div>
@@ -5664,6 +5675,9 @@ function fastLoad() {
     document.getElementById("statusBar").textContent = "数据就绪 | 共" + list.length + "期";
     renderAnalysis(firstType, list);
     renderRecommend(firstType, list);
+    // 隐藏骨架屏
+    var sk = document.getElementById("loadingSkeleton");
+    if (sk) sk.style.display = "none";
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", render);
@@ -6177,6 +6191,8 @@ function loadAll(type) {
     document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
     renderAnalysis(type, data);
     renderRecommend(type, data);
+    var sk = document.getElementById("loadingSkeleton");
+    if (sk) sk.style.display = "none";
   }).catch(function(e) {
     document.getElementById("statusBar").textContent = "加载失败: " + e;
     document.getElementById("dataBadge").textContent = "模拟";
