@@ -5254,52 +5254,32 @@ function recommendDigit(data, cfg) {
   var basic2 = [];
   posAnalysis.forEach(function(pa) { basic2.push(pa.cold[0]); });
 
-  /* 胆拖推荐（数字型改为形态推荐） */
-  /* 注1：大小形态推荐 */
-  var sizeRec = posAnalysis.map(function(pa) {
-    return pa.bigCount > pa.smallCount ? '大' : '小';
-  });
-  var sizeNums = posAnalysis.map(function(pa) {
-    // 选大小形态中最热的
-    var isBig = pa.bigCount > pa.smallCount;
-    if (isBig) {
-      // 选5-9中最热的
-      return pa.hot.filter(function(n) { return n >= 5; })[0] || 5;
-    } else {
-      return pa.hot.filter(function(n) { return n <= 4; })[0] || 0;
-    }
-  });
+  /* 胆拖推荐（数字型：每位热号作胆 + 次热号作拖） */
+  function makeDigitDanTuo(danPerPos) {
+    var dan = [];
+    var tuo = [];
+    posAnalysis.forEach(function(pa) {
+      dan.push.apply(dan, pa.hot.slice(0, danPerPos));
+      tuo.push.apply(tuo, pa.hot.slice(danPerPos, danPerPos + 4));
+      tuo.push.apply(tuo, pa.cold.slice(0, 2));
+    });
+    return {
+      dan: dan.sort(function(a,b){return a-b;}),
+      tuo: tuo.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;})
+    };
+  }
 
-  /* 注2：奇偶形态推荐 */
-  var oddEvenNums = posAnalysis.map(function(pa) {
-    // 选该位奇数最热的
-    var oddHot = pa.hot.filter(function(n) { return n % 2 === 1; });
-    return oddHot.length > 0 ? oddHot[0] : pa.hot[0];
-  });
-
-  /* 注3：走势延续推荐 */
-  var trendNums = posAnalysis.map(function(pa, idx) {
-    var trend = pa.trend;
-    if (trend.length < 2) return pa.hot[0];
-    // 判断走势：上升、下降、震荡
-    var up = 0, down = 0;
-    for (var t = 1; t < trend.length; t++) {
-      if (trend[t] > trend[t - 1]) up++;
-      else if (trend[t] < trend[t - 1]) down++;
-    }
-    var lastVal = trend[trend.length - 1];
-    if (up > down * 2) {
-      // 上升走势，选略大于上期的
-      var target = Math.min(9, lastVal + 1);
-      return target;
-    } else if (down > up * 2) {
-      // 下降走势，选略小于上期的
-      return Math.max(0, lastVal - 1);
-    } else {
-      // 震荡，选该位最热号
-      return pa.hot[0];
-    }
-  });
+  var dantuoList = [];
+  if (rC <= 3) {
+    // 排列三/福彩3D：2组（1胆+拖，2胆+拖）
+    dantuoList.push(makeDigitDanTuo(1));
+    dantuoList.push(makeDigitDanTuo(2));
+  } else {
+    // 排列五/七星彩：3组（1胆+拖，2胆+拖，3胆+拖）
+    dantuoList.push(makeDigitDanTuo(1));
+    dantuoList.push(makeDigitDanTuo(2));
+    dantuoList.push(makeDigitDanTuo(3));
+  }
 
   function reasonDigit(nums, style) {
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
@@ -5313,11 +5293,13 @@ function recommendDigit(data, cfg) {
       { nums: basic1, reason: reasonDigit(basic1, '按位热号推荐') },
       { nums: basic2, reason: reasonDigit(basic2, '按位遗漏回补') }
     ],
-    dantuo: [
-      { dan: sizeNums, tuo: [], reason: reasonDigit(sizeNums, '大小形态推荐') + ' | 各位按大小比走势' },
-      { dan: oddEvenNums, tuo: [], reason: reasonDigit(oddEvenNums, '奇偶形态推荐') + ' | 各位选奇数热号' },
-      { dan: trendNums, tuo: [], reason: reasonDigit(trendNums, '走势延续推荐') + ' | 各位按近10期走势方向' }
-    ],
+    dantuo: dantuoList.map(function(dt, idx) {
+      var danCount = (rC <= 3 ? idx + 1 : idx + 1);
+      return {
+        dan: dt.dan, tuo: dt.tuo,
+        reason: danCount + '胆' + danCount + '拖 | 各位热号作胆 + 次热遗漏作拖'
+      };
+    }),
     analysis: {
       hotReds: posAnalysis.map(function(pa) { return pa.hot.slice(0, 3); }),
       coldReds: posAnalysis.map(function(pa) { return pa.cold.slice(0, 3); }),
