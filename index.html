@@ -5254,7 +5254,7 @@ function recommendDigit(data, cfg) {
   var basic2 = [];
   posAnalysis.forEach(function(pa) { basic2.push(pa.cold[0]); });
 
-  /* 胆拖推荐（数字型：整体选胆 + 邻近作拖） */
+  /* 胆拖推荐（数字型：整体选胆 + 热号作拖） */
   // 收集所有位的热号，按全局频率排序
   var allHot = [];
   posAnalysis.forEach(function(pa) { allHot = allHot.concat(pa.hot.slice(0, 3)); });
@@ -5263,31 +5263,38 @@ function recommendDigit(data, cfg) {
   allHot.forEach(function(n) { hotFreq[n] = (hotFreq[n] || 0) + 1; });
   var globalHot = Object.keys(hotFreq).map(Number).sort(function(a,b){return hotFreq[b]-hotFreq[a];});
 
-  function makeDigitDanTuo(danCount) {
+  function makeDigitDanTuo(danCount, tuoCount) {
     // 胆码：全局热号前 danCount 个
     var dan = globalHot.slice(0, danCount).sort(function(a,b){return a-b;});
-    // 拖码：每个胆码的 ±1 邻近号（去重）
-    var tuoSet = {};
-    dan.forEach(function(n) {
-      if (n > 0) tuoSet[n-1] = true;
-      if (n < 9) tuoSet[n+1] = true;
-    });
-    // 移除已在胆码中的
-    dan.forEach(function(n) { delete tuoSet[n]; });
-    var tuo = Object.keys(tuoSet).map(Number).sort(function(a,b){return a-b;});
+    var danSet = {};
+    dan.forEach(function(n) { danSet[n] = true; });
+    // 拖码：从剩余热号里取 tuoCount 个
+    var tuo = [];
+    for (var i = 0; i < globalHot.length && tuo.length < tuoCount; i++) {
+      if (!danSet[globalHot[i]]) {
+        tuo.push(globalHot[i]);
+        danSet[globalHot[i]] = true; // 避免重复
+      }
+    }
+    tuo.sort(function(a,b){return a-b;});
     return { dan: dan, tuo: tuo };
   }
 
   var dantuoList = [];
   if (pos <= 3) {
-    // 排列三/福彩3D：2组（1胆+拖，2胆+拖）
-    dantuoList.push(makeDigitDanTuo(1));
-    dantuoList.push(makeDigitDanTuo(2));
+    // 排列三/福彩3D：2组（1胆+5拖，2胆+5拖）
+    dantuoList.push(makeDigitDanTuo(1, 5));
+    dantuoList.push(makeDigitDanTuo(2, 5));
+  } else if (pos === 5) {
+    // 排列五：3组（1胆+7拖，2胆+7拖，3胆+7拖）
+    dantuoList.push(makeDigitDanTuo(1, 7));
+    dantuoList.push(makeDigitDanTuo(2, 7));
+    dantuoList.push(makeDigitDanTuo(3, 7));
   } else {
-    // 排列五/七星彩：3组（1胆+拖，2胆+拖，3胆+拖）
-    dantuoList.push(makeDigitDanTuo(1));
-    dantuoList.push(makeDigitDanTuo(2));
-    dantuoList.push(makeDigitDanTuo(3));
+    // 七星彩：3组（1胆+9拖，2胆+9拖，3胆+9拖）
+    dantuoList.push(makeDigitDanTuo(1, 9));
+    dantuoList.push(makeDigitDanTuo(2, 9));
+    dantuoList.push(makeDigitDanTuo(3, 9));
   }
 
   function reasonDigit(nums, style) {
