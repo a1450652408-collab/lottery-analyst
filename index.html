@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- v2351 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -5271,7 +5270,7 @@ function recommendDigit(data, cfg) {
   }
 
   var dantuoList = [];
-  if (rC <= 3) {
+  if (pos <= 3) {
     // 排列三/福彩3D：2组（1胆+拖，2胆+拖）
     dantuoList.push(makeDigitDanTuo(1));
     dantuoList.push(makeDigitDanTuo(2));
@@ -5295,10 +5294,10 @@ function recommendDigit(data, cfg) {
       { nums: basic2, reason: reasonDigit(basic2, '按位遗漏回补') }
     ],
     dantuo: dantuoList.map(function(dt, idx) {
-      var danCount = (rC <= 3 ? idx + 1 : idx + 1);
+      var danCount = idx + 1;
       return {
         dan: dt.dan, tuo: dt.tuo,
-        reason: danCount + '胆' + danCount + '拖 | 各位热号作胆 + 次热遗漏作拖'
+        reason: danCount + '胆拖 | 每位' + danCount + '热号作胆 + 次热遗漏作拖'
       };
     }),
     analysis: {
