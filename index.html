@@ -6262,13 +6262,9 @@ function showMatrix() {
   var matrix;
   if (isKeno) {
     
-    var seen = {}, rng = [];
-    for (var ri = 0; ri < 50; ri++) {
-      var pool = candidates.slice().sort(function(){return Math.random()-0.5;});
-      var combo = pool.slice(0, 10).sort(function(a,b){return a-b;});
-      var key = combo.join(',');
-      if (!seen[key]) { seen[key] = true; rng.push(combo); }
-      if (rng.length >= 25) break;
+    var rng = [];
+    for (var offset = 0; offset <= candidates.length - 10; offset++) {
+      rng.push(candidates.slice(offset, offset + 10));
     }
     matrix = rng;
     if (!matrix || matrix.length === 0) {
