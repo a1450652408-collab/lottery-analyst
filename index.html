@@ -6201,14 +6201,10 @@ function showMatrix() {
   } else if (isKeno) {
     
     if (rec.basic && rec.basic.length > 0) {
-      var basicNums = [];
-      rec.basic.forEach(function(item) {
-        var ns = item.nums || item.r || item.n || [];
-        basicNums = basicNums.concat(ns);
-      });
-      candidates = basicNums.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
-      pickCount = 20;
-      guarantee = 10;
+      var ns = rec.basic[0].nums || rec.basic[0].r || rec.basic[0].n || [];
+      candidates = ns.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+      pickCount = 10;
+      guarantee = 5; // 中10保5
     }
   }
 
@@ -6220,9 +6216,15 @@ function showMatrix() {
   var matrix;
   if (isKeno) {
     
-    matrix = rec.basic.map(function(item) {
-      return (item.nums || item.r || item.n || []).slice(0, 20).sort(function(a,b){return a-b;});
-    });
+    var seen = {}, rng = [];
+    for (var ri = 0; ri < 50; ri++) {
+      var pool = candidates.slice().sort(function(){return Math.random()-0.5;});
+      var combo = pool.slice(0, 10).sort(function(a,b){return a-b;});
+      var key = combo.join(',');
+      if (!seen[key]) { seen[key] = true; rng.push(combo); }
+      if (rng.length >= 25) break;
+    }
+    matrix = rng;
     if (!matrix || matrix.length === 0) {
       document.getElementById("matrixBox").style.display = "none";
       return;
