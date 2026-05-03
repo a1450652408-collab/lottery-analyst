@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -6084,6 +6083,39 @@ function renderHitRate(type, data, rec) {
   }
 
   
+  var lastMatrixKey = "lastMatrix_" + type;
+  var lastMatrixSaved = localStorage.getItem(lastMatrixKey);
+  var lastMatrix = null;
+  if (lastMatrixSaved) {
+    try { lastMatrix = JSON.parse(lastMatrixSaved); } catch(e) {}
+  }
+  if (lastMatrix && lastMatrix.matrix && lastMatrix.savedAt !== latest.p) {
+    html += '<div class="hit-label">上期旋转矩阵 (' + lastMatrix.savedAt + '期 → ' + latest.p + '期)</div>';
+    var totalRows = lastMatrix.matrix.length;
+    var bestRow = 0, bestHit = 0;
+    lastMatrix.matrix.forEach(function(row, ri) {
+      var rowHit = 0;
+      row.forEach(function(n) {
+        if (latestNums.indexOf(n) !== -1) rowHit++;
+      });
+      if (rowHit > bestHit) { bestHit = rowHit; bestRow = ri; }
+      if (ri < 5 || rowHit > 0) {
+        var show = row.slice(0, 10);
+        html += '<div class="rec-card hit-card" style="font-size:11px"><div class="rec-header">#' + (ri+1) + '｜命中 <b>' + rowHit + '</b></div><div class="rec-balls">';
+        show.forEach(function(n) {
+          var cls = latestNums.indexOf(n) !== -1 ? "r hit" : "r miss";
+          html += '<span class="ball ' + cls + '" style="width:24px;height:24px;font-size:10px">' + String(n).padStart(2,"0") + '</span>';
+        });
+        if (row.length > 10) html += '<span style="color:#999;font-size:9px;margin-left:4px">+' + (row.length-10) + '</span>';
+        html += '</div></div>';
+      }
+    });
+    if (totalRows > 5) {
+      html += '<div style="font-size:10px;color:#999;text-align:center;margin-top:4px">最佳 #' + (bestRow+1) + ' 命中 ' + bestHit + '球 | 共 ' + totalRows + '组（仅显示命中行）</div>';
+    }
+  }
+
+  
   if (lastRec.dantuo && lastRec.dantuo.length > 0) {
     html += '<div class="hit-label">上期胆拖推荐</div>';
     lastRec.dantuo.forEach(function(item, idx) {
@@ -6274,6 +6306,14 @@ function showMatrix() {
     html += '</div>';
   });
   gridEl.innerHTML = html;
+
+  
+  localStorage.setItem("lastMatrix_" + cur, JSON.stringify({
+    matrix: matrix,
+    blueNums: blueNums,
+    savedAt: data[0].p,
+    pickCount: pickCount
+  }));
 
   
   var btn = document.getElementById("btnMatrix");
