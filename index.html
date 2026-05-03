@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
+
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -6197,7 +6198,7 @@ function showMatrix() {
       var bSorted = Object.keys(bFreq).map(Number).sort(function(a,b){return bFreq[b]-bFreq[a];});
       blueNums = bSorted.slice(0, cfg.bC).sort(function(a,b){return a-b;});
     }
-  } else {
+  } else if (isKeno) {
     
     if (rec.basic && rec.basic.length > 0) {
       var basicNums = [];
@@ -6206,7 +6207,6 @@ function showMatrix() {
         basicNums = basicNums.concat(ns);
       });
       candidates = basicNums.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
-      candidates = candidates.slice(0, 25); // 最多25个
       pickCount = 20;
       guarantee = 10;
     }
@@ -6217,10 +6217,22 @@ function showMatrix() {
     return;
   }
 
-  var matrix = buildRotationMatrix(cur, candidates, cfg);
-  if (!matrix || matrix.length === 0) {
-    document.getElementById("matrixBox").style.display = "none";
-    return;
+  var matrix;
+  if (isKeno) {
+    
+    matrix = rec.basic.map(function(item) {
+      return (item.nums || item.r || item.n || []).slice(0, 20).sort(function(a,b){return a-b;});
+    });
+    if (!matrix || matrix.length === 0) {
+      document.getElementById("matrixBox").style.display = "none";
+      return;
+    }
+  } else {
+    matrix = buildRotationMatrix(cur, candidates, cfg);
+    if (!matrix || matrix.length === 0) {
+      document.getElementById("matrixBox").style.display = "none";
+      return;
+    }
   }
 
   
