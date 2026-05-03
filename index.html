@@ -5014,15 +5014,20 @@ function recommendLotto(data, cfg) {
     // 拖码数量 = 选号总数 - 胆码数
     var tuoCount = rC - danCount;
 
-    // 蓝球胆拖（仅当有蓝球时）
+    // 蓝球推荐
     var blueDan = [];
     var blueTuo = [];
     if (bC > 0) {
-      // 双色球(1蓝)：1个蓝球推荐，无拖码
-      // 大乐透(2蓝)：前bC-1个热蓝作胆 + 剩余热蓝作拖
-      var bDanCount = Math.max(1, bC - 1);
-      blueDan = hotBlues.slice(0, bDanCount).sort(function(a,b){return a-b;});
-      blueTuo = hotBlues.slice(bDanCount, bDanCount + 3).sort(function(a,b){return a-b;});
+      if (bC === 1) {
+        // 双色球(1蓝)：直接推荐4个热蓝，不区分胆拖
+        blueDan = hotBlues.slice(0, 4).sort(function(a,b){return a-b;});
+        blueTuo = [];
+      } else {
+        // 大乐透(2蓝)：前bC-1个热蓝作胆 + 剩余热蓝作拖
+        var bDanCount = bC - 1;
+        blueDan = hotBlues.slice(0, bDanCount).sort(function(a,b){return a-b;});
+        blueTuo = hotBlues.slice(bDanCount, bDanCount + 3).sort(function(a,b){return a-b;});
+      }
     }
 
     return {
@@ -6045,10 +6050,18 @@ function renderRecommend(type, data) {
         });
         dtHtml += '</div></div>';
       }
-      // 蓝球胆拖
+      // 蓝球推荐
       var bDan = item.blueDan || [];
       var bTuo = item.blueTuo || [];
-      if (bDan.length > 0) {
+      if (bDan.length > 0 && bTuo.length === 0) {
+        // 双色球：不区分胆拖，统一推荐4个蓝球
+        dtHtml += '<div class="dt-row"><span class="dt-label">蓝球</span><div class="dt-balls">';
+        bDan.forEach(function(n) {
+          dtHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5)">' + String(n).padStart(2,"0") + '</span>';
+        });
+        dtHtml += '</div></div>';
+      } else if (bDan.length > 0) {
+        // 大乐透：区分胆拖
         dtHtml += '<div class="dt-row"><span class="dt-label">蓝胆</span><div class="dt-balls">';
         bDan.forEach(function(n) {
           dtHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5)">' + String(n).padStart(2,"0") + '</span>';
