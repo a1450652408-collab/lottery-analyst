@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-03 12:28:47 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-03 13:46:11 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -84,7 +84,7 @@ window.MiniDestroy=function(id){ if(_charts[id]){_charts[id].destroy();delete _c
 })();
 </script>
 <script>
-/* 开奖数据 - 自动生成 - 2026-05-03 11:28:35 */
+/* 开奖数据 - 部分更新 2026-05-03 13:46:11 */
 window.__LOTTERY_DATA = {
   "ssq": [
     {
@@ -5373,6 +5373,15 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .rec-card .rec-header{font-size:11px;color:var(--sub);margin-bottom:4px}
 .rec-card .rec-balls{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
 .rec-card .rec-reason{font-size:10px;color:var(--sub);line-height:1.5}
+.hit-rate-box{margin-top:12px;background:linear-gradient(135deg,#f0fdf4,#fff);border:1px solid rgba(76,175,80,.15);border-radius:12px;padding:12px;text-align:center}
+.hit-rate-label{font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:8px}
+.hit-rate-label span{font-weight:400;color:#666;font-size:11px}
+.hit-item{display:inline-block;margin:4px 6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e8e8e8}
+.hit-item .hit-count{color:#2e7d32;font-size:14px}
+.hit-item .hit-total{color:#999;font-size:10px}
+.hit-item.won{border-color:#4caf50;background:linear-gradient(135deg,#e8f5e9,#fff);box-shadow:0 1px 4px rgba(76,175,80,.2)}
+.hit-item.won .hit-count{color:#e53935;animation:pulse .8s ease-in-out}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 .btn{padding:8px 16px;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
 .btn:active{transform:scale(.96)}
 .btn-sm{padding:6px 12px;font-size:12px}
@@ -5481,6 +5490,11 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <button class="btn btn-smart btn-sm" id="btnRefreshAll" style="flex:1">换一批推荐</button>
       <button class="btn btn-primary btn-sm" id="btnSaveRec" style="flex:1">保存推荐</button>
     </div>
+    <!-- 命中率 -->
+    <div class="hit-rate-box" id="hitRateBox" style="display:none">
+      <div class="hit-rate-label">📊 最新开奖命中率 <span id="hitPeriod"></span></div>
+      <div id="hitRateGrid"></div>
+    </div>
   </div>
   <div class="card">
     <div class="section-head"><div class="dot" style="background:var(--cyan)"></div>遗漏值走势分析</div>
@@ -5511,447 +5525,6 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
   <button class="tab-btn" data-page="page2">❤️ 我的</button>
 </div>
 
-<script>
-/* lotto-main.js v2.2 - 数据加载、UI渲染、事件绑定 */
-/* 数据来源：window.__LOTTERY_DATA (内嵌真实开奖数据) */
-
-(function(){
-"use strict";
-
-/* ===== 彩种配置（recPeriod: 乐透30期 / 每日100期） ===== */
-window._C = {
-  ssq:{name:"双色球",type:"lotto",rMax:33,bMax:16,rC:6,bC:1,recPeriod:30},
-  dlt:{name:"大乐透",type:"lotto",rMax:35,bMax:12,rC:5,bC:2,recPeriod:30},
-  qlc:{name:"七乐彩",type:"lotto",rMax:30,bMax:0,rC:7,bC:0,recPeriod:30},
-  kl8:{name:"快乐8",type:"keno",rMax:80,bMax:0,rC:20,bC:0,recPeriod:100},
-  fc3d:{name:"福彩3D",type:"digit",rMax:9,rC:3,recPeriod:100},
-  pl3:{name:"排列三",type:"digit",rMax:9,rC:3,recPeriod:100},
-  pl5:{name:"排列五",type:"digit",rMax:9,rC:5,recPeriod:100},
-  qxc:{name:"七星彩",type:"digit",rMax:9,rC:7,recPeriod:100}
-};
-var C = window._C;
-var cur = "ssq", charts = {}, cache = {};
-window._cache = cache;
-
-/* ===== 加载内嵌数据 ===== */
-function fetchData(type) {
-  if (cache[type] && cache[type].length > 0) return Promise.resolve(cache[type]);
-  var src = window.__LOTTERY_DATA;
-  if (src && src[type] && src[type].length > 0) {
-    var list = src[type].map(function(item) {
-      if (item.r && !Array.isArray(item.r)) item.r = [item.r];
-      if (item.b && !Array.isArray(item.b)) item.b = [item.b];
-      if (item.r && Array.isArray(item.r)) item.r.sort(function(a,b){return a-b;});
-      if (item.b && Array.isArray(item.b)) item.b.sort(function(a,b){return a-b;});
-      return item;
-    });
-    cache[type] = list;
-    return Promise.resolve(list);
-  }
-  var mock = genMock(type);
-  cache[type] = mock;
-  return Promise.resolve(mock);
-}
-
-/* ===== 模拟数据 ===== */
-function genMock(type) {
-  var cfg = C[type];
-  var data = [];
-  for (var i = 50; i >= 1; i--) {
-    var r = [];
-    while (r.length < cfg.rC) {
-      var n = Math.floor(Math.random() * cfg.rMax) + 1;
-      if (r.indexOf(n) === -1) r.push(n);
-    }
-    r.sort(function(a,b){return a-b;});
-    var b = [];
-    if (cfg.bC > 0) {
-      while (b.length < cfg.bC) {
-        var n = Math.floor(Math.random() * cfg.bMax) + 1;
-        if (b.indexOf(n) === -1) b.push(n);
-      }
-      b.sort(function(a,b){return a-b;});
-    }
-    data.push({
-      p: "20" + (26 - Math.floor((i-1)/3)) + String(i).padStart(2,"0"),
-      d: "2026-04-" + String(i).padStart(2,"0"),
-      r: r, b: b
-    });
-  }
-  return data;
-}
-
-/* ===== 获取号码数组 ===== */
-function getNums(item) {
-  if (item.n) return item.n;
-  return item.r || [];
-}
-function getBlues(item) {
-  return item.b || [];
-}
-
-/* ===== 渲染分析 ===== */
-function renderAnalysis(type, data) {
-  if (!data || data.length === 0) return;
-  var cfg = C[type];
-  var period = cfg.recPeriod || 30;
-  var useData = data.slice(0, period); /* 只用配置的期数 */
-  document.getElementById("sTotal").textContent = period;
-
-  // 更新频率标签
-  var freqInfoEl = document.getElementById("freqInfo");
-  if (freqInfoEl) freqInfoEl.textContent = "近" + period + "期";
-
-  // 最近开奖
-  var recent = useData.slice(0, 10);
-  var drawHtml = "";
-  recent.forEach(function(item) {
-    var ballsHtml = "";
-    if (cfg.type === "digit") {
-      var nums = getNums(item);
-      nums.forEach(function(n) {
-        ballsHtml += '<span class="ball r">' + n + '</span>';
-      });
-    } else if (cfg.type === "keno") {
-      var nums = getNums(item);
-      nums.forEach(function(n) {
-        ballsHtml += '<span class="ball r" style="width:28px;height:28px;font-size:11px">' + n + '</span>';
-      });
-    } else {
-      var reds = item.r || [];
-      var blues = item.b || [];
-      reds.forEach(function(n) {
-        ballsHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';
-      });
-      if (blues.length > 0) {
-        ballsHtml += '<span style="width:4px;display:inline-block"></span>';
-        blues.forEach(function(n) {
-          ballsHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>';
-        });
-      }
-    }
-    drawHtml += '<div class="draw-item"><div class="draw-period">' + item.p + '</div><div class="draw-balls">' + ballsHtml + '</div></div>';
-  });
-  var drawEl = document.getElementById("drawList") || document.getElementById("latestDraw");
-  if (drawEl) drawEl.innerHTML = drawHtml;
-
-  // 频率分析 - 热温冷
-  var numMin = 1, numMax = cfg.rMax;
-  if (cfg.type === "digit") { numMin = 0; numMax = 9; }
-
-  var freq = {};
-  for (var i = numMin; i <= numMax; i++) freq[i] = 0;
-  useData.forEach(function(item) {
-    var nums = getNums(item);
-    nums.forEach(function(n) { if (freq[n] !== undefined) freq[n]++; });
-  });
-
-  var maxF = 0;
-  Object.keys(freq).forEach(function(k) { if (freq[k] > maxF) maxF = freq[k]; });
-
-  var hot = [], warm = [], cold = [];
-  Object.keys(freq).forEach(function(k) {
-    var n = parseInt(k);
-    var f = freq[n];
-    if (f >= maxF * 0.6) hot.push({n:n,f:f});
-    else if (f >= maxF * 0.3) warm.push({n:n,f:f});
-    else cold.push({n:n,f:f});
-  });
-
-  hot.sort(function(a,b){return b.f-a.f;});
-  warm.sort(function(a,b){return b.f-a.f;});
-  cold.sort(function(a,b){return b.f-a.f;});
-
-  // 统计卡片（与HTML中 id 对应：sTotal/sAvg/sHotN/sColdN）
-  var sumAll = 0;
-  useData.forEach(function(item){ var ns=getNums(item); ns.forEach(function(n){ sumAll+=n; }); });
-  var avgSum = useData.length > 0 ? Math.round(sumAll / useData.length) : 0;
-  var sHotNEl = document.getElementById("sHotN");
-  var sColdNEl = document.getElementById("sColdN");
-  var sAvgEl = document.getElementById("sAvg");
-  if (sHotNEl) sHotNEl.textContent = hot.length > 0 ? hot[0].n : '-';
-  if (sColdNEl) sColdNEl.textContent = cold.length > 0 ? cold[0].n : '-';
-  if (sAvgEl) sAvgEl.textContent = avgSum;
-
-  // 号码网格（HTML中 id 为 freqGrid）
-  var gridHtml = "";
-  for (var i = numMin; i <= numMax; i++) {
-    var cls = "num";
-    var f = freq[i];
-    if (f >= maxF * 0.6) cls += " hot";
-    else if (f >= maxF * 0.3) cls += " warm";
-    else cls += " cold";
-    gridHtml += '<span class="' + cls + '">' + i + '</span>';
-  }
-  var gridEl = document.getElementById("freqGrid");
-  if (gridEl) gridEl.innerHTML = gridHtml;
-
-  // 遗漏值
-  var miss = {};
-  for (var i = numMin; i <= numMax; i++) miss[i] = 0;
-  for (var di = 0; di < useData.length; di++) {
-    var nums = getNums(useData[di]);
-    Object.keys(miss).forEach(function(k) {
-      if (nums.indexOf(parseInt(k)) === -1) miss[k]++;
-      else miss[k] = 0;
-    });
-  }
-
-  // 走势图
-  renderChart(type, useData);
-}
-
-/* ===== 渲染走势图（使用内嵌 MiniChart，零外部依赖） ===== */
-function renderChart(type, data) {
-  var recent = data.slice(0, 20).reverse();
-
-  /* ---------- 1. 和值走势 → chartSum ---------- */
-  var canvasSum = document.getElementById("chartSum");
-  if (canvasSum) {
-    MiniDestroy("chartSum");
-    var labels = [], sums = [];
-    recent.forEach(function(item) {
-      labels.push(item.p);
-      var nums = getNums(item);
-      var s = 0; nums.forEach(function(n) { s += n; });
-      sums.push(s);
-    });
-    MiniChart("chartSum", "line", labels, [
-      { data: sums, color: "#e53935", fill: "rgba(229,57,53,0.08)" }
-    ], {});
-  }
-
-  /* ---------- 2. 奇偶比 → chartOdd ---------- */
-  var canvasOdd = document.getElementById("chartOdd");
-  if (canvasOdd) {
-    MiniDestroy("chartOdd");
-    var labels2 = [], oddCnt = [];
-    recent.forEach(function(item) {
-      labels2.push(item.p);
-      var nums = getNums(item);
-      var o = 0; nums.forEach(function(n) { if (n % 2 === 1) o++; });
-      oddCnt.push(o);
-    });
-    MiniChart("chartOdd", "line", labels2, [
-      { data: oddCnt, color: "#1976d2", fill: "rgba(25,118,210,0.08)" }
-    ], {});
-  }
-
-  /* ---------- 3. 区间分布 → chartZone ---------- */
-  var canvasZone = document.getElementById("chartZone");
-  if (canvasZone) {
-    MiniDestroy("chartZone");
-    var zoneLabels = [], zoneData = [];
-    recent.forEach(function(item) {
-      zoneLabels.push(item.p);
-      zoneData.push(getNums(item).length);
-    });
-    MiniChart("chartZone", "bar", zoneLabels, [
-      { data: zoneData, color: "#4caf50", type: "bar" }
-    ], {});
-  }
-}
-
-/* ===== 渲染推荐 ===== */
-function renderRecommend(type, data) {
-  if (!data || data.length === 0) return;
-  var cfg = C[type];
-  var period = cfg.recPeriod || 30;
-
-  // 更新标题文字
-  var hl = document.getElementById("heroLabel");
-  if (hl) hl.textContent = "🔮 基于近" + period + "期走势智能推荐";
-  var hd = document.getElementById("heroDesc");
-  if (hd) hd.textContent = "冷热号 · 遗漏值 · 区间均衡 · 奇偶搭配（近" + period + "期）";
-
-  // 调用算法（只传已配置期数的数据）
-  var rec = generateRecommend(data.slice(0, period), cfg);
-  if (!rec) {
-    document.getElementById("recArea").innerHTML = '<div class="saved-empty">数据不足，无法生成推荐</div>';
-    return;
-  }
-
-  // 基本推荐 → basicRecs
-  var basicHtml = "";
-  if (rec.basic && rec.basic.length > 0) {
-    rec.basic.forEach(function(item, idx) {
-      basicHtml += '<div class="rec-card"><div class="rec-header">' + (item.label || ("第"+(idx+1)+"注")) + '</div>';
-      basicHtml += '<div class="rec-balls">';
-      if (cfg.type === "digit") {
-        var nums = item.nums || item.n || item.r || [];
-        nums.forEach(function(n, i) {
-          basicHtml += '<span class="ball r">' + n + '</span>';
-          if (i < nums.length - 1 && cfg.rC > 3) basicHtml += '<span style="width:2px;display:inline-block"></span>';
-        });
-      } else if (cfg.type === "keno") {
-        var nums = item.nums || item.n || item.r || [];
-        nums.forEach(function(n) {
-          basicHtml += '<span class="ball r" style="width:28px;height:28px;font-size:11px">' + n + '</span>';
-        });
-      } else {
-        var reds = item.nums || item.r || [];
-        var blues = item.blues || item.b || [];
-        reds.forEach(function(n) {
-          basicHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';
-        });
-        if (blues.length > 0) {
-          basicHtml += '<span style="width:4px;display:inline-block"></span>';
-          blues.forEach(function(n) {
-            basicHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>';
-          });
-        }
-      }
-      basicHtml += '</div>';
-      if (item.reason) basicHtml += '<div class="rec-reason">' + item.reason + '</div>';
-      basicHtml += '</div>';
-    });
-  }
-  var basicEl = document.getElementById("basicRecs");
-  if (basicEl) basicEl.innerHTML = basicHtml;
-
-  // 胆拖推荐 → dantuoRecs
-  var dtHtml = "";
-  if (rec.dantuo && rec.dantuo.length > 0) {
-    rec.dantuo.forEach(function(item, idx) {
-      dtHtml += '<div class="dantuo-card"><div class="rec-header">' + (item.label || ("第"+(idx+1)+"注")) + '</div>';
-      if (item.reason) dtHtml += '<div class="rec-reason">' + item.reason + '</div>';
-      var dans = item.dan || [];
-      var tuos = item.tuo || [];
-      if (dans.length > 0) {
-        dtHtml += '<div class="dt-row"><span class="dt-label">胆码</span><div class="dt-balls">';
-        dans.forEach(function(n) {
-          dtHtml += '<span class="dt-ball dan">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        });
-        dtHtml += '</div></div>';
-      }
-      if (tuos.length > 0) {
-        dtHtml += '<div class="dt-row"><span class="dt-label">拖码</span><div class="dt-balls">';
-        tuos.forEach(function(n) {
-          dtHtml += '<span class="dt-ball tuo">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        });
-        dtHtml += '</div></div>';
-      }
-      dtHtml += '</div>';
-    });
-  }
-  var dtEl = document.getElementById("dantuoRecs");
-  if (dtEl) dtEl.innerHTML = dtHtml;
-
-  /* ===== 遗漏值走势图 → chartMiss（MiniChart） ===== */
-  if (rec.analysis) {
-    var canvasMiss = document.getElementById("chartMiss");
-    if (canvasMiss) {
-      MiniDestroy("chartMiss");
-      var missMap = rec.analysis.rMiss || {};
-      var numMin2 = cfg.type === "digit" ? 0 : 1;
-      var numMax2 = cfg.type === "digit" ? 9 : Math.min(cfg.rMax, 30);
-      var missLabels = [], missData = [], missColors = [];
-      for (var mi = numMin2; mi <= numMax2; mi++) {
-        missLabels.push(String(mi));
-        var mv = missMap[mi] || 0;
-        missData.push(mv);
-        missColors.push(mv >= 10 ? "#e53935" : mv >= 5 ? "#ff9800" : "#1976d2");
-      }
-      MiniChart("chartMiss", "bar", missLabels, [
-        { data: missData, color: "#1976d2", bg: missColors, type: "bar" }
-      ], {});
-    }
-
-    /* ===== 热号追踪 → hotGrid（推荐页） ===== */
-    var hotGridEl = document.getElementById("hotGrid");
-    if (hotGridEl && rec.analysis.hotReds) {
-      var hotHtml = "";
-      rec.analysis.hotReds.forEach(function(n) {
-        if (Array.isArray(n)) {
-          n.forEach(function(nn) { hotHtml += '<span class="num hot">' + nn + '</span>'; });
-        } else {
-          hotHtml += '<span class="num hot">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        }
-      });
-      hotGridEl.innerHTML = hotHtml;
-    }
-
-    /* ===== 冷号追踪 → coldGrid ===== */
-    var coldGridEl = document.getElementById("coldGrid");
-    if (coldGridEl && rec.analysis.coldReds) {
-      var coldHtml = "";
-      rec.analysis.coldReds.forEach(function(n) {
-        if (Array.isArray(n)) {
-          n.forEach(function(nn) { coldHtml += '<span class="num cold">' + nn + '</span>'; });
-        } else {
-          coldHtml += '<span class="num cold">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        }
-      });
-      coldGridEl.innerHTML = coldHtml;
-    }
-  }
-}
-
-/* ===== 切换页面 ===== */
-function switchPage(page) {
-  document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
-  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
-  document.getElementById(page).classList.add("active");
-  document.querySelector('.tab-btn[data-page="'+page+'"]').classList.add("active");
-  /* 切换到推荐页时重新渲染图表（修复隐藏canvas尺寸为0） */
-  if (page === 'page1' && cache[cur] && cache[cur].length > 0) {
-    setTimeout(function() { renderRecommend(cur, cache[cur]); }, 100);
-  }
-}
-
-/* ===== 切换彩种 ===== */
-function switchType(type) {
-  cur = type;
-  // 同步所有彩种栏的高亮状态
-  document.querySelectorAll(".type-btn").forEach(function(b){
-    b.classList.remove("active");
-    if(b.dataset.type===type) b.classList.add("active");
-  });
-  loadAll(type);
-}
-
-/* ===== 加载所有数据 ===== */
-function loadAll(type) {
-  type = type || cur;
-  document.getElementById("statusBar").textContent = "正在加载数据...";
-  fetchData(type).then(function(data) {
-    if (!data || data.length === 0) {
-      document.getElementById("statusBar").textContent = "数据加载失败";
-      return;
-    }
-    document.getElementById("dataBadge").textContent = "实时";
-    document.getElementById("dataBadge").style.background = "#4caf50";
-    document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
-    renderAnalysis(type, data);
-    renderRecommend(type, data);
-  }).catch(function(e) {
-    document.getElementById("statusBar").textContent = "加载失败: " + e;
-    document.getElementById("dataBadge").textContent = "模拟";
-    document.getElementById("dataBadge").style.background = "#ff9800";
-    var mock = genMock(type);
-    renderAnalysis(type, mock);
-    renderRecommend(type, mock);
-  });
-}
-
-/* ===== 初始化 ===== */
-function init() {
-  document.querySelectorAll(".tab-btn").forEach(function(btn) {
-    btn.addEventListener("click", function(){ switchPage(this.dataset.page); });
-  });
-  document.querySelectorAll(".type-btn").forEach(function(btn) {
-    btn.addEventListener("click", function(){ switchType(this.dataset.type); });
-  });
-  loadAll("ssq");
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
-}
-
-})();
-</script>
+<script src="lotto-main.js?v=5.2"></script>
 </body>
 </html>
