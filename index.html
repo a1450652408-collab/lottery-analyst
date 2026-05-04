@@ -6114,50 +6114,9 @@ function renderHitRate(type, data, rec) {
   }
 
   
-  if (!hasNewDraw) {
-    periodEl.textContent = "（等待新开奖 | 推荐号码锁定于" + latest.p + "期）";
-    var phtml = "";
-    if (curRec.basic && curRec.basic.length > 0) {
-      phtml += '<div class="hit-label">当前基本推荐</div>';
-      curRec.basic.forEach(function(item, idx) {
-        phtml += '<div class="rec-card hit-card"><div class="rec-header">第'+(idx+1)+'注</div><div class="rec-balls">';
-        (item.nums||[]).forEach(function(n) {
-          phtml += '<span class="ball r" style="opacity:.5">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        });
-        if (item.blues && item.blues.length > 0) {
-          phtml += '<span style="width:4px;display:inline-block"></span>';
-          item.blues.forEach(function(n) {
-            phtml += '<span class="ball b" style="opacity:.5">' + String(n).padStart(2,"0") + '</span>';
-          });
-        }
-        phtml += '</div></div>';
-      });
-    }
-    if (curRec.dantuo && curRec.dantuo.length > 0) {
-      phtml += '<div class="hit-label">当前胆拖推荐</div>';
-      curRec.dantuo.forEach(function(item) {
-        var dans = item.dan || [];
-        var tuos = item.tuo || [];
-        phtml += '<div class="rec-card hit-card"><div class="rec-header">' + dans.length + '胆拖</div><div class="rec-balls">';
-        dans.forEach(function(n) {
-          phtml += '<span class="ball r" style="opacity:.5;font-size:11px">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        });
-        if (tuos.length > 0) {
-          phtml += '<span style="margin:0 4px;color:#999;font-size:10px">|</span>';
-          tuos.forEach(function(n) {
-            phtml += '<span class="ball r" style="opacity:.5;font-size:11px;background:radial-gradient(circle at 35% 35%,#ff8a80,#ef5350)">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-          });
-        }
-        phtml += '</div></div>';
-      });
-    }
-    gridEl.innerHTML = phtml || '<span style="color:#999;font-size:11px">等待新开奖数据...</span>';
-    boxEl.style.display = "block";
-    return;
-  }
-
-  
-  periodEl.textContent = "（上期荐" + lastRec.savedAt + "期 → 开奖" + latest.p + "期）";
+  periodEl.textContent = hasNewDraw 
+    ? "（上期荐" + lastRec.savedAt + "期 → 开奖" + latest.p + "期）"
+    : "（上期推荐 " + lastRec.savedAt + " 期 | 等待新开奖）";
 
   
   function isHit(n) { return latestNums.indexOf(n) !== -1; }
