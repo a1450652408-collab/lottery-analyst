@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 13:25:18 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-04 13:56:19 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -6313,15 +6313,6 @@ function recommendDigit(data, cfg) {
       return ns.length > p ? ns[p] : -1;
     }, 0, 9);
 
-    // 该位贝叶斯后验（该位最热号的后验概率）
-    var pBayes = bayesianUpdate(recent, function(dd) {
-      var ns = getNums(dd);
-      return ns.length > p ? [ns[p]] : [];
-    }, pHot[0], 1, 1);
-
-    // 该位信息熵
-    var pEntropy = entropy(pFreq, 0, 9);
-
     // EMA综合排序（热度 + 趋势）
     var pHotEma = [];
     for (var d = 0; d <= 9; d++) {
@@ -6333,6 +6324,15 @@ function recommendDigit(data, cfg) {
     var pHot = sortByFreq(pFreq, 0, 9);
     var pCold = sortByMiss(pMiss, 0, 9);
     var pHotNums = pHotEma.map(function(x) { return x.n; });
+
+    // 该位贝叶斯后验（该位最热号的后验概率）
+    var pBayes = bayesianUpdate(recent, function(dd) {
+      var ns = getNums(dd);
+      return ns.length > p ? [ns[p]] : [];
+    }, pHot[0], 1, 1);
+
+    // 该位信息熵
+    var pEntropy = entropy(pFreq, 0, 9);
 
     // 该位近10期走势
     var pTrend = [];
@@ -6943,25 +6943,34 @@ function genMock(type) {
   var cfg = C[type];
   var data = [];
   for (var i = 50; i >= 1; i--) {
-    var r = [];
-    while (r.length < cfg.rC) {
-      var n = Math.floor(Math.random() * cfg.rMax) + 1;
-      if (r.indexOf(n) === -1) r.push(n);
-    }
-    r.sort(function(a,b){return a-b;});
-    var b = [];
-    if (cfg.bC > 0) {
-      while (b.length < cfg.bC) {
-        var n = Math.floor(Math.random() * cfg.bMax) + 1;
-        if (b.indexOf(n) === -1) b.push(n);
+    var p = "20" + (26 - Math.floor((i-1)/3)) + String(i).padStart(2,"0");
+    var d = "2026-04-" + String(i).padStart(2,"0");
+    
+    if (cfg.type === "digit") {
+      // 数字彩：n字段，范围0-9，允许重复
+      var nums = [];
+      for (var di = 0; di < cfg.rC; di++) {
+        nums.push(Math.floor(Math.random() * 10));
       }
-      b.sort(function(a,b){return a-b;});
+      data.push({ p: p, d: d, n: nums, b: [] });
+    } else {
+      // 乐透/基诺：r字段，范围1-rMax，不重复
+      var r = [];
+      while (r.length < cfg.rC) {
+        var n = Math.floor(Math.random() * cfg.rMax) + 1;
+        if (r.indexOf(n) === -1) r.push(n);
+      }
+      r.sort(function(a,b){return a-b;});
+      var b = [];
+      if (cfg.bC > 0) {
+        while (b.length < cfg.bC) {
+          var n = Math.floor(Math.random() * cfg.bMax) + 1;
+          if (b.indexOf(n) === -1) b.push(n);
+        }
+        b.sort(function(a,b){return a-b;});
+      }
+      data.push({ p: p, d: d, r: r, b: b });
     }
-    data.push({
-      p: "20" + (26 - Math.floor((i-1)/3)) + String(i).padStart(2,"0"),
-      d: "2026-04-" + String(i).padStart(2,"0"),
-      r: r, b: b
-    });
   }
   return data;
 }
