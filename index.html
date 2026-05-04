@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 13:56:19 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-04 14:11:36 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -5763,6 +5763,156 @@ function buildBinarySeq(data, numGetter, targetNum) {
 
 
 /* ================================================================
+   数学增强工具函数（v5.0：概率模型 + 回归 + 间隔分析 + 相关性）
+   ================================================================ */
+
+/* 泊松分布概率：P(X=k) = λ^k * e^(-λ) / k!
+   用法：poissonProb(3.2, 5) → 期望值3.2次，恰好出现5次的概率 */
+function poissonProb(lambda, k) {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  var logP = k * Math.log(lambda) - lambda - logFactorial(k);
+  return Math.exp(logP);
+}
+function logFactorial(n) {
+  var r = 0;
+  for (var i = 2; i <= n; i++) r += Math.log(i);
+  return r;
+}
+
+/* 泊松累积概率：P(X >= k) — 至少出现k次的概率
+   值越小，说明该号码高频出现越"不寻常"（统计显著） */
+function poissonCumulative(lambda, k) {
+  var prob = 0;
+  for (var i = k; i <= Math.min(100, Math.ceil(lambda * 3)); i++) {
+    prob += poissonProb(lambda, i);
+  }
+  return Math.min(prob, 1);
+}
+
+/* 百分位数：返回数组第p百分位的值
+   p范围0-100，例如p=50返回中位数 */
+function percentile(arr, p) {
+  if (!arr || arr.length === 0) return 0;
+  var sorted = arr.slice().sort(function(a,b){return a-b;});
+  var idx = (p / 100) * (sorted.length - 1);
+  var lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (idx - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* 简单线性回归：返回 {slope, intercept, r2}
+   slope > 0 表示上升趋势，< 0 下降趋势，绝对值越大趋势越强
+   r2 (0-1) 表示拟合优度，越大越可信 */
+function linearTrend(arr) {
+  if (!arr || arr.length < 3) return { slope: 0, intercept: 0, r2: 0 };
+  var n = arr.length;
+  var xs = [], ys = [];
+  for (var i = 0; i < n; i++) { xs.push(i); ys.push(arr[i]); }
+  var mx = (n - 1) / 2, my = 0;
+  for (var i = 0; i < n; i++) my += ys[i];
+  my /= n;
+  var num = 0, den = 0;
+  for (var i = 0; i < n; i++) {
+    num += (xs[i] - mx) * (ys[i] - my);
+    den += (xs[i] - mx) * (xs[i] - mx);
+  }
+  var slope = den === 0 ? 0 : num / den;
+  var intercept = my - slope * mx;
+  // R² = 1 - SS_res/SS_tot
+  var ssRes = 0, ssTot = 0;
+  for (var i = 0; i < n; i++) {
+    var pred = slope * xs[i] + intercept;
+    ssRes += (ys[i] - pred) * (ys[i] - pred);
+    ssTot += (ys[i] - my) * (ys[i] - my);
+  }
+  var r2 = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
+  return { slope: slope, intercept: intercept, r2: Math.max(0, Math.min(1, r2)) };
+}
+
+/* 间隔分析：分析号码连续不出现的间隔情况
+   返回 {meanGap, medianGap, maxGap, currentStreak, gaps, consistency}
+   consistency 越接近1，间隔越均匀（越容易预测） */
+function gapAnalysis(data, numGetter, targetNum) {
+  var gaps = [], lastSeen = -1;
+  for (var i = 0; i < data.length; i++) {
+    var nums = numGetter(data[i]);
+    if (nums.indexOf(targetNum) !== -1) {
+      if (lastSeen >= 0) gaps.push(i - lastSeen - 1);
+      lastSeen = i;
+    }
+  }
+  // 当前遗漏（距最近一次出现的期数）
+  var currentStreak = lastSeen >= 0 ? data.length - 1 - lastSeen : data.length;
+  if (gaps.length === 0) {
+    return { meanGap: data.length, medianGap: data.length, maxGap: data.length,
+             minGap: data.length, currentStreak: currentStreak, gaps: [],
+             consistency: 1, lastSeenPeriod: lastSeen };
+  }
+  gaps.sort(function(a,b){return a-b;});
+  var sum = 0; gaps.forEach(function(g){ sum += g; });
+  var meanGap = sum / gaps.length;
+  var medianGap = gaps.length % 2 === 1 ? gaps[Math.floor(gaps.length/2)]
+    : (gaps[gaps.length/2 - 1] + gaps[gaps.length/2]) / 2;
+  // 间隔均匀度（变异系数的倒数，越大越均匀）
+  var gapSd = 0;
+  gaps.forEach(function(g){ gapSd += (g - meanGap) * (g - meanGap); });
+  gapSd = Math.sqrt(gapSd / gaps.length);
+  var consistency = meanGap > 0 ? 1 / (1 + gapSd / Math.max(meanGap, 0.1)) : 0;
+  return {
+    meanGap: meanGap, medianGap: medianGap,
+    maxGap: gaps[gaps.length - 1] || 0, minGap: gaps[0] || 0,
+    currentStreak: currentStreak, gaps: gaps,
+    consistency: consistency, lastSeenPeriod: lastSeen
+  };
+}
+
+/* 皮尔逊相关系数：r ∈ [-1, 1]，衡量两个序列的线性相关程度
+   在数字彩中用于分析不同位置之间的关联性 */
+function pearsonCorr(xs, ys) {
+  if (!xs || !ys || xs.length < 3 || xs.length !== ys.length) return 0;
+  var n = xs.length;
+  var mx = 0, my = 0;
+  for (var i = 0; i < n; i++) { mx += xs[i]; my += ys[i]; }
+  mx /= n; my /= n;
+  var num = 0, dx2 = 0, dy2 = 0;
+  for (var i = 0; i < n; i++) {
+    var dx = xs[i] - mx, dy = ys[i] - my;
+    num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+  }
+  var den = Math.sqrt(dx2 * dy2);
+  return den === 0 ? 0 : Math.max(-1, Math.min(1, num / den));
+}
+
+/* 自相关系数：衡量序列与其自身滞后lag期的相关性
+   值>0.2表示可能存在周期模式 */
+function autoCorrelation(arr, lag) {
+  if (!arr || arr.length < lag + 3) return 0;
+  var n = arr.length - lag;
+  var xs = arr.slice(0, n), ys = arr.slice(lag);
+  return pearsonCorr(xs, ys);
+}
+
+/* 综合排名打分：根据多个指标的加权评分选号
+   scores: [{name, value, weight, higherBetter}...]
+   返回归一化后的综合分数 */
+function compositeScore(candidates, indicators) {
+  var results = [];
+  for (var ci = 0; ci < candidates.length; ci++) {
+    var total = 0, wSum = 0;
+    for (var ii = 0; ii < indicators.length; ii++) {
+      var ind = indicators[ii];
+      var val = ind.fn(candidates[ci]);
+      wSum += ind.weight;
+      total += val * ind.weight;
+    }
+    results.push({ n: candidates[ci], score: wSum > 0 ? total / wSum : 0 });
+  }
+  results.sort(function(a,b){return b.score - a.score;});
+  return results;
+}
+
+
+/* ================================================================
    第二层：关联分析工具
    ================================================================ */
 
@@ -5930,22 +6080,43 @@ function recommendLotto(data, cfg) {
   /* 卡方检验：整体分布是否显著偏离均匀 */
   var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
 
-  /* 综合热度排名：EMA + MACD趋势 + 贝叶斯后验加权 */
+  /* 综合热度排名：EMA + MACD趋势 + 贝叶斯后验 + 泊松概率 + 线性趋势加权 */
   var hotReds = [];
   var macdNums = {}; // 每个号的MACD信号
+  var trendNums = {}; // 每个号的线性回归趋势
+  var gapNums = {};   // 每个号的间隔分析
+  var poissonNums = {}; // 每个号的泊松概率
+  var totalDraws = recent.length;
+  var expectedFreq = totalDraws * rC / rMax; // 理论期望出现次数
+
   for (var nn = 1; nn <= rMax; nn++) {
     var seq = buildBinarySeq(recent, getNums, nn);
     macdNums[nn] = macdSignal(seq);
+    trendNums[nn] = linearTrend(seq);
+    gapNums[nn] = gapAnalysis(recent, getNums, nn);
+    // 泊松概率：P(X >= rFreq[nn]) — 越小说明该号高频越"异常"
+    var poissonP = poissonCumulative(expectedFreq, rFreq[nn] || 0);
+    poissonNums[nn] = poissonP;
   }
+
   for (var nn = 1; nn <= rMax; nn++) {
-    var emaW = rEmaScore[nn] * 0.55;
-    var zW = zScore(rFreq[nn]||0, freqMean, freqSd) * 0.2;
+    var emaW = rEmaScore[nn] * 0.50;
+    var zW = zScore(rFreq[nn]||0, freqMean, freqSd) * 0.15;
     // MACD bullish→加分，bearish→降分
     var macdW = macdNums[nn].signal === 'bullish' ? macdNums[nn].macd * 5 : macdNums[nn].macd * 2;
     // 贝叶斯后验调整
     var bayes = bayesianUpdate(recent, getNums, nn, 1, 1);
-    var bayesW = bayes.mean * 0.1;
-    hotReds.push({ n: nn, score: emaW + zW + macdW + bayesW });
+    var bayesW = bayes.mean * 0.10;
+    // 线性趋势：斜率>0(加热)加分，<0(降温)减分，r²高则趋势更可信
+    var trend = trendNums[nn];
+    var trendW = trend.slope * trend.r2 * 3;
+    // 泊松概率：高频号(P小)加分，低频号(P大)减分
+    var poissonW = (1 - poissonNums[nn]) * 0.15;
+    // 间隔均匀度：间隔越均匀越有规律，加分
+    var gapCon = gapNums[nn].consistency;
+    var gapW = (gapCon - 0.5) * 0.10;
+
+    hotReds.push({ n: nn, score: emaW + zW + macdW + bayesW + trendW + poissonW + gapW });
   }
   hotReds.sort(function(a, b) { return b.score - a.score; });
   var hotRedNums = hotReds.map(function(x) { return x.n; });
@@ -6070,8 +6241,13 @@ function recommendLotto(data, cfg) {
       return nums.some(function(n) { return n >= zn[0] && n <= zn[1]; });
     }).length;
     var emaFlag = nums.filter(function(n) { return rEmaScore[n] > 0.15; }).length;
+    // 泊松显著：P<0.05的号码个数（统计显著高频）
+    var poissonSig = nums.filter(function(n) { return poissonNums[n] < 0.05; }).length;
+    // 趋势：斜率>0的号码个数（正在升温）
+    var trendUp = nums.filter(function(n) { return trendNums[n].slope > 0.005 && trendNums[n].r2 > 0.1; }).length;
     return style + ' | 和值' + sum + ' | 奇偶' + odd + ':' + (nums.length - odd)
-      + ' | ' + zHit + '区覆盖 | EMA热' + emaFlag + '个 | 偏差p=' + chiResult[1].toFixed(3);
+      + ' | ' + zHit + '区覆盖 | EMA热' + emaFlag + '个 | 泊松显著' + poissonSig + '个'
+      + ' | 趋势升' + trendUp + '个 | p=' + chiResult[1].toFixed(3);
   }
 
   return {
@@ -6095,7 +6271,20 @@ function recommendLotto(data, cfg) {
       bMiss: bMiss,
       emaScores: rEmaScore,
       chiSquare: chiResult,
-      freqCv: freqCv.toFixed(3)
+      freqCv: freqCv.toFixed(3),
+      /* 数学增强指标 */
+      poissonProb: (function() {
+        var p = {}; for (var n=1; n<=rMax; n++) p[n] = poissonNums[n];
+        return p;
+      })(),
+      linearTrend: (function() {
+        var t = {}; for (var n=1; n<=rMax; n++) t[n] = { slope: trendNums[n].slope, r2: trendNums[n].r2 };
+        return t;
+      })(),
+      gapStats: (function() {
+        var g = {}; for (var n=1; n<=rMax; n++) g[n] = { meanGap: gapNums[n].meanGap, streak: gapNums[n].currentStreak, consistency: gapNums[n].consistency };
+        return g;
+      })()
     },
     /* 第二层：关联分析 */
     pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
@@ -6167,7 +6356,17 @@ function recommendKeno(data, cfg) {
     bayesNums[i] = bayesianUpdate(recent, getNums, i, 1, 1);
   }
 
-  /* 所有号码按调整后权重排序（+MACD+贝叶斯） */
+  /* 泊松概率 + 线性趋势 + 间隔分析（数学增强） */
+  var poissonKeno = {}, trendKeno = {}, gapKeno = {};
+  var expectedKenoFreq = recent.length * rC / rMax;
+  for (var i = 1; i <= rMax; i++) {
+    var seq = buildBinarySeq(recent, getNums, i);
+    poissonKeno[i] = poissonCumulative(expectedKenoFreq, freq[i] || 0);
+    trendKeno[i] = linearTrend(seq);
+    gapKeno[i] = gapAnalysis(recent, getNums, i);
+  }
+
+  /* 所有号码按调整后权重排序（+MACD+贝叶斯+泊松+线性趋势） */
   var allNums = [];
   for (var i = 1; i <= rMax; i++) allNums.push(i);
 
@@ -6179,6 +6378,15 @@ function recommendKeno(data, cfg) {
     if (macdNums[b].signal === 'bullish') wB += 0.3;
     if (bayesNums[a].mean > 0.25) wA += 0.2;
     if (bayesNums[b].mean > 0.25) wB += 0.2;
+    // 泊松显著（P<0.05说明高频异常）：加分
+    if (poissonKeno[a] < 0.05) wA += 0.25;
+    if (poissonKeno[b] < 0.05) wB += 0.25;
+    // 线性趋势上升：加分
+    if (trendKeno[a].slope > 0.003 && trendKeno[a].r2 > 0.1) wA += 0.15;
+    if (trendKeno[b].slope > 0.003 && trendKeno[b].r2 > 0.1) wB += 0.15;
+    // 间隔均匀度：加分
+    if (gapKeno[a].consistency > 0.55) wA += 0.10;
+    if (gapKeno[b].consistency > 0.55) wB += 0.10;
     return wB - wA;
   });
 
@@ -6221,7 +6429,12 @@ function recommendKeno(data, cfg) {
     var coldCount = nums.filter(function(n) { return (miss[n] || 0) >= 10; }).length;
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
     var mid30 = hyperGeomCumulative(rMax, rC, rC, rC/2).toFixed(4);
+    // 泊松显著个数
+    var poissonSig = nums.filter(function(n) { return poissonKeno[n] < 0.05; }).length;
+    // 趋势上升个数
+    var trendUp = nums.filter(function(n) { return trendKeno[n].slope > 0.003 && trendKeno[n].r2 > 0.1; }).length;
     return 'EMA热' + emaCount + '个 | 高遗漏' + coldCount + '个 | 和值' + sum
+      + ' | 泊松显著' + poissonSig + '个 | 趋势升' + trendUp + '个'
       + ' | p偏=' + chiResult[1].toFixed(3) + ' | CV=' + freqCv.toFixed(2);
   }
 
@@ -6242,7 +6455,20 @@ function recommendKeno(data, cfg) {
       emaScores: emaScore,
       chiSquare: chiResult,
       freqCv: freqCv.toFixed(3),
-      adaptiveWeights: { wFreq: wFreq.toFixed(2), wMiss: wMiss.toFixed(2), wEma: wEma.toFixed(2) }
+      adaptiveWeights: { wFreq: wFreq.toFixed(2), wMiss: wMiss.toFixed(2), wEma: wEma.toFixed(2) },
+      /* 数学增强指标 */
+      poissonKeno: (function() {
+        var p = {}; for (var n=1; n<=rMax; n++) p[n] = poissonKeno[n];
+        return p;
+      })(),
+      trendKeno: (function() {
+        var t = {}; for (var n=1; n<=rMax; n++) t[n] = { slope: trendKeno[n].slope, r2: trendKeno[n].r2 };
+        return t;
+      })(),
+      gapKeno: (function() {
+        var g = {}; for (var n=1; n<=rMax; n++) g[n] = { meanGap: gapKeno[n].meanGap.toFixed(1), streak: gapKeno[n].currentStreak, consistency: gapKeno[n].consistency.toFixed(2) };
+        return g;
+      })()
     },
     /* 第二层：关联分析 */
     pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
@@ -6331,6 +6557,39 @@ function recommendDigit(data, cfg) {
       return ns.length > p ? [ns[p]] : [];
     }, pHot[0], 1, 1);
 
+    // 该位线性回归趋势（每位每个数字的出现趋势）  
+    var pTrendLine = {};
+    for (var d = 0; d <= 9; d++) {
+      var seq = buildBinarySeq(recent, function(dd) {
+        var ns = getNums(dd);
+        return ns.length > p ? [ns[p]] : [];
+      }, d);
+      pTrendLine[d] = linearTrend(seq);
+    }
+
+    // 该位间隔分析（每位每个数字的间隔模式）
+    var pGap = {};
+    for (var d = 0; d <= 9; d++) {
+      pGap[d] = gapAnalysis(recent, function(dd) {
+        var ns = getNums(dd);
+        return ns.length > p ? [ns[p]] : [];
+      }, d);
+    }
+
+    // 该位自相关分析（每位是否存在周期模式）
+    var pAutoCorr = {};
+    for (var d = 0; d <= 9; d++) {
+      var seq = buildBinarySeq(recent, function(dd) {
+        var ns = getNums(dd);
+        return ns.length > p ? [ns[p]] : [];
+      }, d);
+      pAutoCorr[d] = {
+        lag1: autoCorrelation(seq, 1),
+        lag2: autoCorrelation(seq, 2),
+        lag3: autoCorrelation(seq, 3)
+      };
+    }
+
     // 该位信息熵
     var pEntropy = entropy(pFreq, 0, 9);
 
@@ -6373,7 +6632,29 @@ function recommendDigit(data, cfg) {
           s.push(ns.length > p ? ns[p] : -1);
         }
         return s.filter(function(x){return x>=0;});
-      })())
+      })()),
+      /* 数学增强指标 */
+      trendLine: pTrendLine,
+      gap: pGap,
+      autoCorr: pAutoCorr
+    });
+  }
+
+  /* ---- 位置相关性分析（相邻位置之间的皮尔逊相关系数） ---- */
+  var posCorr = [];
+  for (var cp = 0; cp < pos - 1; cp++) {
+    var xs = [], ys = [];
+    for (var t = 0; t < recent.length; t++) {
+      var ns = getNums(recent[t]);
+      if (ns.length > cp + 1) {
+        xs.push(ns[cp]);
+        ys.push(ns[cp + 1]);
+      }
+    }
+    posCorr.push({
+      pair: '位' + (cp+1) + '-' + (cp+2),
+      corr: pearsonCorr(xs, ys),
+      sampleN: xs.length
     });
   }
 
@@ -6384,12 +6665,45 @@ function recommendDigit(data, cfg) {
     basic1.push(lastDigit >= 0 && lastDigit <= 9 ? pa.markov.bestNext[lastDigit] || pa.hotEma[0] : pa.hotEma[0]);
   });
 
-  /* 基本推荐注2：贝叶斯后验 + MACD加权 EMA */
+  /* 基本推荐注2：贝叶斯后验 + MACD加权 EMA + 线性趋势 */
   var basic2 = [];
   posAnalysis.forEach(function(pa) {
     var macdBonus = pa.macd.signal === 'bullish' ? 0.2 : 0;
     var bayesPick = pa.bayes.mean > 0.3 ? pa.hot[0] : pa.hotEma[0];
-    basic2.push(bayesPick);
+    // 线性趋势增强：选出正斜率>0.005且r²>0.15的数字（正在显著升温）
+    var trendCandidates = [];
+    for (var d = 0; d <= 9; d++) {
+      if (pa.trendLine[d] && pa.trendLine[d].slope > 0.005 && pa.trendLine[d].r2 > 0.15) {
+        trendCandidates.push(d);
+      }
+    }
+    var finalPick = bayesPick;
+    if (trendCandidates.length > 0) {
+      // 在趋势候选选中最热的一个
+      for (var ti = 0; ti < pa.hotEma.length; ti++) {
+        if (trendCandidates.indexOf(pa.hotEma[ti]) !== -1) {
+          finalPick = pa.hotEma[ti];
+          break;
+        }
+      }
+    }
+    basic2.push(finalPick);
+  });
+
+  /* 基本推荐注3：间隔回归+自相关复合推荐 */
+  var basic3 = [];
+  posAnalysis.forEach(function(pa) {
+    // 综合评分：EMA热度 + 线性趋势 + 间隔均匀度 + 贝叶斯
+    var scores = [];
+    for (var d = 0; d <= 9; d++) {
+      var s = (pa.ema[d] || 0) * 0.40
+        + ((pa.trendLine[d] && pa.trendLine[d].slope > 0) ? Math.min(pa.trendLine[d].slope * 20, 0.3) : 0)
+        + ((pa.gap[d] && pa.gap[d].consistency > 0.6) ? pa.gap[d].consistency * 0.15 : 0)
+        + ((pa.freq[d] || 0) / recent.length * 0.15);
+      scores.push({ n: d, score: s });
+    }
+    scores.sort(function(a,b){return b.score - a.score;});
+    basic3.push(scores[0].n);
   });
 
   /* 胆拖推荐：MACD bullish调整热度排序 */
@@ -6441,7 +6755,15 @@ function recommendDigit(data, cfg) {
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
     var big = nums.filter(function(n) { return n >= 5; }).length;
     var odd = nums.filter(function(n) { return n % 2 === 1; }).length;
-    return style + ' | 和值' + sum + ' | 大小' + big + ':' + (nums.length - big) + ' | 奇偶' + odd + ':' + (nums.length - odd);
+    // 数字根：各位数字之和反复求和至个位数
+    var digRoot = sum;
+    while (digRoot >= 10) {
+      var ds = 0;
+      while (digRoot > 0) { ds += digRoot % 10; digRoot = Math.floor(digRoot / 10); }
+      digRoot = ds;
+    }
+    return style + ' | 和值' + sum + ' | 大小' + big + ':' + (nums.length - big)
+      + ' | 奇偶' + odd + ':' + (nums.length - odd) + ' | 数根' + digRoot;
   }
 
   /* 综合所有位的遗漏值（用于走势图） */
@@ -6472,7 +6794,8 @@ function recommendDigit(data, cfg) {
   return {
     basic: [
       { nums: basic1, reason: reasonDigit(basic1, 'Markov转移预测') + ' | Markov每位上期→下期最可能' },
-      { nums: basic2, reason: reasonDigit(basic2, 'Bayes后验+MACD加权') + ' | 贝叶斯p>0.3替换EMA热号' }
+      { nums: basic2, reason: reasonDigit(basic2, '趋势回归+Bayes') + ' | 线性趋势筛选+贝叶斯p>0.3' },
+      { nums: basic3, reason: reasonDigit(basic3, '复合评分推荐') + ' | EMA+趋势+间隔一致+频率加权' }
     ],
     dantuo: dantuoList.map(function(dt, idx) {
       var danCount = idx + 1;
@@ -6487,7 +6810,30 @@ function recommendDigit(data, cfg) {
       rMiss: rMissAll,
       rFreq: rFreqAll,
       posFreq: posAnalysis.map(function(pa) { return pa.freq; }),
-      posMiss: posAnalysis.map(function(pa) { return pa.miss; })
+      posMiss: posAnalysis.map(function(pa) { return pa.miss; }),
+      /* 数学增强指标 */
+      posCorr: posCorr,
+      posGap: posAnalysis.map(function(pa) {
+        var g = {};
+        for (var d = 0; d <= 9; d++) {
+          if (pa.gap[d]) g[d] = { meanGap: pa.gap[d].meanGap.toFixed(1), streak: pa.gap[d].currentStreak, consistency: pa.gap[d].consistency.toFixed(2) };
+        }
+        return g;
+      }),
+      posTrend: posAnalysis.map(function(pa) {
+        var t = {};
+        for (var d = 0; d <= 9; d++) {
+          if (pa.trendLine[d]) t[d] = { slope: pa.trendLine[d].slope.toFixed(4), r2: pa.trendLine[d].r2.toFixed(3) };
+        }
+        return t;
+      }),
+      posAutoCorr: posAnalysis.map(function(pa) {
+        var a = {};
+        for (var d = 0; d <= 9; d++) {
+          if (pa.autoCorr[d]) a[d] = pa.autoCorr[d];
+        }
+        return a;
+      })
     }
   };
 }
