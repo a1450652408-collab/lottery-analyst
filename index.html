@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 11:11:50 -->
+<!-- Built: 2026-05-04 11:45:08 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -5730,6 +5730,110 @@ function buildBinarySeq(data, numGetter, targetNum) {
   return seq;
 }
 
+function markovMatrix(data, getter, numMin, numMax) {
+  var size = numMax - numMin + 1;
+  var counts = [];
+  for (var i = 0; i < size; i++) { counts[i] = []; for (var j = 0; j < size; j++) counts[i][j] = 0; }
+  var rowTotals = [];
+  for (var i = 0; i < size; i++) rowTotals[i] = 0;
+
+  for (var t = data.length - 1; t > 0; t--) {
+    var prev = getter(data[t]);
+    var curr = getter(data[t - 1]);
+    if (prev >= numMin && prev <= numMax && curr >= numMin && curr <= numMax) {
+      counts[prev - numMin][curr - numMin]++;
+      rowTotals[prev - numMin]++;
+    }
+  }
+
+  var matrix = [];
+  var bestNext = [];
+  for (var i = 0; i < size; i++) {
+    matrix[i] = [];
+    var best = -1, bestV = -1;
+    for (var j = 0; j < size; j++) {
+      matrix[i][j] = rowTotals[i] > 0 ? counts[i][j] / rowTotals[i] : 0;
+      if (matrix[i][j] > bestV) { bestV = matrix[i][j]; best = j + numMin; }
+    }
+    bestNext[i] = best;
+  }
+  return { matrix: matrix, bestNext: bestNext, counts: counts, totals: rowTotals };
+}
+
+function pairFrequency(data, numGetter, numMin, numMax) {
+  var pairMap = {};
+  data.forEach(function(d) {
+    var nums = numGetter(d).filter(function(n) { return n >= numMin && n <= numMax; });
+    nums.sort(function(a,b){return a-b;});
+    for (var i = 0; i < nums.length; i++) {
+      for (var j = i + 1; j < nums.length; j++) {
+        var key = nums[i] + ',' + nums[j];
+        pairMap[key] = (pairMap[key] || 0) + 1;
+      }
+    }
+  });
+  var pairs = Object.keys(pairMap).map(function(k) {
+    var parts = k.split(',');
+    return { a: parseInt(parts[0]), b: parseInt(parts[1]), count: pairMap[k] };
+  });
+  pairs.sort(function(a, b) { return b.count - a.count; });
+  return { pairMap: pairMap, topPairs: pairs };
+}
+
+function conditionalProb(data, numGetter, numMin, numMax, pairData) {
+  var pairMap = pairData.pairMap;
+  var soloFreq = countFreq(data, numGetter, numMin, numMax);
+  var conds = [];
+  for (var a = numMin; a <= numMax; a++) {
+    for (var b = numMin; b <= numMax; b++) {
+      if (a === b) continue;
+      var k = Math.min(a,b) + ',' + Math.max(a,b);
+      var pairCount = pairMap[k] || 0;
+      var aCount = soloFreq[a] || 1;
+      conds.push({ given: a, target: b, prob: pairCount / aCount });
+    }
+  }
+  conds.sort(function(a, b) { return b.prob - a.prob; });
+  return { conds: conds, topConds: conds.slice(0, 30) };
+}
+
+function macdSignal(arr) {
+  if (!arr || arr.length < 5) return { short: 0, long: 0, macd: 0, signal: 0, histogram: 0 };
+  var short = ema(arr, 0.5);  // alpha 0.5 ≈ 窗口5
+  var long = ema(arr, 0.15);  // alpha 0.15 ≈ 窗口20
+  return {
+    short: short,
+    long: long,
+    macd: short - long,
+    signal: (short - long) > 0 ? 'bullish' : 'bearish',
+    histogram: short - long
+  };
+}
+
+function bayesianUpdate(data, numGetter, targetNum, priorAlpha, priorBeta) {
+  var alpha = priorAlpha || 1;
+  var beta = priorBeta || 1;
+  for (var i = data.length - 1; i >= 0; i--) {
+    var nums = numGetter(data[i]);
+    if (nums.indexOf(targetNum) !== -1) alpha++;
+    else beta++;
+  }
+  return { alpha: alpha, beta: beta, mean: alpha / (alpha + beta) };
+}
+
+function entropy(freqMap, numMin, numMax) {
+  var total = 0;
+  for (var i = numMin; i <= numMax; i++) total += (freqMap[i] || 0);
+  if (total === 0) return { entropy: 0, max: 0, normalized: 1 };
+  var h = 0;
+  for (var i = numMin; i <= numMax; i++) {
+    var p = (freqMap[i] || 0) / total;
+    if (p > 0) h -= p * Math.log2(p);
+  }
+  var maxH = Math.log2(numMax - numMin + 1);
+  return { entropy: h, max: maxH, normalized: h / maxH, structured: 1 - h / maxH };
+}
+
 function recommendLotto(data, cfg) {
   var period = cfg.recPeriod || 30;
   var recent = getRecent(data, period);
@@ -5912,7 +6016,15 @@ function recommendLotto(data, cfg) {
       emaScores: rEmaScore,
       chiSquare: chiResult,
       freqCv: freqCv.toFixed(3)
-    }
+    },
+    
+    pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
+    condProb: conditionalProb(recent, getNums, 1, rMax,
+      { pairMap: pairFrequency(recent, getNums, 1, rMax).pairMap }).topConds.slice(0, 10),
+    
+    bayesian: { top: bayesianUpdate(recent, getNums, hotRedNums[0], 1, 1) },
+    redEntropy: entropy(rFreq, 1, rMax),
+    macdHot: macdSignal(hotReds.map(function(x){ return x.score; }))
   };
 }
 
@@ -6022,7 +6134,14 @@ function recommendKeno(data, cfg) {
       chiSquare: chiResult,
       freqCv: freqCv.toFixed(3),
       adaptiveWeights: { wFreq: wFreq.toFixed(2), wMiss: wMiss.toFixed(2), wEma: wEma.toFixed(2) }
-    }
+    },
+    
+    pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
+    condProb: conditionalProb(recent, getNums, 1, rMax,
+      { pairMap: pairFrequency(recent, getNums, 1, rMax).pairMap }).topConds.slice(0, 10),
+    
+    kenoEntropy: entropy(freq, 1, rMax),
+    macdTop: macdSignal(allNums.slice(0, 5).map(function(n) { return emaScore[n] || 0; }))
   };
 }
 
@@ -6062,6 +6181,21 @@ function recommendDigit(data, cfg) {
     var freqArr = [];
     for (var d = 0; d <= 9; d++) freqArr.push(pFreq[d] || 0);
     var pChi = chiSquareTest(freqArr, recent.length, 10);
+
+    // 该位马尔可夫转移矩阵
+    var pMarkov = markovMatrix(recent, function(dd) {
+      var ns = getNums(dd);
+      return ns.length > p ? ns[p] : -1;
+    }, 0, 9);
+
+    // 该位贝叶斯后验（该位最热号的后验概率）
+    var pBayes = bayesianUpdate(recent, function(dd) {
+      var ns = getNums(dd);
+      return ns.length > p ? [ns[p]] : [];
+    }, pHot[0], 1, 1);
+
+    // 该位信息熵
+    var pEntropy = entropy(pFreq, 0, 9);
 
     // EMA综合排序（热度 + 趋势）
     var pHotEma = [];
@@ -6103,7 +6237,18 @@ function recommendDigit(data, cfg) {
       bigCount: bigCount,
       smallCount: smallCount,
       bigRatio: Math.round(bigCount / recent.length * 100) + '%',
-      chiP: pChi[1].toFixed(3)
+      chiP: pChi[1].toFixed(3),
+      markov: pMarkov,
+      bayes: pBayes,
+      entropy: pEntropy,
+      macd: macdSignal((function() {
+        var s = [];
+        for (var t = Math.min(20, recent.length-1); t >= 0; t--) {
+          var ns = getNums(recent[t]);
+          s.push(ns.length > p ? ns[p] : -1);
+        }
+        return s.filter(function(x){return x>=0;});
+      })())
     });
   }
 
