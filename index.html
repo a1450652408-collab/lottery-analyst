@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 11:45:08 -->
+<!-- Built: 2026-05-04 11:56:38 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -5864,8 +5864,20 @@ function recommendLotto(data, cfg) {
 
   
   var hotReds = [];
+  var macdNums = {}; // 每个号的MACD信号
   for (var nn = 1; nn <= rMax; nn++) {
-    hotReds.push({ n: nn, score: rEmaScore[nn] * 0.7 + zScore(rFreq[nn]||0, freqMean, freqSd) * 0.3 });
+    var seq = buildBinarySeq(recent, getNums, nn);
+    macdNums[nn] = macdSignal(seq);
+  }
+  for (var nn = 1; nn <= rMax; nn++) {
+    var emaW = rEmaScore[nn] * 0.55;
+    var zW = zScore(rFreq[nn]||0, freqMean, freqSd) * 0.2;
+    // MACD bullish→加分，bearish→降分
+    var macdW = macdNums[nn].signal === 'bullish' ? macdNums[nn].macd * 5 : macdNums[nn].macd * 2;
+    // 贝叶斯后验调整
+    var bayes = bayesianUpdate(recent, getNums, nn, 1, 1);
+    var bayesW = bayes.mean * 0.1;
+    hotReds.push({ n: nn, score: emaW + zW + macdW + bayesW });
   }
   hotReds.sort(function(a, b) { return b.score - a.score; });
   var hotRedNums = hotReds.map(function(x) { return x.n; });
@@ -6064,12 +6076,25 @@ function recommendKeno(data, cfg) {
   var wEma = 0.2 + freqCv * 0.1;
 
   
+  var macdNums = {}, bayesNums = {};
+  for (var i = 1; i <= rMax; i++) {
+    var seq = buildBinarySeq(recent, getNums, i);
+    macdNums[i] = macdSignal(seq);
+    bayesNums[i] = bayesianUpdate(recent, getNums, i, 1, 1);
+  }
+
+  
   var allNums = [];
   for (var i = 1; i <= rMax; i++) allNums.push(i);
 
   allNums.sort(function(a, b) {
     var wA = (freq[a]||0)/freqMean * wFreq + (miss[a]||0)/recent.length * wMiss + emaScore[a] * wEma * 10;
     var wB = (freq[b]||0)/freqMean * wFreq + (miss[b]||0)/recent.length * wMiss + emaScore[b] * wEma * 10;
+    // 加分：MACD bullish +0.3, 贝叶斯>0.25 +0.2
+    if (macdNums[a].signal === 'bullish') wA += 0.3;
+    if (macdNums[b].signal === 'bullish') wB += 0.3;
+    if (bayesNums[a].mean > 0.25) wA += 0.2;
+    if (bayesNums[b].mean > 0.25) wB += 0.2;
     return wB - wA;
   });
 
@@ -6254,17 +6279,26 @@ function recommendDigit(data, cfg) {
 
   
   var basic1 = [];
-  posAnalysis.forEach(function(pa) { basic1.push(pa.hotEma[0]); });
+  posAnalysis.forEach(function(pa) {
+    var lastDigit = pa.trend.length > 0 ? pa.trend[pa.trend.length - 1] : -1;
+    basic1.push(lastDigit >= 0 && lastDigit <= 9 ? pa.markov.bestNext[lastDigit] || pa.hotEma[0] : pa.hotEma[0]);
+  });
 
   
   var basic2 = [];
-  posAnalysis.forEach(function(pa) { basic2.push(pa.cold[0]); });
+  posAnalysis.forEach(function(pa) {
+    var macdBonus = pa.macd.signal === 'bullish' ? 0.2 : 0;
+    var bayesPick = pa.bayes.mean > 0.3 ? pa.hot[0] : pa.hotEma[0];
+    basic2.push(bayesPick);
+  });
 
   
-  // 收集所有位的热号，按全局频率排序
   var allHot = [];
-  posAnalysis.forEach(function(pa) { allHot = allHot.concat(pa.hot.slice(0, 3)); });
-  // 去重并按频率排序
+  posAnalysis.forEach(function(pa) {
+    var boost = pa.macd.signal === 'bullish' ? 2 : 1;
+    var topN = pa.hot.slice(0, 3 * boost);
+    allHot = allHot.concat(topN);
+  });
   var hotFreq = {};
   allHot.forEach(function(n) { hotFreq[n] = (hotFreq[n] || 0) + 1; });
   var globalHot = Object.keys(hotFreq).map(Number).sort(function(a,b){return hotFreq[b]-hotFreq[a];});
@@ -6312,8 +6346,8 @@ function recommendDigit(data, cfg) {
 
   return {
     basic: [
-      { nums: basic1, reason: reasonDigit(basic1, '按位热号推荐') },
-      { nums: basic2, reason: reasonDigit(basic2, '按位遗漏回补') }
+      { nums: basic1, reason: reasonDigit(basic1, 'Markov转移预测') + ' | Markov每位上期→下期最可能' },
+      { nums: basic2, reason: reasonDigit(basic2, 'Bayes后验+MACD加权') + ' | 贝叶斯p>0.3替换EMA热号' }
     ],
     dantuo: dantuoList.map(function(dt, idx) {
       var danCount = idx + 1;
