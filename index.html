@@ -6084,30 +6084,74 @@ function renderHitRate(type, data, rec) {
   if (!boxEl || !gridEl) return;
 
   
-  var saveRec = { basic: [], dantuo: [], savedAt: latest.p };
+  var curRec = { basic: [], dantuo: [], savedAt: latest.p };
   rec.basic.forEach(function(item) {
-    saveRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
+    curRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
   });
   rec.dantuo.forEach(function(item) {
-    saveRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
+    curRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
   });
 
   
   var lastKey = "lastRec_" + type;
   var lastRec = null;
-  var lastSaved = localStorage.getItem(lastKey);
-  if (lastSaved) {
-    try { lastRec = JSON.parse(lastSaved); } catch(e) { lastRec = null; }
+  try { lastRec = JSON.parse(localStorage.getItem(lastKey) || "null"); } catch(e) {}
+
+  
+  var hasNewDraw = lastRec && lastRec.savedAt !== latest.p;
+
+  
+  if (!lastRec || lastRec.savedAt !== latest.p) {
+    localStorage.setItem(lastKey, JSON.stringify(curRec));
   }
 
   
-  localStorage.setItem(lastKey, JSON.stringify(saveRec));
-
-  
-  if (!lastRec || lastRec.savedAt === latest.p) {
-    // 没有上期记录，或已经比过，显示空状态
+  if (!lastRec) {
     periodEl.textContent = "";
     gridEl.innerHTML = '<span style="color:#999;font-size:11px">下一期开奖后显示命中</span>';
+    boxEl.style.display = "block";
+    return;
+  }
+
+  
+  if (!hasNewDraw) {
+    periodEl.textContent = "（等待新开奖 | 推荐号码锁定于" + latest.p + "期）";
+    var phtml = "";
+    if (curRec.basic && curRec.basic.length > 0) {
+      phtml += '<div class="hit-label">当前基本推荐</div>';
+      curRec.basic.forEach(function(item, idx) {
+        phtml += '<div class="rec-card hit-card"><div class="rec-header">第'+(idx+1)+'注</div><div class="rec-balls">';
+        (item.nums||[]).forEach(function(n) {
+          phtml += '<span class="ball r" style="opacity:.5">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
+        });
+        if (item.blues && item.blues.length > 0) {
+          phtml += '<span style="width:4px;display:inline-block"></span>';
+          item.blues.forEach(function(n) {
+            phtml += '<span class="ball b" style="opacity:.5">' + String(n).padStart(2,"0") + '</span>';
+          });
+        }
+        phtml += '</div></div>';
+      });
+    }
+    if (curRec.dantuo && curRec.dantuo.length > 0) {
+      phtml += '<div class="hit-label">当前胆拖推荐</div>';
+      curRec.dantuo.forEach(function(item) {
+        var dans = item.dan || [];
+        var tuos = item.tuo || [];
+        phtml += '<div class="rec-card hit-card"><div class="rec-header">' + dans.length + '胆拖</div><div class="rec-balls">';
+        dans.forEach(function(n) {
+          phtml += '<span class="ball r" style="opacity:.5;font-size:11px">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
+        });
+        if (tuos.length > 0) {
+          phtml += '<span style="margin:0 4px;color:#999;font-size:10px">|</span>';
+          tuos.forEach(function(n) {
+            phtml += '<span class="ball r" style="opacity:.5;font-size:11px;background:radial-gradient(circle at 35% 35%,#ff8a80,#ef5350)">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
+          });
+        }
+        phtml += '</div></div>';
+      });
+    }
+    gridEl.innerHTML = phtml || '<span style="color:#999;font-size:11px">等待新开奖数据...</span>';
     boxEl.style.display = "block";
     return;
   }
