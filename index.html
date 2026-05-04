@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 11:56:38 -->
+<!-- Built: 2026-05-04 12:06:58 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -84,7 +84,7 @@ window.MiniDestroy=function(id){ if(_charts[id]){_charts[id].destroy();delete _c
 })();
 </script>
 <script>
-
+/* 开奖数据 - 手动更新 2026-05-04 10:44:15 */
 window.__LOTTERY_DATA = {
   "ssq": [
     {
@@ -5555,16 +5555,21 @@ window.__LOTTERY_DATA = {
 };
 </script>
 <script>
+/* lotto-algo.js v4.0 - 三种彩种差异化推荐算法，乐透30期/每日100期 */
 
+/* ===== 工具函数 ===== */
+/* 注意: data 是开奖日期从新到旧排列（index 0 是最新一期） */
 function getRecent(data, n) {
   if (!data || !data.length) return [];
   return data.slice(0, n);
 }
 
+/* 获取号码列表（兼容 r/n 两种字段） */
 function getNums(d) {
   return d.r || d.n || [];
 }
 
+/* 获取蓝球列表（兼容 b 字段的数字/数组） */
 function getBlues(d) {
   var b = d.b;
   if (Array.isArray(b)) return b;
@@ -5572,6 +5577,7 @@ function getBlues(d) {
   return [];
 }
 
+/* 统计号码频率（通用） */
 function countFreq(data, numGetter, numMin, numMax) {
   var m = {};
   for (var i = numMin; i <= numMax; i++) m[i] = 0;
@@ -5584,6 +5590,7 @@ function countFreq(data, numGetter, numMin, numMax) {
   return m;
 }
 
+/* 遗漏值计算（通用） */
 function getMissMap(data, numGetter, numMin, numMax) {
   var lastSeen = {};
   for (var i = numMin; i <= numMax; i++) lastSeen[i] = -1;
@@ -5600,12 +5607,14 @@ function getMissMap(data, numGetter, numMin, numMax) {
   return miss;
 }
 
+/* 和值列表 */
 function sumList(data, numGetter) {
   return data.map(function(d) {
     return numGetter(d).reduce(function(s, n) { return s + n; }, 0);
   });
 }
 
+/* 奇偶比列表 */
 function oddEvenList(data, numGetter) {
   return data.map(function(d) {
     var nums = numGetter(d);
@@ -5614,6 +5623,7 @@ function oddEvenList(data, numGetter) {
   });
 }
 
+/* 按频率排序（热→冷） */
 function sortByFreq(freqMap, numMin, numMax) {
   var nums = [];
   for (var i = numMin; i <= numMax; i++) nums.push(i);
@@ -5621,6 +5631,7 @@ function sortByFreq(freqMap, numMin, numMax) {
   return nums;
 }
 
+/* 按遗漏排序（冷→热） */
 function sortByMiss(missMap, numMin, numMax) {
   var nums = [];
   for (var i = numMin; i <= numMax; i++) nums.push(i);
@@ -5628,12 +5639,20 @@ function sortByMiss(missMap, numMin, numMax) {
   return nums;
 }
 
+/* 去重排序 */
 function uniqueSorted(arr) {
   var s = {};
   arr.forEach(function(n) { s[n] = 1; });
   return Object.keys(s).map(Number).sort(function(a, b) { return a - b; });
 }
 
+
+/* ================================================================
+   统计工具函数（v4.1：数学与统计学增强）
+   ================================================================ */
+
+/* 指数加权移动平均：越近期权重大，alpha=0.4 表示近5期权重约83%
+   用法：ema([3,5,4,6,5], 0.4) → 趋势热度分数 */
 function ema(arr, alpha) {
   if (!arr || arr.length === 0) return 0;
   alpha = alpha || 0.4;
@@ -5644,6 +5663,7 @@ function ema(arr, alpha) {
   return val;
 }
 
+/* 移动平均：最近window期的简单平均 */
 function movingAvg(arr, window) {
   if (!arr || arr.length === 0) return 0;
   var w = Math.min(window || 5, arr.length);
@@ -5652,6 +5672,7 @@ function movingAvg(arr, window) {
   return sum / w;
 }
 
+/* 标准差：衡量波动程度 */
 function stdDev(arr) {
   if (!arr || arr.length < 2) return 0;
   var n = arr.length;
@@ -5663,12 +5684,15 @@ function stdDev(arr) {
   return Math.sqrt(sumSq / n);
 }
 
+/* 变异系数 CV = stdDev/mean：越大越不稳定 */
 function coeffVar(arr) {
   var m = movingAvg(arr, arr.length);
   if (m === 0) return 0;
   return stdDev(arr) / m;
 }
 
+/* 卡方统计量：检验实际频率是否偏离理论均匀分布
+   返回 [chi2, p近似值] */
 function chiSquareTest(observed, totalDraws, numPool) {
   var expected = totalDraws / numPool; // 每个号的理论期望次数
   var chi2 = 0;
@@ -5685,6 +5709,7 @@ function chiSquareTest(observed, totalDraws, numPool) {
   return [chi2, 1 - p]; // p越小，分布越偏离均匀（越"有规律"）
 }
 
+/* 误差函数 erf 近似（用于卡方p值计算） */
 function erf(x) {
   var sign = x >= 0 ? 1 : -1;
   x = Math.abs(x);
@@ -5696,6 +5721,8 @@ function erf(x) {
   return sign * y;
 }
 
+/* 超几何分布概率：N个球中K个好球，抽n个，恰好中k个的概率
+   C(K,k)*C(N-K,n-k)/C(N,n) */
 function hyperGeomProb(N, K, n, k) {
   function comb(nn, kk) {
     if (kk < 0 || kk > nn) return 0;
@@ -5708,6 +5735,7 @@ function hyperGeomProb(N, K, n, k) {
   return comb(K, k) * comb(N - K, n - k) / comb(N, n);
 }
 
+/* 累计超几何概率：选n个号，至少中m个的概率 */
 function hyperGeomCumulative(N, K, n, m) {
   var prob = 0;
   for (var k = m; k <= Math.min(n, K); k++) {
@@ -5716,11 +5744,13 @@ function hyperGeomCumulative(N, K, n, m) {
   return prob;
 }
 
+/* Z-score 标准化：(值-均值)/标准差 */
 function zScore(val, mean, sd) {
   if (sd === 0) return 0;
   return (val - mean) / sd;
 }
 
+/* 构建号码出现序列 [1=出现, 0=未出现]，按最近到最远 */
 function buildBinarySeq(data, numGetter, targetNum) {
   var seq = [];
   for (var i = 0; i < data.length; i++) {
@@ -5730,6 +5760,13 @@ function buildBinarySeq(data, numGetter, targetNum) {
   return seq;
 }
 
+
+/* ================================================================
+   第二层：关联分析工具
+   ================================================================ */
+
+/* 马尔可夫转移矩阵：getter(draw)返回该期该位的数字(0-9)
+   分析近期趋势，predictNext=给定上期X，预测下期最可能的数字（仅数字型有效） */
 function markovMatrix(data, getter, numMin, numMax) {
   var size = numMax - numMin + 1;
   var counts = [];
@@ -5760,6 +5797,8 @@ function markovMatrix(data, getter, numMin, numMax) {
   return { matrix: matrix, bestNext: bestNext, counts: counts, totals: rowTotals };
 }
 
+/* 号码对共现频率：统计每对号码同时出现的次数
+   返回 {pairMap: 键值对, topPairs: [{a,b,count}...]} */
 function pairFrequency(data, numGetter, numMin, numMax) {
   var pairMap = {};
   data.forEach(function(d) {
@@ -5780,6 +5819,8 @@ function pairFrequency(data, numGetter, numMin, numMax) {
   return { pairMap: pairMap, topPairs: pairs };
 }
 
+/* 条件概率：P(B|A) = 同时出现的概率 / P(A)
+   topConds: [{given, target, prob}] 概率最高的条件组合 */
 function conditionalProb(data, numGetter, numMin, numMax, pairData) {
   var pairMap = pairData.pairMap;
   var soloFreq = countFreq(data, numGetter, numMin, numMax);
@@ -5797,6 +5838,12 @@ function conditionalProb(data, numGetter, numMin, numMax, pairData) {
   return { conds: conds, topConds: conds.slice(0, 30) };
 }
 
+
+/* ================================================================
+   第三层：趋势检测工具
+   ================================================================ */
+
+/* MACD：短期EMA(5) - 长期EMA(20)，正值=热度加速，负值=热度衰减 */
 function macdSignal(arr) {
   if (!arr || arr.length < 5) return { short: 0, long: 0, macd: 0, signal: 0, histogram: 0 };
   var short = ema(arr, 0.5);  // alpha 0.5 ≈ 窗口5
@@ -5810,6 +5857,9 @@ function macdSignal(arr) {
   };
 }
 
+/* 贝叶斯后验概率（Beta-Binomial 共轭）
+   prior = [alpha, beta]（先验超参），每次出现更新 alpha+1，否则 beta+1
+   返回 [posteriorAlpha, posteriorBeta, posteriorMean] */
 function bayesianUpdate(data, numGetter, targetNum, priorAlpha, priorBeta) {
   var alpha = priorAlpha || 1;
   var beta = priorBeta || 1;
@@ -5821,6 +5871,8 @@ function bayesianUpdate(data, numGetter, targetNum, priorAlpha, priorBeta) {
   return { alpha: alpha, beta: beta, mean: alpha / (alpha + beta) };
 }
 
+/* 信息熵：H = -Σ p(x)·log₂(p(x))，值越大越均匀
+   返回 [entropy, maxEntropy, normalizedEntropy(0-1)] */
 function entropy(freqMap, numMin, numMax) {
   var total = 0;
   for (var i = numMin; i <= numMax; i++) total += (freqMap[i] || 0);
@@ -5834,6 +5886,21 @@ function entropy(freqMap, numMin, numMax) {
   return { entropy: h, max: maxH, normalized: h / maxH, structured: 1 - h / maxH };
 }
 
+
+/* ================================================================
+   一、乐透型推荐算法
+   适用：双色球(33选6+16选1)、大乐透(35选5+12选2)、七乐彩(30选7)
+
+   玩法特点：
+   - 从 rMax 个数字中选 rC 个红球（不重复、无顺序）
+   - 部分有蓝球从 bMax 中选 bC 个
+   - 重点分析：红球区间分布、奇偶比、和值走势、冷热号、蓝球走势
+
+   策略：
+   - 注1：热号为主 + 区间均衡（追热）
+   - 注2：冷号回补 + 区间均衡（追冷）
+   - 胆拖：热号选胆码，遗漏大号码选拖码
+   ================================================================ */
 function recommendLotto(data, cfg) {
   var period = cfg.recPeriod || 30;
   var recent = getRecent(data, period);
@@ -5841,28 +5908,28 @@ function recommendLotto(data, cfg) {
 
   var rMax = cfg.rMax, bMax = cfg.bMax, rC = cfg.rC, bC = cfg.bC;
 
-  
+  /* 红球分析 */
   var rFreq = countFreq(recent, getNums, 1, rMax);
   var rMiss = getMissMap(recent, getNums, 1, rMax);
 
-  
+  /* EMA 热度分数：把每个号码的出现/未出现序列做指数平滑，近期权重大 */
   var rEmaScore = {};
   for (var nn = 1; nn <= rMax; nn++) {
     var seq = buildBinarySeq(recent, getNums, nn);
     rEmaScore[nn] = ema(seq, 0.35); // alpha=0.35，近7期权重约90%
   }
 
-  
+  /* 计算频率的标准差和变异系数，判断号码稳定性 */
   var freqValues = [];
   for (var nn = 1; nn <= rMax; nn++) freqValues.push(rFreq[nn] || 0);
   var freqMean = movingAvg(freqValues, freqValues.length);
   var freqSd = stdDev(freqValues);
   var freqCv = freqMean > 0 ? freqSd / freqMean : 0;
 
-  
+  /* 卡方检验：整体分布是否显著偏离均匀 */
   var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
 
-  
+  /* 综合热度排名：EMA + MACD趋势 + 贝叶斯后验加权 */
   var hotReds = [];
   var macdNums = {}; // 每个号的MACD信号
   for (var nn = 1; nn <= rMax; nn++) {
@@ -5884,7 +5951,7 @@ function recommendLotto(data, cfg) {
 
   var coldReds = sortByMiss(rMiss, 1, rMax);
 
-  
+  /* 蓝球分析（如果有） */
   var hotBlues = [], coldBlues = [], bFreq = {}, bMiss = {};
   if (bC > 0 && bMax > 0) {
     bFreq = countFreq(recent, getBlues, 1, bMax);
@@ -5893,14 +5960,14 @@ function recommendLotto(data, cfg) {
     coldBlues = sortByMiss(bMiss, 1, bMax);
   }
 
-  
+  /* 区间定义（根据不同彩种） */
   var zones;
   if (rMax === 33) zones = [[1, 11], [12, 22], [23, 33]];
   else if (rMax === 35) zones = [[1, 12], [13, 23], [24, 35]];
   else if (rMax === 30) zones = [[1, 10], [11, 20], [21, 30]];
   else zones = [[1, Math.ceil(rMax / 3)], [Math.ceil(rMax / 3) + 1, Math.ceil(rMax * 2 / 3)], [Math.ceil(rMax * 2 / 3) + 1, rMax]];
 
-  
+  /* 选号：EMA热度 + 区间均衡 + 稳定性筛选 */
   function pickHotBalanced(count) {
     var picked = [];
     // 每区间选 EMA 分数最高的号码
@@ -5919,7 +5986,7 @@ function recommendLotto(data, cfg) {
     return uniqueSorted(picked).slice(0, count);
   }
 
-  
+  /* 选号：冷号回补 + 区间均衡 */
   function pickColdBalanced(count) {
     var picked = [];
     zones.forEach(function(zn) {
@@ -5938,7 +6005,7 @@ function recommendLotto(data, cfg) {
     return uniqueSorted(picked).slice(0, count);
   }
 
-  
+  /* 蓝球推荐 */
   function pickBlue(fromList) {
     if (fromList.length === 0) return [];
     var picked = [];
@@ -5947,13 +6014,13 @@ function recommendLotto(data, cfg) {
     return picked;
   }
 
-  
+  /* 基本推荐 */
   var basic1 = pickHotBalanced(rC);
   var basic2 = pickColdBalanced(rC);
   var bRec1 = bC > 0 ? pickBlue(hotBlues) : [];
   var bRec2 = bC > 0 ? pickBlue(coldBlues) : [];
 
-  
+  /* 胆拖推荐 */
   function makeDanTuo(danCount) {
     var dan = hotRedNums.slice(0, danCount);
     var danSet = {};
@@ -5994,7 +6061,7 @@ function recommendLotto(data, cfg) {
   var dt3 = makeDanTuo(3);
   var dt4 = makeDanTuo(4);
 
-  
+  /* 推荐依据（含统计指标） */
   function reason(nums, style) {
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
     var odd = nums.filter(function(n) { return n % 2 === 1; }).length;
@@ -6029,17 +6096,33 @@ function recommendLotto(data, cfg) {
       chiSquare: chiResult,
       freqCv: freqCv.toFixed(3)
     },
-    
+    /* 第二层：关联分析 */
     pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
     condProb: conditionalProb(recent, getNums, 1, rMax,
       { pairMap: pairFrequency(recent, getNums, 1, rMax).pairMap }).topConds.slice(0, 10),
-    
+    /* 第三层：趋势检测 */
     bayesian: { top: bayesianUpdate(recent, getNums, hotRedNums[0], 1, 1) },
     redEntropy: entropy(rFreq, 1, rMax),
     macdHot: macdSignal(hotReds.map(function(x){ return x.score; }))
   };
 }
 
+
+/* ================================================================
+   二、基诺型推荐算法
+   适用：快乐8（80选20，1-80号码池）
+
+   玩法特点：
+   - 从80个号码中开出20个（不重复）
+   - 没有蓝球概念
+   - 号码池大、开出数量多，频率分布更均匀
+   - 重点分析：综合权重 = 频率*0.4 + 遗漏*0.6（遗漏权重大于频率）
+
+   策略：
+   - 注1：综合权重最高的20个（整体最优）
+   - 注2：高频10个 + 高遗漏10个（冷热对冲）
+   - 胆拖：综合权重选胆码，高遗漏选拖码
+   ================================================================ */
 function recommendKeno(data, cfg) {
   var period = cfg.recPeriod || 50;
   var recent = getRecent(data, period);
@@ -6048,12 +6131,12 @@ function recommendKeno(data, cfg) {
   var rMax = cfg.rMax; // 80
   var rC = cfg.rC; // 20
 
-  
+  /* 频率统计 */
   var freq = countFreq(recent, getNums, 1, rMax);
-  
+  /* 遗漏值 */
   var miss = getMissMap(recent, getNums, 1, rMax);
 
-  
+  /* EMA 热度分数：每个号的近期热度趋势 */
   var emaScore = {};
   var cvScore = {}; // 变异系数：越大=越不稳定=越有参考价值
   for (var i = 1; i <= rMax; i++) {
@@ -6062,7 +6145,7 @@ function recommendKeno(data, cfg) {
     cvScore[i] = coeffVar(seq);
   }
 
-  
+  /* 统计检验 */
   var freqValues = [];
   for (var i = 1; i <= rMax; i++) freqValues.push(freq[i] || 0);
   var freqMean = movingAvg(freqValues, freqValues.length);
@@ -6070,12 +6153,12 @@ function recommendKeno(data, cfg) {
   var freqCv = freqMean > 0 ? freqSd / freqMean : 0;
   var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
 
-  
+  /* 自适应权重：CV大→遗漏更重要；EMA趋势强→频率更重要 */
   var wFreq = 0.3 + freqCv * 0.3; // CV大偏离大，频率参考价值降
   var wMiss = 0.5 - freqCv * 0.2;
   var wEma = 0.2 + freqCv * 0.1;
 
-  
+  /* MACD + 贝叶斯预计算 */
   var macdNums = {}, bayesNums = {};
   for (var i = 1; i <= rMax; i++) {
     var seq = buildBinarySeq(recent, getNums, i);
@@ -6083,7 +6166,7 @@ function recommendKeno(data, cfg) {
     bayesNums[i] = bayesianUpdate(recent, getNums, i, 1, 1);
   }
 
-  
+  /* 所有号码按调整后权重排序（+MACD+贝叶斯） */
   var allNums = [];
   for (var i = 1; i <= rMax; i++) allNums.push(i);
 
@@ -6098,20 +6181,20 @@ function recommendKeno(data, cfg) {
     return wB - wA;
   });
 
-  
+  /* 按纯频率排序 */
   var hotNums = sortByFreq(freq, 1, rMax);
-  
+  /* 按纯遗漏排序 */
   var coldNums = sortByMiss(miss, 1, rMax);
 
-  
+  /* 注1：综合权重Top20 */
   var basic1 = allNums.slice(0, rC).sort(function(a, b) { return a - b; });
 
-  
+  /* 注2：高频10 + 高遗漏10（冷热对冲） */
   var hotPart = hotNums.slice(0, 10);
   var coldPart = coldNums.slice(0, 10);
   var basic2 = uniqueSorted(hotPart.concat(coldPart)).slice(0, rC);
 
-  
+  /* 胆拖推荐（快乐8胆拖：选胆码+拖码，总选中>=1个胆码才算中奖） */
   function makeKenoDanTuo(danCount) {
     var dan = allNums.slice(0, danCount).sort(function(a, b) { return a - b; });
     var danSet = {};
@@ -6160,16 +6243,32 @@ function recommendKeno(data, cfg) {
       freqCv: freqCv.toFixed(3),
       adaptiveWeights: { wFreq: wFreq.toFixed(2), wMiss: wMiss.toFixed(2), wEma: wEma.toFixed(2) }
     },
-    
+    /* 第二层：关联分析 */
     pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
     condProb: conditionalProb(recent, getNums, 1, rMax,
       { pairMap: pairFrequency(recent, getNums, 1, rMax).pairMap }).topConds.slice(0, 10),
-    
+    /* 第三层：趋势检测 */
     kenoEntropy: entropy(freq, 1, rMax),
     macdTop: macdSignal(allNums.slice(0, 5).map(function(n) { return emaScore[n] || 0; }))
   };
 }
 
+
+/* ================================================================
+   三、数字型推荐算法
+   适用：福彩3D(3位)、排列三(3位)、排列五(5位)、七星彩(7位)
+
+   玩法特点：
+   - 每一位独立从0-9中选1个数字（可重复、有顺序）
+   - 没有蓝球概念
+   - 重点分析：每一位的独立频率、遗漏值、大小比、奇偶比
+   - 各位之间无关联性，必须按位独立分析
+
+   策略：
+   - 注1：每位选该位最热数字（追热）
+   - 注2：每位选该位遗漏最大数字（回补）
+   - 胆拖：各位按位推荐，不是传统胆拖，改为多位形态推荐
+   ================================================================ */
 function recommendDigit(data, cfg) {
   var period = cfg.recPeriod || 50;
   var recent = getRecent(data, period);
@@ -6177,7 +6276,7 @@ function recommendDigit(data, cfg) {
 
   var pos = cfg.rC; // 几位数字（用 rC 字段）
 
-  
+  /* 按位独立分析 */
   var posAnalysis = [];
   for (var p = 0; p < pos; p++) {
     // 该位频率（0-9）
@@ -6277,14 +6376,14 @@ function recommendDigit(data, cfg) {
     });
   }
 
-  
+  /* 基本推荐注1：马尔可夫转移预测（上期→下期最可能数字） */
   var basic1 = [];
   posAnalysis.forEach(function(pa) {
     var lastDigit = pa.trend.length > 0 ? pa.trend[pa.trend.length - 1] : -1;
     basic1.push(lastDigit >= 0 && lastDigit <= 9 ? pa.markov.bestNext[lastDigit] || pa.hotEma[0] : pa.hotEma[0]);
   });
 
-  
+  /* 基本推荐注2：贝叶斯后验 + MACD加权 EMA */
   var basic2 = [];
   posAnalysis.forEach(function(pa) {
     var macdBonus = pa.macd.signal === 'bullish' ? 0.2 : 0;
@@ -6292,7 +6391,7 @@ function recommendDigit(data, cfg) {
     basic2.push(bayesPick);
   });
 
-  
+  /* 胆拖推荐：MACD bullish调整热度排序 */
   var allHot = [];
   posAnalysis.forEach(function(pa) {
     var boost = pa.macd.signal === 'bullish' ? 2 : 1;
@@ -6356,23 +6455,51 @@ function recommendDigit(data, cfg) {
         reason: danCount + '胆拖 | ' + danCount + '热号作胆 + 邻号(±1)作拖'
       };
     }),
+    /* 综合所有位的遗漏值（用于走势图） */
+    var rMissAll = {};
+    for (var d = 0; d <= 9; d++) rMissAll[d] = 0;
+    posAnalysis.forEach(function(pa) {
+      for (var d = 0; d <= 9; d++) { rMissAll[d] += (pa.miss[d] || 0); }
+    });
+    /* 综合所有位的频率 */
+    var rFreqAll = {};
+    for (var d = 0; d <= 9; d++) rFreqAll[d] = 0;
+    posAnalysis.forEach(function(pa) {
+      for (var d = 0; d <= 9; d++) { rFreqAll[d] += (pa.freq[d] || 0); }
+    });
+    /* 热号/冷号去重平铺（用于网格渲染） */
+    var hotFlat = [];
+    var coldFlat = [];
+    var seenHot = {}, seenCold = {};
+    posAnalysis.forEach(function(pa) {
+      pa.hot.slice(0, 3).forEach(function(n) {
+        if (!seenHot[n]) { seenHot[n] = true; hotFlat.push(n); }
+      });
+      pa.cold.slice(0, 3).forEach(function(n) {
+        if (!seenCold[n]) { seenCold[n] = true; coldFlat.push(n); }
+      });
+    });
     analysis: {
-      hotReds: posAnalysis.map(function(pa) { return pa.hot.slice(0, 3); }),
-      coldReds: posAnalysis.map(function(pa) { return pa.cold.slice(0, 3); }),
+      hotReds: hotFlat,
+      coldReds: coldFlat,
+      rMiss: rMissAll,
+      rFreq: rFreqAll,
       posFreq: posAnalysis.map(function(pa) { return pa.freq; }),
-      posMiss: posAnalysis.map(function(pa) { return pa.miss; }),
-      rMiss: posAnalysis[0] ? posAnalysis[0].miss : {}
+      posMiss: posAnalysis.map(function(pa) { return pa.miss; })
     }
   };
 }
 
+/* ===== 旋转矩阵缩水 ===== */
+/* 贪心算法：从 N 个候选号中选 M 个，保证中奖至少 K 个
+   原理：覆盖所有 C(N,K) 种 K-组合，每注覆盖 C(M,K) 种 */
 function generateRotationMatrix(candidates, pick, guarantee) {
   if (!candidates || candidates.length < pick) return [];
   var N = candidates.length;
   var M = pick;
   var K = guarantee;
 
-  
+  /* 生成所有 K-组合索引（针对候选数组的下标） */
   function combos(arr, k) {
     var result = [];
     function backtrack(start, cur) {
@@ -6387,20 +6514,20 @@ function generateRotationMatrix(candidates, pick, guarantee) {
     return result;
   }
 
-  
+  /* 所有候选下标 0..N-1 */
   var idxs = [];
   for (var i = 0; i < N; i++) idxs.push(i);
 
-  
+  /* 需要覆盖的所有 K-组合（用字符串表示，如 "0,2,5"） */
   var allTargets = {};
   combos(idxs, K).forEach(function(c) {
     allTargets[c.sort(function(a,b){return a-b;}).join(",")] = true;
   });
 
-  
+  /* 生成所有可能的下注组合（N选M，用下标表示） */
   var allBets = combos(idxs, M); // 所有 C(N,M) 注
 
-  
+  /* 贪心：每次选一注能覆盖最多未覆盖目标的注 */
   var selected = [];
   var uncovered = Object.keys(allTargets);
   var maxRounds = Math.min(N * 30, allBets.length);
@@ -6414,7 +6541,7 @@ function generateRotationMatrix(candidates, pick, guarantee) {
     for (var b = 0; b < allBets.length; b++) {
       var bet = allBets[b];
       if (!bet) continue;
-      
+      /* 这一注的 K-组合 */
       var coverCount = 0;
       combos(bet, K).forEach(function(ck) {
         var key = ck.sort(function(a,b){return a-b;}).join(",");
@@ -6431,7 +6558,7 @@ function generateRotationMatrix(candidates, pick, guarantee) {
     var chosenBet = allBets[bestIdx];
     selected.push(chosenBet.slice());
 
-    
+    /* 删除被覆盖的目标 */
     combos(chosenBet, K).forEach(function(ck) {
       var key = ck.sort(function(a,b){return a-b;}).join(",");
       delete allTargets[key];
@@ -6440,28 +6567,29 @@ function generateRotationMatrix(candidates, pick, guarantee) {
     allBets[bestIdx] = null; // 标记已选
   }
 
-  
+  /* 下标转实际号码 */
   return selected.map(function(betIdxs) {
     return betIdxs.map(function(idx) { return candidates[idx]; }).sort(function(a,b){return a-b;});
   });
 }
 
+/* 预置已知优化矩阵（常见参数的最优解，比贪心更精确） */
 var PRESET_MATRIX = {
-  
+  /* 双色球 红球 N选6保5 */
   "ssq_8_6_5": ["01,02,03,04,05,06","01,02,03,04,07,08","01,02,05,06,07,08","03,04,05,06,07,08"],
   "ssq_9_6_5": ["01,02,03,04,05,06","01,02,03,04,07,08","01,02,03,05,07,09","01,02,04,06,08,09","03,04,05,06,07,08","03,04,05,06,08,09","01,03,05,07,08,09"],
   "ssq_10_6_5": ["01,02,03,04,05,06","01,02,03,04,07,08","01,02,03,05,07,09","01,02,04,05,08,10","01,02,06,07,09,10","03,04,05,06,07,09","03,04,06,08,09,10","01,03,05,08,09,10","01,03,04,06,07,08","02,04,05,07,09,10","01,02,05,06,08,09","01,02,04,06,07,10","03,05,06,07,08,10","01,03,04,07,09,10"],
   "ssq_12_6_5": ["01,02,03,04,05,06","01,02,03,04,07,08","01,02,03,05,07,09","01,02,03,06,08,10","01,02,04,05,08,11","01,02,04,06,09,12","01,02,05,06,10,11","01,02,05,06,10,12","01,03,04,06,07,10","01,03,04,06,09,11","01,03,05,08,09,12","01,03,07,08,11,12","01,04,05,07,10,12","01,04,05,09,10,11","02,03,04,05,09,10","02,03,06,07,09,11","02,03,06,07,11,12","02,03,08,09,10,12","02,04,07,08,09,10","02,04,07,08,11,12","02,05,07,08,09,11","02,05,07,09,11,12","03,04,05,07,11,12","03,04,05,08,09,11","03,04,05,08,10,12","03,04,08,10,11,12","03,04,06,08,09,12","03,05,06,08,09,10","03,05,06,09,10,11","04,05,06,07,08,09","04,05,06,07,08,10","05,06,07,08,10,12","06,07,09,10,11,12","01,07,08,09,10,11","01,02,07,09,10,12"],
 
-  
+  /* 大乐透 前区 N选5保4 */
   "dlt_8_5_4": ["01,02,03,04,05","01,02,03,06,07","01,02,04,06,08","01,03,04,07,08","02,03,05,06,08"],
   "dlt_10_5_4": ["01,02,03,04,05","01,02,03,06,07","01,02,04,06,08","01,03,04,07,09","01,05,06,08,10","02,04,05,07,09","02,05,06,09,10","03,04,08,09,10","01,07,08,09,10","02,03,07,08,10"],
   "dlt_12_5_4": ["01,02,03,04,05","01,02,03,06,07","01,02,04,06,08","01,02,05,09,10","01,03,04,07,11","01,03,05,08,12","01,04,05,06,09","01,06,10,11,12","02,03,08,09,11","02,04,07,10,12","02,05,06,11,12","02,07,08,09,10","03,04,09,10,12","03,05,06,07,10","04,05,07,08,11","01,07,08,09,12","03,06,08,11,12","04,06,07,09,11"],
 
-  
+  /* 七乐彩 N选7保6 */
   "qlc_9_7_6": ["01,02,03,04,05,06,07","01,02,03,04,05,08,09","01,02,03,06,07,08,09","04,05,06,07,08,09"],
-  "qlc_10_7_6": [] ,
-  "qlc_12_7_6": [] 
+  "qlc_10_7_6": [] /* 留空用贪心 */,
+  "qlc_12_7_6": [] /* 留空用贪心 */
 };
 
 function getPresetMatrix(lotType, nCandidates, pick, guarantee) {
@@ -6473,11 +6601,12 @@ function getPresetMatrix(lotType, nCandidates, pick, guarantee) {
   });
 }
 
+/* 统一入口：根据彩种类型返回最优旋转矩阵 */
 function buildRotationMatrix(type, candidates, cfg) {
   if (!candidates || candidates.length < 5) return null;
   var n = candidates.length;
 
-  
+  /* 根据彩种确定 pick 和 guarantee */
   var pick, guarantee, lotKey;
   if (type === "ssq") { pick = 6; guarantee = 5; lotKey = "ssq"; }
   else if (type === "dlt") { pick = 5; guarantee = 4; lotKey = "dlt"; }
@@ -6486,7 +6615,7 @@ function buildRotationMatrix(type, candidates, cfg) {
 
   if (n < pick + 1) return null; // 候选号不够
 
-  
+  /* 先查预置矩阵 */
   var preset = getPresetMatrix(lotKey, n, pick, guarantee);
   if (preset) {
     return preset.map(function(line) {
@@ -6494,10 +6623,12 @@ function buildRotationMatrix(type, candidates, cfg) {
     });
   }
 
-  
+  /* 无预置，用贪心算法生成 */
   return generateRotationMatrix(candidates, pick, guarantee);
 }
 
+
+/* ===== 入口：根据彩种类型调用对应算法 ===== */
 function generateRecommend(data, cfg) {
   if (!data || data.length < 5) return null;
   switch (cfg.type) {
@@ -6730,10 +6861,13 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 </div>
 
 <script>
+/* lotto-main.js v2.2 - 数据加载、UI渲染、事件绑定 */
+/* 数据来源：window.__LOTTERY_DATA (内嵌真实开奖数据) */
 
 (function(){
 "use strict";
 
+/* ===== 彩种配置（recPeriod: 乐透30期 / 每日100期） ===== */
 window._C = {
   ssq:{name:"双色球",type:"lotto",rMax:33,bMax:16,rC:6,bC:1,recPeriod:30},
   dlt:{name:"大乐透",type:"lotto",rMax:35,bMax:12,rC:5,bC:2,recPeriod:30},
@@ -6748,6 +6882,7 @@ var C = window._C;
 var cur = "ssq", charts = {}, cache = {};
 window._cache = cache;
 
+/* ===== 加载内嵌数据 ===== */
 function fetchData(type) {
   if (cache[type] && cache[type].length > 0) return Promise.resolve(cache[type]);
   var src = window.__LOTTERY_DATA;
@@ -6767,6 +6902,7 @@ function fetchData(type) {
   return Promise.resolve(mock);
 }
 
+/* 立即渲染：不等 DOM，直接显示 */
 function fastLoad() {
   var src = window.__LOTTERY_DATA;
   if (!src) return false;
@@ -6800,6 +6936,7 @@ function fastLoad() {
   return true;
 }
 
+/* ===== 模拟数据 ===== */
 function genMock(type) {
   var cfg = C[type];
   var data = [];
@@ -6827,6 +6964,7 @@ function genMock(type) {
   return data;
 }
 
+/* ===== 获取号码数组 ===== */
 function getNums(item) {
   if (item.n) return item.n;
   return item.r || [];
@@ -6835,11 +6973,12 @@ function getBlues(item) {
   return item.b || [];
 }
 
+/* ===== 渲染分析 ===== */
 function renderAnalysis(type, data) {
   if (!data || data.length === 0) return;
   var cfg = C[type];
   var period = cfg.recPeriod || 30;
-  var useData = data.slice(0, period); 
+  var useData = data.slice(0, period); /* 只用配置的期数 */
   document.getElementById("sTotal").textContent = period;
 
   // 更新频率标签
@@ -6945,10 +7084,11 @@ function renderAnalysis(type, data) {
   renderChart(type, useData);
 }
 
+/* ===== 渲染走势图（使用内嵌 MiniChart，零外部依赖） ===== */
 function renderChart(type, data) {
   var recent = data.slice(0, 20).reverse();
 
-  
+  /* ---------- 1. 和值走势 → chartSum ---------- */
   var canvasSum = document.getElementById("chartSum");
   if (canvasSum) {
     MiniDestroy("chartSum");
@@ -6964,7 +7104,7 @@ function renderChart(type, data) {
     ], {});
   }
 
-  
+  /* ---------- 2. 奇偶比 → chartOdd ---------- */
   var canvasOdd = document.getElementById("chartOdd");
   if (canvasOdd) {
     MiniDestroy("chartOdd");
@@ -6980,7 +7120,7 @@ function renderChart(type, data) {
     ], {});
   }
 
-  
+  /* ---------- 3. 区间分布 → chartZone ---------- */
   var canvasZone = document.getElementById("chartZone");
   if (canvasZone) {
     MiniDestroy("chartZone");
@@ -6995,6 +7135,7 @@ function renderChart(type, data) {
   }
 }
 
+/* ===== 渲染推荐 ===== */
 function renderRecommend(type, data) {
   if (!data || data.length === 0) return;
   var cfg = C[type];
@@ -7106,13 +7247,13 @@ function renderRecommend(type, data) {
   var dtEl = document.getElementById("dantuoRecs");
   if (dtEl) dtEl.innerHTML = dtHtml;
 
-  
+  /* ===== 命中率 ===== */
   // 生成"保存版"推荐：跳过最新一期（data[1:]），代表"上期"推荐
   var recSave = data.length > 1 ? generateRecommend(data.slice(1, period + 1), cfg) : null;
   var savePeriod = data.length > 1 ? data[1].p : data[0].p;
   renderHitRate(type, data, rec, recSave, savePeriod);
 
-  
+  /* ===== 遗漏值走势图 → chartMiss（MiniChart） ===== */
   if (rec.analysis) {
     var canvasMiss = document.getElementById("chartMiss");
     if (canvasMiss) {
@@ -7132,7 +7273,7 @@ function renderRecommend(type, data) {
       ], {});
     }
 
-    
+    /* ===== 热号追踪 → hotGrid（推荐页） ===== */
     var hotGridEl = document.getElementById("hotGrid");
     if (hotGridEl && rec.analysis.hotReds) {
       var hotHtml = "";
@@ -7146,7 +7287,7 @@ function renderRecommend(type, data) {
       hotGridEl.innerHTML = hotHtml;
     }
 
-    
+    /* ===== 冷号追踪 → coldGrid ===== */
     var coldGridEl = document.getElementById("coldGrid");
     if (coldGridEl && rec.analysis.coldReds) {
       var coldHtml = "";
@@ -7162,6 +7303,7 @@ function renderRecommend(type, data) {
   }
 }
 
+/* ===== 命中率 ===== */
 function renderHitRate(type, data, rec, recSave, savePeriod) {
   if (!data || data.length === 0) return;
   var cfg = C[type];
@@ -7178,7 +7320,7 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
   var periodEl = document.getElementById("hitPeriod");
   if (!boxEl || !gridEl) return;
 
-  
+  /* 构建"保存版"推荐快照（跳过最新一期，代表上期推荐） */
   var curRec = { basic: [], dantuo: [], savedAt: savePeriod || latest.p };
   var src = recSave || rec;  // 优先用跳过最新一期的版本
   if (src) {
@@ -7190,7 +7332,7 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     });
   }
 
-  
+  /* 读取上期推荐（v2：跳过最新一期保存，和上方推荐数据源不同） */
   var lastKey = "lastRec_v2_" + type;
   var lastRec = null;
   try { lastRec = JSON.parse(localStorage.getItem(lastKey) || "null"); } catch(e) {}
@@ -7203,15 +7345,15 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     if (om && om.savedAt === latest.p) { localStorage.removeItem("lastMatrix_" + type); }
   }
 
-  
+  /* 判断是否有新开奖数据可比对 */
   var hasNewDraw = lastRec && lastRec.savedAt !== latest.p;
 
-  
+  /* 只在期号变化时保存推荐 */
   if (!lastRec || lastRec.savedAt !== latest.p) {
     localStorage.setItem(lastKey, JSON.stringify(curRec));
   }
 
-  
+  /* 没有上期记录 → 首次访问 */
   if (!lastRec) {
     periodEl.textContent = "";
     gridEl.innerHTML = '<span style="color:#999;font-size:11px">下一期开奖后显示命中</span>';
@@ -7219,18 +7361,18 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     return;
   }
 
-  
+  /* 有上期推荐 → 用上期推荐对比最新开奖，命中高亮 */
   periodEl.textContent = hasNewDraw 
     ? "（上期荐" + lastRec.savedAt + "期 → 开奖" + latest.p + "期）"
     : "（上期推荐 " + lastRec.savedAt + " 期 | 等待新开奖）";
 
-  
+  /* check if a number is in latest draw */
   function isHit(n) { return latestNums.indexOf(n) !== -1; }
   function isBlueHit(n) { return latestBlues.indexOf(n) !== -1; }
 
   var html = "";
 
-  
+  /* 上期基本推荐 */
   if (lastRec.basic && lastRec.basic.length > 0) {
     html += '<div class="hit-label">上期基本推荐</div>';
     lastRec.basic.forEach(function(item, idx) {
@@ -7251,7 +7393,7 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     });
   }
 
-  
+  /* 上期旋转矩阵 */
   var lastMatrixKey = "lastMatrix_" + type;
   var lastMatrixSaved = localStorage.getItem(lastMatrixKey);
   var lastMatrix = null;
@@ -7284,7 +7426,7 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     }
   }
 
-  
+  /* 上期胆拖推荐 */
   if (lastRec.dantuo && lastRec.dantuo.length > 0) {
     html += '<div class="hit-label">上期胆拖推荐</div>';
     lastRec.dantuo.forEach(function(item, idx) {
@@ -7329,17 +7471,19 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
   boxEl.style.display = "block";
 }
 
+/* ===== 切换页面 ===== */
 function switchPage(page) {
   document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
   document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
   document.getElementById(page).classList.add("active");
   document.querySelector('.tab-btn[data-page="'+page+'"]').classList.add("active");
-  
+  /* 切换到推荐页时重新渲染图表（修复隐藏canvas尺寸为0） */
   if (page === 'page1' && cache[cur] && cache[cur].length > 0) {
     setTimeout(function() { renderRecommend(cur, cache[cur]); }, 100);
   }
 }
 
+/* ===== 切换彩种 ===== */
 function switchType(type) {
   cur = type;
   // 同步所有彩种栏的高亮状态
@@ -7350,6 +7494,7 @@ function switchType(type) {
   loadAll(type);
 }
 
+/* ===== 加载所有数据 ===== */
 function loadAll(type) {
   type = type || cur;
   document.getElementById("statusBar").textContent = "正在加载数据...";
@@ -7375,6 +7520,7 @@ function loadAll(type) {
   });
 }
 
+/* ===== 旋转矩阵缩水 ===== */
 function showMatrix() {
   var cfg = C[cur];
   var data = cache[cur];
@@ -7395,14 +7541,14 @@ function showMatrix() {
   var pickCount, guarantee;
 
   if (isLotto) {
-    
+    /* 乐透型：热号前12个作为候选 */
     var hotNums = rec.analysis.hotReds || [];
     candidates = (Array.isArray(hotNums[0]) ? hotNums.flat() : hotNums).slice(0, 12);
     candidates = candidates.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
     pickCount = cfg.rC;
     guarantee = cfg.rC - 1;
 
-    
+    /* 蓝球：从最近数据统计高频蓝球 */
     if (cfg.bC > 0) {
       var bFreq = {};
       var bMin = cfg.bMax ? 1 : 0;
@@ -7417,7 +7563,7 @@ function showMatrix() {
       blueNums = bSorted.slice(0, cfg.bC).sort(function(a,b){return a-b;});
     }
   } else if (isKeno) {
-    
+    /* 基诺型（快乐8）：基本推荐第一注缩水成10个一组 */
     if (rec.basic && rec.basic.length > 0) {
       var ns = rec.basic[0].nums || rec.basic[0].r || rec.basic[0].n || [];
       candidates = ns.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
@@ -7433,7 +7579,7 @@ function showMatrix() {
 
   var matrix;
   if (isKeno) {
-    
+    /* 快乐8：20候选 → 每组10个，固定滑动窗口（每期结果不变） */
     var rng = [];
     for (var offset = 0; offset <= candidates.length - 10; offset++) {
       rng.push(candidates.slice(offset, offset + 10));
@@ -7451,7 +7597,7 @@ function showMatrix() {
     }
   }
 
-  
+  /* 计算对比 */
   var fullCombo = 1;
   for (var i = 0; i < Math.min(pickCount, 10); i++) fullCombo = fullCombo * (candidates.length - i) / (i + 1);
   if (pickCount > 10) fullCombo = Math.round(fullCombo * Math.pow(candidates.length/(pickCount+1), pickCount-10));
@@ -7471,7 +7617,7 @@ function showMatrix() {
   }
   infoEl.innerHTML = infoHTML;
 
-  
+  /* 渲染号码 */
   var gridEl = document.getElementById("matrixGrid");
   var html = "";
   matrix.forEach(function(bet) {
@@ -7489,7 +7635,7 @@ function showMatrix() {
   });
   gridEl.innerHTML = html;
 
-  
+  /* 保存矩阵号码（标注倒数第二期，供下期命中率比对） */
   localStorage.setItem("lastMatrix_" + cur, JSON.stringify({
     matrix: matrix,
     blueNums: blueNums,
@@ -7497,13 +7643,14 @@ function showMatrix() {
     pickCount: pickCount
   }));
 
-  
+  /* 按钮可见性 */
   var btn = document.getElementById("btnMatrix");
   if (btn) btn.style.display = (isLotto || isKeno) ? "block" : "none";
   if (isKeno) btn.textContent = "⚡ 旋转矩阵缩水（基于推荐号码）";
   else btn.textContent = "⚡ 旋转矩阵缩水（中N保K）";
 }
 
+/* ===== 初始化 ===== */
 function init() {
   document.querySelectorAll(".tab-btn").forEach(function(btn) {
     btn.addEventListener("click", function(){ switchPage(this.dataset.page); });
