@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-
+<!-- Built: 2026-05-04 10:22:24 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
-
+<!-- MiniChart: 极简 Canvas 图表引擎（零外部依赖，支持折线/柱状） -->
 <script>
 (function(){
 var _charts={};
@@ -5602,7 +5602,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div class="matrix-info" id="matrixInfo"></div>
       <div class="matrix-grid" id="matrixGrid"></div>
     </div>
-    
+    <!-- 命中率 -->
     <div class="hit-rate-box" id="hitRateBox" style="display:none">
       <div class="hit-rate-label">📊 最新开奖命中率 <span id="hitPeriod"></span></div>
       <div id="hitRateGrid"></div>
@@ -6099,9 +6099,12 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
   }
 
   
-  var lastKey = "lastRec_" + type;
+  var lastKey = "lastRec_v2_" + type;
   var lastRec = null;
   try { lastRec = JSON.parse(localStorage.getItem(lastKey) || "null"); } catch(e) {}
+
+  // 清除旧版 key（v1，没有跳过最新一期）
+  if (localStorage.getItem("lastRec_" + type)) { localStorage.removeItem("lastRec_" + type); }
 
   
   var hasNewDraw = lastRec && lastRec.savedAt !== latest.p;
