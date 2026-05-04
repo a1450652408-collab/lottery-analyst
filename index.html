@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 12:06:58 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-04 13:25:18 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -84,7 +84,7 @@ window.MiniDestroy=function(id){ if(_charts[id]){_charts[id].destroy();delete _c
 })();
 </script>
 <script>
-/* 开奖数据 - 手动更新 2026-05-04 10:44:15 */
+/* 开奖数据 - 自动生成 - 2026-05-04 13:24:12 */
 window.__LOTTERY_DATA = {
   "ssq": [
     {
@@ -5552,7 +5552,8 @@ window.__LOTTERY_DATA = {
       ]
     }
   ]
-};
+}
+;
 </script>
 <script>
 /* lotto-algo.js v4.0 - 三种彩种差异化推荐算法，乐透30期/每日100期 */
@@ -6443,6 +6444,31 @@ function recommendDigit(data, cfg) {
     return style + ' | 和值' + sum + ' | 大小' + big + ':' + (nums.length - big) + ' | 奇偶' + odd + ':' + (nums.length - odd);
   }
 
+  /* 综合所有位的遗漏值（用于走势图） */
+  var rMissAll = {};
+  for (var d = 0; d <= 9; d++) rMissAll[d] = 0;
+  posAnalysis.forEach(function(pa) {
+    for (var d = 0; d <= 9; d++) { rMissAll[d] += (pa.miss[d] || 0); }
+  });
+  /* 综合所有位的频率 */
+  var rFreqAll = {};
+  for (var d = 0; d <= 9; d++) rFreqAll[d] = 0;
+  posAnalysis.forEach(function(pa) {
+    for (var d = 0; d <= 9; d++) { rFreqAll[d] += (pa.freq[d] || 0); }
+  });
+  /* 热号/冷号去重平铺（用于网格渲染） */
+  var hotFlat = [];
+  var coldFlat = [];
+  var seenHot = {}, seenCold = {};
+  posAnalysis.forEach(function(pa) {
+    pa.hot.slice(0, 3).forEach(function(n) {
+      if (!seenHot[n]) { seenHot[n] = true; hotFlat.push(n); }
+    });
+    pa.cold.slice(0, 3).forEach(function(n) {
+      if (!seenCold[n]) { seenCold[n] = true; coldFlat.push(n); }
+    });
+  });
+
   return {
     basic: [
       { nums: basic1, reason: reasonDigit(basic1, 'Markov转移预测') + ' | Markov每位上期→下期最可能' },
@@ -6455,30 +6481,6 @@ function recommendDigit(data, cfg) {
         reason: danCount + '胆拖 | ' + danCount + '热号作胆 + 邻号(±1)作拖'
       };
     }),
-    /* 综合所有位的遗漏值（用于走势图） */
-    var rMissAll = {};
-    for (var d = 0; d <= 9; d++) rMissAll[d] = 0;
-    posAnalysis.forEach(function(pa) {
-      for (var d = 0; d <= 9; d++) { rMissAll[d] += (pa.miss[d] || 0); }
-    });
-    /* 综合所有位的频率 */
-    var rFreqAll = {};
-    for (var d = 0; d <= 9; d++) rFreqAll[d] = 0;
-    posAnalysis.forEach(function(pa) {
-      for (var d = 0; d <= 9; d++) { rFreqAll[d] += (pa.freq[d] || 0); }
-    });
-    /* 热号/冷号去重平铺（用于网格渲染） */
-    var hotFlat = [];
-    var coldFlat = [];
-    var seenHot = {}, seenCold = {};
-    posAnalysis.forEach(function(pa) {
-      pa.hot.slice(0, 3).forEach(function(n) {
-        if (!seenHot[n]) { seenHot[n] = true; hotFlat.push(n); }
-      });
-      pa.cold.slice(0, 3).forEach(function(n) {
-        if (!seenCold[n]) { seenCold[n] = true; coldFlat.push(n); }
-      });
-    });
     analysis: {
       hotReds: hotFlat,
       coldReds: coldFlat,
@@ -7277,13 +7279,18 @@ function renderRecommend(type, data) {
     var hotGridEl = document.getElementById("hotGrid");
     if (hotGridEl && rec.analysis.hotReds) {
       var hotHtml = "";
-      rec.analysis.hotReds.forEach(function(n) {
-        if (Array.isArray(n)) {
-          n.forEach(function(nn) { hotHtml += '<span class="num hot">' + nn + '</span>'; });
-        } else {
-          hotHtml += '<span class="num hot">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        }
-      });
+      var hotList = rec.analysis.hotReds;
+      // 数字彩现在返回平铺数组，乐透型仍是普通数组
+      if (Array.isArray(hotList[0])) {
+        // 旧格式兼容：二维数组（按位）
+        hotList.forEach(function(sub) {
+          sub.forEach(function(nn) { hotHtml += '<span class="num hot">' + nn + '</span>'; });
+        });
+      } else {
+        hotList.forEach(function(n) {
+          hotHtml += '<span class="num hot">' + (cfg.type === "digit" ? n : String(n).padStart(2, "0")) + '</span>';
+        });
+      }
       hotGridEl.innerHTML = hotHtml;
     }
 
@@ -7291,13 +7298,16 @@ function renderRecommend(type, data) {
     var coldGridEl = document.getElementById("coldGrid");
     if (coldGridEl && rec.analysis.coldReds) {
       var coldHtml = "";
-      rec.analysis.coldReds.forEach(function(n) {
-        if (Array.isArray(n)) {
-          n.forEach(function(nn) { coldHtml += '<span class="num cold">' + nn + '</span>'; });
-        } else {
-          coldHtml += '<span class="num cold">' + (cfg.type==="digit"? n : String(n).padStart(2,"0")) + '</span>';
-        }
-      });
+      var coldList = rec.analysis.coldReds;
+      if (Array.isArray(coldList[0])) {
+        coldList.forEach(function(sub) {
+          sub.forEach(function(nn) { coldHtml += '<span class="num cold">' + nn + '</span>'; });
+        });
+      } else {
+        coldList.forEach(function(n) {
+          coldHtml += '<span class="num cold">' + (cfg.type === "digit" ? n : String(n).padStart(2, "0")) + '</span>';
+        });
+      }
       coldGridEl.innerHTML = coldHtml;
     }
   }
