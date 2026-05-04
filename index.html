@@ -6015,7 +6015,10 @@ function renderRecommend(type, data) {
   if (dtEl) dtEl.innerHTML = dtHtml;
 
   
-  renderHitRate(type, data, rec);
+  // 生成"保存版"推荐：跳过最新一期（data[1:]），代表"上期"推荐
+  var recSave = data.length > 1 ? generateRecommend(data.slice(1, period + 1), cfg) : null;
+  var savePeriod = data.length > 1 ? data[1].p : data[0].p;
+  renderHitRate(type, data, rec, recSave, savePeriod);
 
   
   if (rec.analysis) {
@@ -6067,7 +6070,7 @@ function renderRecommend(type, data) {
   }
 }
 
-function renderHitRate(type, data, rec) {
+function renderHitRate(type, data, rec, recSave, savePeriod) {
   if (!data || data.length === 0) return;
   var cfg = C[type];
   var latest = data[0];
@@ -6084,13 +6087,16 @@ function renderHitRate(type, data, rec) {
   if (!boxEl || !gridEl) return;
 
   
-  var curRec = { basic: [], dantuo: [], savedAt: latest.p };
-  rec.basic.forEach(function(item) {
-    curRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
-  });
-  rec.dantuo.forEach(function(item) {
-    curRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
-  });
+  var curRec = { basic: [], dantuo: [], savedAt: savePeriod || latest.p };
+  var src = recSave || rec;  // 优先用跳过最新一期的版本
+  if (src) {
+    src.basic.forEach(function(item) {
+      curRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
+    });
+    src.dantuo.forEach(function(item) {
+      curRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
+    });
+  }
 
   
   var lastKey = "lastRec_" + type;
