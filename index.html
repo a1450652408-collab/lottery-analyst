@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-04 10:44:57 -->
+<!-- Built: 2026-05-04 11:11:50 -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -5634,6 +5634,102 @@ function uniqueSorted(arr) {
   return Object.keys(s).map(Number).sort(function(a, b) { return a - b; });
 }
 
+function ema(arr, alpha) {
+  if (!arr || arr.length === 0) return 0;
+  alpha = alpha || 0.4;
+  var val = arr[0]; // 初始值 = 最近一期
+  for (var i = 1; i < arr.length; i++) {
+    val = alpha * arr[i] + (1 - alpha) * val;
+  }
+  return val;
+}
+
+function movingAvg(arr, window) {
+  if (!arr || arr.length === 0) return 0;
+  var w = Math.min(window || 5, arr.length);
+  var sum = 0;
+  for (var i = 0; i < w; i++) sum += arr[i];
+  return sum / w;
+}
+
+function stdDev(arr) {
+  if (!arr || arr.length < 2) return 0;
+  var n = arr.length;
+  var mean = 0;
+  for (var i = 0; i < n; i++) mean += arr[i];
+  mean /= n;
+  var sumSq = 0;
+  for (var i = 0; i < n; i++) sumSq += (arr[i] - mean) * (arr[i] - mean);
+  return Math.sqrt(sumSq / n);
+}
+
+function coeffVar(arr) {
+  var m = movingAvg(arr, arr.length);
+  if (m === 0) return 0;
+  return stdDev(arr) / m;
+}
+
+function chiSquareTest(observed, totalDraws, numPool) {
+  var expected = totalDraws / numPool; // 每个号的理论期望次数
+  var chi2 = 0;
+  var df = numPool - 1; // 自由度
+  for (var i = 0; i < observed.length; i++) {
+    var o = observed[i] || 0;
+    if (expected > 0) chi2 += (o - expected) * (o - expected) / expected;
+  }
+  // 用 Wilson-Hilferty 近似计算 p 值
+  var x = Math.pow(chi2 / df, 1/3);
+  var z = (x - (1 - 2/(9*df))) / Math.sqrt(2/(9*df));
+  // 标准正态 CDF 近似
+  var p = 0.5 * (1 + erf(z / Math.sqrt(2)));
+  return [chi2, 1 - p]; // p越小，分布越偏离均匀（越"有规律"）
+}
+
+function erf(x) {
+  var sign = x >= 0 ? 1 : -1;
+  x = Math.abs(x);
+  var a1=0.254829592, a2=-0.284496736, a3=1.421413741;
+  var a4=-1.453152027, a5=1.061405429;
+  var p = 0.3275911;
+  var t = 1 / (1 + p * x);
+  var y = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1) * t * Math.exp(-x*x);
+  return sign * y;
+}
+
+function hyperGeomProb(N, K, n, k) {
+  function comb(nn, kk) {
+    if (kk < 0 || kk > nn) return 0;
+    if (kk === 0 || kk === nn) return 1;
+    kk = Math.min(kk, nn - kk);
+    var r = 1;
+    for (var i = 0; i < kk; i++) r = r * (nn - i) / (i + 1);
+    return r;
+  }
+  return comb(K, k) * comb(N - K, n - k) / comb(N, n);
+}
+
+function hyperGeomCumulative(N, K, n, m) {
+  var prob = 0;
+  for (var k = m; k <= Math.min(n, K); k++) {
+    prob += hyperGeomProb(N, K, n, k);
+  }
+  return prob;
+}
+
+function zScore(val, mean, sd) {
+  if (sd === 0) return 0;
+  return (val - mean) / sd;
+}
+
+function buildBinarySeq(data, numGetter, targetNum) {
+  var seq = [];
+  for (var i = 0; i < data.length; i++) {
+    var nums = numGetter(data[i]);
+    seq.push(nums.indexOf(targetNum) !== -1 ? 1 : 0);
+  }
+  return seq;
+}
+
 function recommendLotto(data, cfg) {
   var period = cfg.recPeriod || 30;
   var recent = getRecent(data, period);
@@ -5644,7 +5740,32 @@ function recommendLotto(data, cfg) {
   
   var rFreq = countFreq(recent, getNums, 1, rMax);
   var rMiss = getMissMap(recent, getNums, 1, rMax);
-  var hotReds = sortByFreq(rFreq, 1, rMax);
+
+  
+  var rEmaScore = {};
+  for (var nn = 1; nn <= rMax; nn++) {
+    var seq = buildBinarySeq(recent, getNums, nn);
+    rEmaScore[nn] = ema(seq, 0.35); // alpha=0.35，近7期权重约90%
+  }
+
+  
+  var freqValues = [];
+  for (var nn = 1; nn <= rMax; nn++) freqValues.push(rFreq[nn] || 0);
+  var freqMean = movingAvg(freqValues, freqValues.length);
+  var freqSd = stdDev(freqValues);
+  var freqCv = freqMean > 0 ? freqSd / freqMean : 0;
+
+  
+  var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
+
+  
+  var hotReds = [];
+  for (var nn = 1; nn <= rMax; nn++) {
+    hotReds.push({ n: nn, score: rEmaScore[nn] * 0.7 + zScore(rFreq[nn]||0, freqMean, freqSd) * 0.3 });
+  }
+  hotReds.sort(function(a, b) { return b.score - a.score; });
+  var hotRedNums = hotReds.map(function(x) { return x.n; });
+
   var coldReds = sortByMiss(rMiss, 1, rMax);
 
   
@@ -5666,20 +5787,18 @@ function recommendLotto(data, cfg) {
   
   function pickHotBalanced(count) {
     var picked = [];
-    // 每个区间优先从热号选1个
+    // 每区间选 EMA 分数最高的号码
     zones.forEach(function(zn) {
       if (picked.length >= count) return;
-      for (var i = 0; i < hotReds.length; i++) {
-        var n = hotReds[i];
-        if (n >= zn[0] && n <= zn[1] && picked.indexOf(n) === -1) {
-          picked.push(n); break;
-        }
-      }
+      var bestInZone = hotReds.filter(function(x) {
+        return x.n >= zn[0] && x.n <= zn[1] && picked.indexOf(x.n) === -1;
+      });
+      if (bestInZone.length > 0) picked.push(bestInZone[0].n);
     });
-    // 补齐热号
-    hotReds.forEach(function(n) {
+    // 补齐剩余EMA高分号码
+    hotReds.forEach(function(x) {
       if (picked.length >= count) return;
-      if (picked.indexOf(n) === -1) picked.push(n);
+      if (picked.indexOf(x.n) === -1) picked.push(x.n);
     });
     return uniqueSorted(picked).slice(0, count);
   }
@@ -5687,7 +5806,6 @@ function recommendLotto(data, cfg) {
   
   function pickColdBalanced(count) {
     var picked = [];
-    // 每个区间优先从冷号（遗漏大）选1个
     zones.forEach(function(zn) {
       if (picked.length >= count) return;
       for (var i = 0; i < coldReds.length; i++) {
@@ -5697,7 +5815,6 @@ function recommendLotto(data, cfg) {
         }
       }
     });
-    // 补齐冷号
     coldReds.forEach(function(n) {
       if (picked.length >= count) return;
       if (picked.indexOf(n) === -1) picked.push(n);
@@ -5722,12 +5839,11 @@ function recommendLotto(data, cfg) {
 
   
   function makeDanTuo(danCount) {
-    var dan = hotReds.slice(0, danCount);
+    var dan = hotRedNums.slice(0, danCount);
     var danSet = {};
     dan.forEach(function(n) { danSet[n] = 1; });
-    // 拖码池：排除胆码后的热号 + 遗漏号
     var tuoPool = [];
-    hotReds.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
+    hotRedNums.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
     coldReds.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
     // 拖码数量 = 选号总数 - 胆码数
     var tuoCount = rC - danCount;
@@ -5769,13 +5885,14 @@ function recommendLotto(data, cfg) {
     var zHit = zones.filter(function(zn) {
       return nums.some(function(n) { return n >= zn[0] && n <= zn[1]; });
     }).length;
-    var hotHit = nums.filter(function(n) { return (rFreq[n] || 0) >= Math.ceil(30 * rC / rMax); }).length;
-    return style + ' | 和值' + sum + ' | 奇偶' + odd + ':' + (nums.length - odd) + ' | ' + zHit + '区覆盖 | 热号' + hotHit + '个';
+    var emaFlag = nums.filter(function(n) { return rEmaScore[n] > 0.15; }).length;
+    return style + ' | 和值' + sum + ' | 奇偶' + odd + ':' + (nums.length - odd)
+      + ' | ' + zHit + '区覆盖 | EMA热' + emaFlag + '个 | 偏差p=' + chiResult[1].toFixed(3);
   }
 
   return {
     basic: [
-      { nums: basic1, blues: bRec1, reason: reason(basic1, '热号走势+区间均衡') },
+      { nums: basic1, blues: bRec1, reason: reason(basic1, 'EMA热号+区间均衡') },
       { nums: basic2, blues: bRec2, reason: reason(basic2, '冷号回补+区间均衡') }
     ],
     dantuo: [
@@ -5784,14 +5901,17 @@ function recommendLotto(data, cfg) {
       { dan: dt4.dan, tuo: dt4.tuo, count: rC, blueDan: dt4.blueDan, blueTuo: dt4.blueTuo, bC: bC, reason: '4胆' + dt4.dan.join(',') + ' | 拖码' + dt4.tuo.length + '个可选 | 热号集中' + (bC>0?' | 蓝球':'') }
     ],
     analysis: {
-      hotReds: hotReds.slice(0, 10),
+      hotReds: hotRedNums.slice(0, 10),
       coldReds: coldReds.slice(0, 10),
       hotBlues: bC > 0 ? hotBlues.slice(0, 5) : [],
       coldBlues: bC > 0 ? coldBlues.slice(0, 5) : [],
       sumTrend: sumList(recent, getNums),
       oddEven: oddEvenList(recent, getNums),
       rMiss: rMiss,
-      bMiss: bMiss
+      bMiss: bMiss,
+      emaScores: rEmaScore,
+      chiSquare: chiResult,
+      freqCv: freqCv.toFixed(3)
     }
   };
 }
@@ -5810,13 +5930,34 @@ function recommendKeno(data, cfg) {
   var miss = getMissMap(recent, getNums, 1, rMax);
 
   
+  var emaScore = {};
+  var cvScore = {}; // 变异系数：越大=越不稳定=越有参考价值
+  for (var i = 1; i <= rMax; i++) {
+    var seq = buildBinarySeq(recent, getNums, i);
+    emaScore[i] = ema(seq, 0.3);
+    cvScore[i] = coeffVar(seq);
+  }
+
+  
+  var freqValues = [];
+  for (var i = 1; i <= rMax; i++) freqValues.push(freq[i] || 0);
+  var freqMean = movingAvg(freqValues, freqValues.length);
+  var freqSd = stdDev(freqValues);
+  var freqCv = freqMean > 0 ? freqSd / freqMean : 0;
+  var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
+
+  
+  var wFreq = 0.3 + freqCv * 0.3; // CV大偏离大，频率参考价值降
+  var wMiss = 0.5 - freqCv * 0.2;
+  var wEma = 0.2 + freqCv * 0.1;
+
+  
   var allNums = [];
   for (var i = 1; i <= rMax; i++) allNums.push(i);
 
   allNums.sort(function(a, b) {
-    // 快乐8权重：遗漏60% + 频率40%（遗漏更重要，号码池大）
-    var wA = (miss[a] || 0) * 0.6 + (freq[a] || 0) * 0.4;
-    var wB = (miss[b] || 0) * 0.6 + (freq[b] || 0) * 0.4;
+    var wA = (freq[a]||0)/freqMean * wFreq + (miss[a]||0)/recent.length * wMiss + emaScore[a] * wEma * 10;
+    var wB = (freq[b]||0)/freqMean * wFreq + (miss[b]||0)/recent.length * wMiss + emaScore[b] * wEma * 10;
     return wB - wA;
   });
 
@@ -5855,10 +5996,12 @@ function recommendKeno(data, cfg) {
   var dt4 = makeKenoDanTuo(4);
 
   function reasonKeno(nums) {
-    var hotCount = nums.filter(function(n) { return (freq[n] || 0) >= 8; }).length;
+    var emaCount = nums.filter(function(n) { return emaScore[n] > 0.15; }).length;
     var coldCount = nums.filter(function(n) { return (miss[n] || 0) >= 10; }).length;
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
-    return '热号' + hotCount + '个 | 高遗漏' + coldCount + '个 | 和值' + sum + ' | 综合权重分析';
+    var mid30 = hyperGeomCumulative(rMax, rC, rC, rC/2).toFixed(4);
+    return 'EMA热' + emaCount + '个 | 高遗漏' + coldCount + '个 | 和值' + sum
+      + ' | p偏=' + chiResult[1].toFixed(3) + ' | CV=' + freqCv.toFixed(2);
   }
 
   return {
@@ -5867,14 +6010,18 @@ function recommendKeno(data, cfg) {
       { nums: basic2, reason: reasonKeno(basic2) }
     ],
     dantuo: [
-      { dan: dt2.dan, tuo: dt2.tuo, count: rC, reason: '2胆' + dt2.dan.join(',') + ' | 拖码' + dt2.tuo.length + '个可选 | 综合权重选胆' },
+      { dan: dt2.dan, tuo: dt2.tuo, count: rC, reason: '2胆' + dt2.dan.join(',') + ' | 拖码' + dt2.tuo.length + '个可选 | EMA权重选胆' },
       { dan: dt3.dan, tuo: dt3.tuo, count: rC, reason: '3胆' + dt3.dan.join(',') + ' | 拖码' + dt3.tuo.length + '个可选 | 冷热结合' },
       { dan: dt4.dan, tuo: dt4.tuo, count: rC, reason: '4胆' + dt4.dan.join(',') + ' | 拖码' + dt4.tuo.length + '个可选 | 权重集中' }
     ],
     analysis: {
       hotReds: allNums.slice(0, 20),
       coldReds: coldNums.slice(0, 20),
-      rMiss: miss
+      rMiss: miss,
+      emaScores: emaScore,
+      chiSquare: chiResult,
+      freqCv: freqCv.toFixed(3),
+      adaptiveWeights: { wFreq: wFreq.toFixed(2), wMiss: wMiss.toFixed(2), wEma: wEma.toFixed(2) }
     }
   };
 }
@@ -5901,18 +6048,41 @@ function recommendDigit(data, cfg) {
       return nums.length > p ? [nums[p]] : [];
     }, 0, 9);
 
+    // EMA 热度分数（每位每个数字的近期趋势）
+    var pEma = {};
+    for (var d = 0; d <= 9; d++) {
+      var seq = buildBinarySeq(recent, function(dd) {
+        var ns = getNums(dd);
+        return ns.length > p ? [ns[p]] : [];
+      }, d);
+      pEma[d] = ema(seq, 0.35);
+    }
+
+    // 该位卡方检验
+    var freqArr = [];
+    for (var d = 0; d <= 9; d++) freqArr.push(pFreq[d] || 0);
+    var pChi = chiSquareTest(freqArr, recent.length, 10);
+
+    // EMA综合排序（热度 + 趋势）
+    var pHotEma = [];
+    for (var d = 0; d <= 9; d++) {
+      pHotEma.push({ n: d, score: pEma[d] * 0.6 + (pFreq[d]||0)/recent.length * 0.4 });
+    }
+    pHotEma.sort(function(a, b) { return b.score - a.score; });
+
     // 该位热号和冷号排序
     var pHot = sortByFreq(pFreq, 0, 9);
     var pCold = sortByMiss(pMiss, 0, 9);
+    var pHotNums = pHotEma.map(function(x) { return x.n; });
 
-    // 该位近10期走势（判断连续性）
+    // 该位近10期走势
     var pTrend = [];
     for (var t = Math.max(0, recent.length - 10); t < recent.length; t++) {
       var nums = getNums(recent[t]);
       pTrend.push(nums.length > p ? nums[p] : -1);
     }
 
-    // 该位大小比（0-4小，5-9大）
+    // 该位大小比
     var bigCount = 0, smallCount = 0;
     recent.forEach(function(d) {
       var nums = getNums(d);
@@ -5925,18 +6095,21 @@ function recommendDigit(data, cfg) {
     posAnalysis.push({
       freq: pFreq,
       miss: pMiss,
+      ema: pEma,
       hot: pHot,
+      hotEma: pHotNums,
       cold: pCold,
       trend: pTrend,
       bigCount: bigCount,
       smallCount: smallCount,
-      bigRatio: Math.round(bigCount / recent.length * 100) + '%'
+      bigRatio: Math.round(bigCount / recent.length * 100) + '%',
+      chiP: pChi[1].toFixed(3)
     });
   }
 
   
   var basic1 = [];
-  posAnalysis.forEach(function(pa) { basic1.push(pa.hot[0]); });
+  posAnalysis.forEach(function(pa) { basic1.push(pa.hotEma[0]); });
 
   
   var basic2 = [];
