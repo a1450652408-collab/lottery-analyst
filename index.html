@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-05 12:44:11 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-05 13:18:45 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -10674,11 +10674,15 @@ function fastLoad() {
     if (!document.getElementById("statusBar")) { setTimeout(render, 50); return; }
     document.getElementById("dataBadge").textContent = "实时";
     document.getElementById("dataBadge").style.background = "#4caf50";
-  currentAIType = type; currentAIData = data;
-  document.getElementById("aiAnalysisBox").style.display = "block";
-  document.getElementById("aiAnalysisResult").style.display = "none";
-  document.getElementById("aiLoading").style.display = "none";
-  document.getElementById("aiAnalysisBtn").style.display = "block";
+  currentAIType = firstType; currentAIData = list;
+  var aiBox = document.getElementById("aiAnalysisBox");
+  if (aiBox) { aiBox.style.display = "block"; }
+  var aiResult = document.getElementById("aiAnalysisResult");
+  if (aiResult) { aiResult.style.display = "none"; }
+  var aiLoading = document.getElementById("aiLoading");
+  if (aiLoading) { aiLoading.style.display = "none"; }
+  var aiBtn = document.getElementById("aiAnalysisBtn");
+  if (aiBtn) { aiBtn.style.display = "block"; }
     document.getElementById("statusBar").textContent = "数据就绪 | 共" + list.length + "期";
     renderAnalysis(firstType, list);
     renderRecommend(firstType, list);
