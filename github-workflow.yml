@@ -1,0 +1,123 @@
+name: 每日更新开奖数据
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每日 UTC 0:00（北京时间 8:00）
+  workflow_dispatch:        # 手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch latest lottery data
+        run: |
+          python3 - << 'PYEOF'
+          import json, urllib.request, time
+
+          HUINIAO_API = "http://api.huiniao.top/interface/home/lotteryHistory"
+          # 各彩种配置: (API类型, 期数)
+          # 基诺(快乐8)和数字彩(3D/排三/排五/七星彩)用100期, 乐透型用50期
+          TYPE_CONFIG = [
+              ("ssq", "ssq", 50), ("dlt", "dlt", 50), ("qlc", "qlc", 50),
+              ("kl8", "klb", 100),
+              ("fc3d", "fcsd", 100), ("pl3", "pls", 100),
+              ("pl5", "plw", 100), ("qxc", "qxc", 100),
+          ]
+          NUM_FIELDS = ["one","two","three","four","five","six","seven",
+                        "eight","nine","ten","eleven","twelve","thirteen",
+                        "fourteen","fifteen","sixteen","seventeen","eighteen",
+                        "nineteen","twenty"]
+
+          def fetch(api_type, limit=50):
+              url = f"{HUINIAO_API}?type={api_type}&page=1&limit={limit}"
+              req = urllib.request.Request(url, headers={
+                  "User-Agent": "Mozilla/5.0 (compatible; LotteryAnalyst/1.0)"
+              })
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  return json.loads(resp.read().decode("utf-8"))
+
+          def parse_item(api_type, item):
+              nums = []
+              for f in NUM_FIELDS:
+                  v = item.get(f)
+                  if v is not None:
+                      try: nums.append(int(v))
+                      except: pass
+              entry = {"p": str(item.get("code", "")), "d": str(item.get("day", ""))}
+              if api_type == "ssq":
+                  entry["r"] = sorted(nums[:6])
+                  entry["b"] = nums[6] if len(nums) > 6 else None
+              elif api_type == "dlt":
+                  entry["r"] = sorted(nums[:5])
+                  entry["b"] = sorted(nums[5:7]) if len(nums) > 5 else []
+              elif api_type in ("fcsd", "pls"):
+                  entry["n"] = nums[:3]
+              elif api_type == "plw":
+                  entry["n"] = nums[:5]
+              elif api_type == "qxc":
+                  entry["n"] = nums[:7]
+              elif api_type == "qlc":
+                  entry["r"] = sorted(nums[:7])
+              else:
+                  entry["n"] = sorted(nums)
+              return entry
+
+          all_data = {}
+          for lot_type, api_type, limit in TYPE_CONFIG:
+              try:
+                  resp = fetch(api_type, limit=limit)
+                  if resp.get("code") == 1:
+                      items = resp.get("data", {}).get("data", {}).get("list", [])
+                      all_data[lot_type] = [parse_item(api_type, i) for i in items]
+                      print(f"  {lot_type}: OK ({len(all_data[lot_type])} periods)")
+                  else:
+                      print(f"  {lot_type}: API error code={resp.get('code')}")
+              except Exception as e:
+                  print(f"  {lot_type}: FAIL - {e}")
+              time.sleep(0.5)
+
+          # Generate lottery-data.js content
+          js_content = "/* 开奖数据 - 自动生成 - " + time.strftime("%Y-%m-%d %H:%M:%S") + " */\n"
+          js_content += "window.__LOTTERY_DATA = " + json.dumps(all_data, ensure_ascii=False, indent=2) + ";"
+
+          # Read current index.html
+          with open("index.html", "r", encoding="utf-8") as f:
+              html = f.read()
+
+          # Find and replace the data block
+          data_start = html.find("window.__LOTTERY_DATA = ")
+          data_end = html.find(";\n</script>", data_start)
+          if data_start > 0 and data_end > 0:
+              # Find the <script> tag start
+              script_start = html.rfind("<script>", 0, data_start)
+              # Replace from script start to the closing </script> after data
+              next_close = html.find("</script>", data_end)
+              new_html = html[:script_start] + "<script>\n" + js_content + "\n" + html[next_close:]
+              with open("index.html", "w", encoding="utf-8") as f:
+                  f.write(new_html)
+              print(f"\n  Updated index.html with {sum(len(v) for v in all_data.values())} periods")
+          else:
+              print("\n  WARNING: Could not find data block in index.html")
+          PYEOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "data: auto-update $(date +%Y-%m-%d)"
+            git push
+          fi
