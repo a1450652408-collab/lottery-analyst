@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-05 12:25:02 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-05 12:44:11 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -10590,6 +10590,11 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
   <div class="card">
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--blue)"></div>冷号追踪</div></div>
     <div class="hot-grid" id="coldGrid"></div>
+  </div>
+  <div class="card" id="aiAnalysisBox">
+    <button class="save-btn" id="aiAnalysisBtn" onclick="requestAIAnalysis()">🤖 AI 分析本期走势</button>
+    <div id="aiLoading" style="display:none;text-align:center;padding:16px;color:#999">🤔 正在分析，请稍候...</div>
+    <div id="aiAnalysisResult" style="display:none;line-height:1.8;font-size:13px"></div>
   </div>
 </div>
 
