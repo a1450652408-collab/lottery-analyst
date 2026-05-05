@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-05 13:18:45 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-05 14:09:16 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -10591,11 +10591,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--blue)"></div>冷号追踪</div></div>
     <div class="hot-grid" id="coldGrid"></div>
   </div>
-  <div class="card" id="aiAnalysisBox">
-    <button class="save-btn" id="aiAnalysisBtn" onclick="requestAIAnalysis()">🤖 AI 分析本期走势</button>
-    <div id="aiLoading" style="display:none;text-align:center;padding:16px;color:#999">🤔 正在分析，请稍候...</div>
-    <div id="aiAnalysisResult" style="display:none;line-height:1.8;font-size:13px"></div>
-  </div>
+  
 </div>
 
 <div id="page2" class="page">
@@ -10674,15 +10670,6 @@ function fastLoad() {
     if (!document.getElementById("statusBar")) { setTimeout(render, 50); return; }
     document.getElementById("dataBadge").textContent = "实时";
     document.getElementById("dataBadge").style.background = "#4caf50";
-  currentAIType = firstType; currentAIData = list;
-  var aiBox = document.getElementById("aiAnalysisBox");
-  if (aiBox) { aiBox.style.display = "block"; }
-  var aiResult = document.getElementById("aiAnalysisResult");
-  if (aiResult) { aiResult.style.display = "none"; }
-  var aiLoading = document.getElementById("aiLoading");
-  if (aiLoading) { aiLoading.style.display = "none"; }
-  var aiBtn = document.getElementById("aiAnalysisBtn");
-  if (aiBtn) { aiBtn.style.display = "block"; }
     document.getElementById("statusBar").textContent = "数据就绪 | 共" + list.length + "期";
     renderAnalysis(firstType, list);
     renderRecommend(firstType, list);
@@ -11299,11 +11286,6 @@ function loadAll(type) {
     }
     document.getElementById("dataBadge").textContent = "实时";
     document.getElementById("dataBadge").style.background = "#4caf50";
-  currentAIType = type; currentAIData = data;
-  document.getElementById("aiAnalysisBox").style.display = "block";
-  document.getElementById("aiAnalysisResult").style.display = "none";
-  document.getElementById("aiLoading").style.display = "none";
-  document.getElementById("aiAnalysisBtn").style.display = "block";
     document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
     renderAnalysis(type, data);
     renderRecommend(type, data);
@@ -11312,8 +11294,6 @@ function loadAll(type) {
   }).catch(function(e) {
     document.getElementById("statusBar").textContent = "加载失败: " + e;
     document.getElementById("dataBadge").textContent = "模拟";
-  currentAIType = type; currentAIData = data;
-  document.getElementById("aiAnalysisBox").style.display = "block";
     document.getElementById("dataBadge").style.background = "#ff9800";
     var mock = genMock(type);
     renderAnalysis(type, mock);
@@ -11472,87 +11452,6 @@ if (document.readyState === "loading") {
 }
 
 })();
-
-/* ===== AI分析 ===== */
-var AI_KEY = "sk-b91737254258457ab79b163232e8c669";
-var currentAIType = null;
-var currentAIData = null;
-
-function requestAIAnalysis() {
-  var btn = document.getElementById("aiAnalysisBtn");
-  var result = document.getElementById("aiAnalysisResult");
-  var loading = document.getElementById("aiLoading");
-  if (!currentAIType || !currentAIData) {
-    result.innerHTML = "暂无数据，请先选择彩种";
-    result.style.display = "block";
-    return;
-  }
-  btn.style.display = "none";
-  loading.style.display = "block";
-  result.style.display = "none";
-
-  var data = currentAIData;
-  var nameMap = {ssq:"双色球",dlt:"大乐透",kl8:"快乐8",fc3d:"福彩3D",pl3:"排列三",pl5:"排列五",qxc:"七星彩",qlc:"七乐彩"};
-  var name = nameMap[currentAIType] || currentAIType;
-
-  // Build data summary for AI
-  var recent = data.slice(0, 20);
-  var numsList = recent.map(function(d) {
-    return (d.r || d.n || []).join(",") + (d.b ? (Array.isArray(d.b) ? " + " + d.b.join(",") : " + " + d.b) : "");
-  });
-  var freqMap = {};
-  recent.forEach(function(d) {
-    var ns = d.r || d.n || [];
-    ns.forEach(function(n) { freqMap[n] = (freqMap[n]||0) + 1; });
-  });
-  var hotNums = Object.keys(freqMap).sort(function(a,b){return freqMap[b]-freqMap[a]}).slice(0,10).join(",");
-  var latest = data[0];
-  var latestNums = (latest.r || latest.n || []).join(",");
-
-  var prompt = "你是彩票数据分析专家。基于以下数据，用中文给出简短分析（3-5句话）：" +
-    "
-彩票：" + name + "
-最近20期开奖：" + numsList.join(" | ") +
-    "
-热号TOP10：" + hotNums + "
-最新一期：" + latestNums +
-    "
-
-分析维度：1.号码热度趋势 2.冷热号分布 3.和值区间 4.下期简要参考";
-
-  fetch("https://api.deepseek.com/v1/chat/completions", {
-    method: "POST",
-    headers: {"Content-Type":"application/json","Authorization":"Bearer " + AI_KEY},
-    body: JSON.stringify({
-      model: "deepseek-chat",
-      messages: [
-        {role: "system", content: "你是一个彩票数据分析专家，根据历史开奖数据给出客观分析，不承诺中奖。"},
-        {role: "user", content: prompt}
-      ],
-      stream: false,
-      max_tokens: 500
-    })
-  })
-  .then(function(resp) { return resp.json(); })
-  .then(function(res) {
-    loading.style.display = "none";
-    if (res.choices && res.choices.length > 0) {
-      var text = res.choices[0].message.content;
-      result.innerHTML = "<strong style='color:#536dfe'>" + name + " AI分析</strong><br><br>" + text.replace(/
-/g, "<br>");
-    } else {
-      result.innerHTML = "AI分析失败：" + (res.error ? res.error.message : JSON.stringify(res));
-    }
-    result.style.display = "block";
-    btn.style.display = "block";
-  })
-  .catch(function(err) {
-    loading.style.display = "none";
-    result.innerHTML = "网络错误：" + err.message;
-    result.style.display = "block";
-    btn.style.display = "block";
-  });
-}
 </script>
 </body>
 </html>
