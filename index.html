@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-05 11:33:57 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-05 11:39:48 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -11118,12 +11118,27 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
     localStorage.setItem(lastKey, JSON.stringify(curRec));
   }
 
-  /* 没有上期记录 → 首次访问 */
+  /* 没有上期记录 → 从数据中自动生成（兼容首次访问/跨域） */
   if (!lastRec) {
-    periodEl.textContent = "";
-    gridEl.innerHTML = '<span style="color:#999;font-size:11px">下一期开奖后显示命中</span>';
-    boxEl.style.display = "block";
-    return;
+    if (recSave && recSave.basic && recSave.basic.length > 0) {
+      lastRec = { basic: [], dantuo: [], savedAt: savePeriod || latest.p };
+      recSave.basic.forEach(function(item) {
+        lastRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
+      });
+      if (recSave.dantuo) {
+        recSave.dantuo.forEach(function(item) {
+          lastRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
+        });
+      }
+      // 保存到 localStorage，下次就能直接用
+      try { localStorage.setItem(lastKey, JSON.stringify(lastRec)); } catch(e) {}
+      periodEl.textContent = "（上期荐" + savePeriod + "期 → 开奖" + latest.p + "期）";
+    } else {
+      periodEl.textContent = "";
+      gridEl.innerHTML = '<span style="color:#999;font-size:11px">下一期开奖后显示命中</span>';
+      boxEl.style.display = "block";
+      return;
+    }
   }
 
   /* 有上期推荐 → 用上期推荐对比最新开奖，命中高亮 */
