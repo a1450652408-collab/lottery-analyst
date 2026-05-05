@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>福彩数据分析师</title>
-<!-- Built: 2026-05-05 14:16:01 | Self-contained, zero external dependencies -->
+<!-- Built: 2026-05-05 14:24:49 | Self-contained, zero external dependencies -->
 <script>
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
@@ -11006,10 +11006,8 @@ function renderRecommend(type, data) {
   if (dtEl) dtEl.innerHTML = dtHtml;
 
   /* ===== 命中率 ===== */
-  // 生成"保存版"推荐：跳过最新一期（data[1:]），代表"上期"推荐
-  var recSave = data.length > 1 ? generateRecommend(data.slice(1, period + 1), cfg) : null;
-  var savePeriod = data.length > 1 ? data[1].p : data[0].p;
-  renderHitRate(type, data, rec, recSave, savePeriod);
+  // 用用户实际看到的推荐 rec 来保存和对比命中率
+  renderHitRate(type, data, rec);
 
   /* ===== 遗漏值走势图 → chartMiss（MiniChart） ===== */
   if (rec.analysis) {
@@ -11070,12 +11068,12 @@ function renderRecommend(type, data) {
 }
 
 /* ===== 命中率 ===== */
-function renderHitRate(type, data, rec, recSave, savePeriod) {
+function renderHitRate(type, data, rec) {
   if (!data || data.length === 0) return;
   var cfg = C[type];
   var latest = data[0];
+  var latestPeriod = latest.p;
   var latestNums = getNums(latest);
-  // 蓝球
   var latestBlues = [];
   if (latest.b) {
     latestBlues = Array.isArray(latest.b) ? latest.b : [latest.b];
@@ -11086,51 +11084,51 @@ function renderHitRate(type, data, rec, recSave, savePeriod) {
   var periodEl = document.getElementById("hitPeriod");
   if (!boxEl || !gridEl) return;
 
-  /* 构建"保存版"推荐快照（跳过最新一期，代表上期推荐） */
-  var curRec = { basic: [], dantuo: [], savedAt: savePeriod || latest.p };
-  var src = recSave || rec;  // 优先用跳过最新一期的版本
-  if (src) {
-    src.basic.forEach(function(item) {
-      curRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
-    });
-    src.dantuo.forEach(function(item) {
-      curRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
-    });
+  /* 把当前显示的推荐构建成可保存的格式 */
+  var curRec = { basic: [], dantuo: [], savedAt: latestPeriod };
+  if (rec) {
+    if (rec.basic) {
+      rec.basic.forEach(function(item) {
+        curRec.basic.push({ nums: item.nums || item.r || [], blues: item.blues || item.b || [] });
+      });
+    }
+    if (rec.dantuo) {
+      rec.dantuo.forEach(function(item) {
+        curRec.dantuo.push({ dan: item.dan || [], tuo: item.tuo || [], blueDan: item.blueDan || [], blueTuo: item.blueTuo || [] });
+      });
+    }
   }
 
-  /* 读取上期推荐（v2：跳过最新一期保存，和上方推荐数据源不同） */
+  /* 读取 localStorage 中保存的上期推荐 */
   var lastKey = "lastRec_v2_" + type;
   var lastRec = null;
   try { lastRec = JSON.parse(localStorage.getItem(lastKey) || "null"); } catch(e) {}
 
-  // 清除旧版 key（v1，没有跳过最新一期）
+  /* 清除旧版 key */
   if (localStorage.getItem("lastRec_" + type)) { localStorage.removeItem("lastRec_" + type); }
-  // 清除旧矩阵 key（v1 savedAt=data[0].p），触发重新保存
-  if (localStorage.getItem("lastMatrix_" + type)) {
-    var om = null; try { om = JSON.parse(localStorage.getItem("lastMatrix_" + type)); } catch(e) {}
-    if (om && om.savedAt === latest.p) { localStorage.removeItem("lastMatrix_" + type); }
-  }
 
-  /* 判断是否有新开奖数据可比对 */
-  var hasNewDraw = lastRec && lastRec.savedAt !== latest.p;
+  /* 检查是否有新开奖：保存的推荐期号 ≠ 最新期号 */
+  var hasNewDraw = lastRec && lastRec.savedAt !== latestPeriod;
 
-  /* 只在期号变化时保存推荐 */
-  if (!lastRec || lastRec.savedAt !== latest.p) {
+  /* 有旧记录且期号变了 → 有上一期的推荐可以对比 */
+  if (hasNewDraw) {
+    // 保存当前推荐供下次对比
     localStorage.setItem(lastKey, JSON.stringify(curRec));
-  }
-
-  /* 没有上期记录 → 首次访问，保存推荐留待下次对比 */
-  if (!lastRec) {
+    periodEl.textContent = lastRec.savedAt + "期推荐 → " + latestPeriod + "期开奖";
+  } else if (lastRec && lastRec.savedAt === latestPeriod) {
+    // 期号没变 → 等待新开奖
+    periodEl.textContent = lastRec.savedAt + "期推荐 | 等待新开奖";
+    gridEl.innerHTML = '<span style="color:#999;font-size:11px">当前期尚未开奖，等待下一期</span>';
+    boxEl.style.display = "block";
+    return;
+  } else {
+    /* 首次访问：保存当前推荐，下次开奖后对比 */
+    localStorage.setItem(lastKey, JSON.stringify(curRec));
     periodEl.textContent = "";
-    gridEl.innerHTML = '<span style="color:#999;font-size:11px">保存本期推荐，下次开奖后显示命中</span>';
+    gridEl.innerHTML = '<span style="color:#999;font-size:11px">已保存本期推荐，下次开奖后显示命中</span>';
     boxEl.style.display = "block";
     return;
   }
-
-  /* 有上期推荐 → 用上期推荐对比最新开奖，命中高亮 */
-  periodEl.textContent = hasNewDraw 
-    ? "（上期荐" + lastRec.savedAt + "期 → 开奖" + latest.p + "期）"
-    : "（上期推荐 " + lastRec.savedAt + " 期 | 等待新开奖）";
 
   /* check if a number is in latest draw */
   function isHit(n) { return latestNums.indexOf(n) !== -1; }
