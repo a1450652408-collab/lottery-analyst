@@ -10725,6 +10725,22 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div class="section-head"><div class="left"><div class="dot" style="background:#d32f2f"></div>遗漏预警</div><div class="right">当前遗漏超过历史80%→预警</div></div>
     <div id="omitWarn" class="stat-mini"></div>
   </div>
+  <div class="card" id="cardPattern" style="display:none">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#9c27b0"></div>形态周期追踪</div><div class="right">连续同形态超过5期→拐点预警</div></div>
+    <div id="patternTrack" class="stat-mini"></div>
+  </div>
+  <div class="card" id="cardDan" style="display:none">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>独胆推荐</div><div class="right">EMA热度+遗漏交汇→最佳独胆</div></div>
+    <div id="danRec" class="stat-mini"></div>
+  </div>
+  <div class="card" id="cardKill" style="display:none">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#607d8b"></div>杀号建议</div><div class="right">极冷号+趋势背离→建议排除</div></div>
+    <div id="killList" class="stat-mini"></div>
+  </div>
+  <div class="card" id="cardKenoDan" style="display:none">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#1a73e8"></div>分区胆码（快乐8）</div><div class="right">8区各选1热号→8个胆码</div></div>
+    <div id="kenoDanList" class="stat-mini"></div>
+  </div>
   <div class="card">
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--cyan)"></div>最新开奖</div></div>
     <div id="latestDraw"></div>
@@ -11254,6 +11270,192 @@ function renderAdvanced(type, data) {
   
   var omEl = document.getElementById("omitWarn");
   if (omEl) omEl.innerHTML = omitHtml;
+
+  // -- 5. 形态周期追踪 (数字彩) --
+  if (cfg.type === "digit") {
+    var pEl = document.getElementById("cardPattern");
+    if (pEl) pEl.style.display = "block";
+    renderPatternTrack(type, data);
+  } else {
+    var pEl2 = document.getElementById("cardPattern");
+    if (pEl2) pEl2.style.display = "none";
+  }
+
+  // -- 6. 独胆推荐 (数字彩) --
+  if (cfg.type === "digit") {
+    var dEl = document.getElementById("cardDan");
+    if (dEl) dEl.style.display = "block";
+    renderDanRecommend(type, data);
+  } else {
+    var dEl2 = document.getElementById("cardDan");
+    if (dEl2) dEl2.style.display = "none";
+  }
+
+  // -- 7. 杀号建议 (全部) --
+  var kEl = document.getElementById("cardKill");
+  if (kEl) kEl.style.display = "block";
+  renderKillNumbers(type, data);
+
+  // -- 8. 快乐8分区胆码 --
+  if (cfg.type === "keno") {
+    var kdEl = document.getElementById("cardKenoDan");
+    if (kdEl) kdEl.style.display = "block";
+    renderKenoDan(type, data);
+  } else {
+    var kdEl2 = document.getElementById("cardKenoDan");
+    if (kdEl2) kdEl2.style.display = "none";
+  }
+}
+
+/* ===== 形态周期追踪 ===== */
+function renderPatternTrack(type, data) {
+  var useData = data.slice(0, 30);
+  var recent = useData.slice(0, 20).reverse();
+  
+  // 统计最近5期的各种形态
+  var last5 = recent.slice(-5);
+  var last10 = recent.slice(-10);
+  
+  // 大小形态: 0=全大 1=全小 混合=显示大/小个数
+  var sizeStreak = 0, sizeLast = null;
+  var oddStreak = 0, oddLast = null;
+  var primeStreak = 0, primeLast = null;
+  var primes = new Set([2,3,5,7]);
+  
+  for (var i = last10.length - 1; i >= 0; i--) {
+    var ns = getNums(last10[i]);
+    var bigCount = 0, oddCount = 0, primeCount = 0;
+    ns.forEach(function(n){ 
+      if(n>=5) bigCount++; if(n%2===1) oddCount++; if(primes.has(n)) primeCount++; 
+    });
+    var sType = bigCount > ns.length/2 ? '多-大' : '多-小';
+    var oType = oddCount > ns.length/2 ? '多-奇' : '多-偶';
+    var pType = primeCount > ns.length/2 ? '多-质' : '多-合';
+    
+    if (sType === sizeLast) sizeStreak++; else { sizeStreak = 1; sizeLast = sType; }
+    if (oType === oddLast) oddStreak++; else { oddStreak = 1; oddLast = oType; }
+    if (pType === primeLast) primeStreak++; else { primeStreak = 1; primeLast = pType; }
+  }
+  
+  var html = '';
+  var warn = function(s, th) { return s >= th ? '<span class="warn-tag">⚠拐点</span>' : ''; };
+  html += '<div class="sm-row"><span class="sm-label">大小形态</span><span class="sm-val">' + sizeLast + ' 连' + sizeStreak + '期' + warn(sizeStreak, 5) + '</span></div>';
+  html += '<div class="sm-row"><span class="sm-label">奇偶形态</span><span class="sm-val">' + oddLast + ' 连' + oddStreak + '期' + warn(oddStreak, 5) + '</span></div>';
+  html += '<div class="sm-row"><span class="sm-label">质合形态</span><span class="sm-val">' + primeLast + ' 连' + primeStreak + '期' + warn(primeStreak, 4) + '</span></div>';
+  
+  // 和值和值标准差
+  var sums = []; last10.forEach(function(item){ var s=0;getNums(item).forEach(function(n){s+=n;});sums.push(s); });
+  var avg = sums.reduce(function(a,b){return a+b;},0)/sums.length;
+  var sd = Math.sqrt(sums.reduce(function(a,b){return a+Math.pow(b-avg,2);},0)/sums.length);
+  var nowSum = sums[sums.length-1];
+  var sumStatus = nowSum > avg + sd ? '偏高' : (nowSum < avg - sd ? '偏低' : '正常');
+  html += '<div class="sm-row"><span class="sm-label">和值(均值'+Math.round(avg)+'±'+Math.round(sd)+')</span><span class="sm-val">' + nowSum + ' → ' + sumStatus + '</span></div>';
+  
+  var ptEl = document.getElementById("patternTrack");
+  if (ptEl) ptEl.innerHTML = html;
+}
+
+/* ===== 独胆推荐 ===== */
+function renderDanRecommend(type, data) {
+  var useData = data.slice(0, 30);
+  var numMin = 0, numMax = 9;
+  var posCount = type === "pl5" ? 5 : 3;
+  
+  var html = '';
+  for (var pos = 0; pos < posCount; pos++) {
+    // EMA 热度
+    var emaScores = {};
+    for (var d = numMin; d <= numMax; d++) {
+      var seq = [];
+      for (var i = Math.min(30, useData.length)-1; i >= 0; i--) {
+        var ns = getNums(useData[i]);
+        seq.push(ns.length > pos && ns[pos] === d ? 1 : 0);
+      }
+      var e = seq[0];
+      for (var j = 1; j < seq.length; j++) e = 0.4 * seq[j] + 0.6 * e;
+      emaScores[d] = e;
+    }
+    
+    // 遗漏值
+    var miss = {}; for (var d = numMin; d <= numMax; d++) miss[d] = 0;
+    for (var i = 0; i < useData.length; i++) {
+      var ns = getNums(useData[i]);
+      if (ns.length > pos && ns[pos] !== undefined) miss[ns[pos]] = 0;
+      for (var d = numMin; d <= numMax; d++) miss[d]++;
+    }
+    
+    // 综合评分: EMA * 0.6 + (1 - miss/maxMiss) * 0.4
+    var maxMiss = 0; for (var d = numMin; d <= numMax; d++) if (miss[d] > maxMiss) maxMiss = miss[d];
+    var scores = [];
+    for (var d = numMin; d <= numMax; d++) {
+      scores.push({n:d, ema:emaScores[d], miss:miss[d], 
+        score: emaScores[d]*0.6 + (1-miss[d]/Math.max(maxMiss,1))*0.4});
+    }
+    scores.sort(function(a,b){return b.score-a.score;});
+    var best = scores[0];
+    
+    html += '<div class="sm-row"><span class="sm-label">第'+(pos+1)+'位独胆</span><span class="sm-val" style="font-size:16px;color:#ff5722">' + best.n + '</span><span style="font-size:10px;color:#999;margin-left:4px">EMA:'+best.ema.toFixed(2)+' 遗漏:'+best.miss+'期</span></div>';
+  }
+  
+  var drEl = document.getElementById("danRec");
+  if (drEl) drEl.innerHTML = html;
+}
+
+/* ===== 杀号建议 ===== */
+function renderKillNumbers(type, data) {
+  var useData = data.slice(0, 50);
+  var cfg = C[type];
+  var numMin = cfg.type==="digit"?0:1, numMax = cfg.rMax;
+  if (cfg.type==="digit") numMax = 9;
+  
+  // 找遗漏值最大的5个号 + 近20期0出现的号
+  var freq = {}, lastSeen = {};
+  for (var i = numMin; i <= numMax; i++) { freq[i]=0; lastSeen[i]=-1; }
+  for (var i = 0; i < useData.length; i++) {
+    var ns = getNums(useData[i]);
+    ns.forEach(function(n){ if(n>=numMin&&n<=numMax){freq[n]++; lastSeen[n]=i;} });
+  }
+  
+  var miss = {};
+  for (var i = numMin; i <= numMax; i++) miss[i] = useData.length-1-lastSeen[i];
+  
+  var kills = [];
+  for (var i = numMin; i <= numMax; i++) {
+    if (freq[i] === 0 && miss[i] >= 20) kills.push({n:i, reason:'近50期0次出现'});
+    else if (miss[i] >= 15) kills.push({n:i, reason:'遗漏'+miss[i]+'期'});
+  }
+  kills.sort(function(a,b){return b.reason.localeCompare(a.reason);});
+  kills = kills.slice(0, 5);
+  
+  var html = kills.length > 0 ? '' : '<div class="sm-row"><span class="sm-label">暂无</span><span class="sm-val">所有号码频率正常，无需杀号</span></div>';
+  kills.forEach(function(k){
+    html += '<div class="sm-row"><span class="sm-label">号码'+String(k.n).padStart(2,'0')+'</span><span class="sm-val" style="color:#c62828">✕ '+k.reason+'</span></div>';
+  });
+  
+  var klEl = document.getElementById("killList");
+  if (klEl) klEl.innerHTML = html;
+}
+
+/* ===== 快乐8分区胆码 ===== */
+function renderKenoDan(type, data) {
+  var useData = data.slice(0, 30);
+  var zones = [[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,70],[71,80]];
+  
+  var html = '';
+  zones.forEach(function(zr, zi) {
+    var freq = {};
+    for (var i = zr[0]; i <= zr[1]; i++) freq[i] = 0;
+    useData.forEach(function(item){
+      var ns = getNums(item);
+      ns.forEach(function(n){ if(freq[n]!==undefined) freq[n]++; });
+    });
+    var sorted = Object.entries(freq).sort(function(a,b){return b[1]-a[1];});
+    var top = sorted[0];
+    html += '<div class="sm-row"><span class="sm-label">区'+(zi+1)+'('+zr[0]+'-'+zr[1]+')</span><span class="sm-val" style="font-size:15px;color:#1a73e8">' + String(parseInt(top[0])).padStart(2,'0') + '</span><span style="font-size:10px;color:#999"> 近30期'+top[1]+'次</span></div>';
+  });
+  
+  var kdEl = document.getElementById("kenoDanList");
+  if (kdEl) kdEl.innerHTML = html;
 }
 
 /* ===== 渲染推荐 ===== */
