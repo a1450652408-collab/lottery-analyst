@@ -10598,6 +10598,14 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .strategy-detail{background:#fff;border-radius:10px;padding:10px 12px}
 .strategy-detail .detail-row{font-size:12px;color:#555;line-height:1.8;padding:2px 0}
 .strategy-detail .detail-icon{margin-right:4px}
+.stat-mini{font-size:12px;color:#555;padding:4px 0}
+.stat-mini .sm-row{display:flex;justify-content:space-between;padding:3px 8px;border-bottom:1px solid #f5f5f5;align-items:center}
+.stat-mini .sm-row:last-child{border:none}
+.stat-mini .sm-label{color:#999;flex-shrink:0}
+.stat-mini .sm-val{font-weight:700;text-align:right}
+.stat-mini .sm-nums{font-family:monospace;font-size:13px;letter-spacing:1px;margin-left:8px}
+.stat-mini .warn-tag{display:inline-block;background:#ffebee;color:#c62828;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-left:4px}
+.omit-bar{display:inline-block;height:6px;border-radius:3px;background:#ef5350;vertical-align:middle;margin:0 4px}
 .loading-skeleton{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0f172a;font-family:sans-serif}
 @keyframes pulse-skel{0%,100%{opacity:.5}50%{opacity:1}}
 .btn{padding:8px 16px;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
@@ -10700,6 +10708,22 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
   <div class="card">
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--purple)"></div>区间分布</div></div>
     <div class="chart-box" style="height:180px"><canvas id="chartZone"></canvas></div>
+  </div>
+  <div class="card" id="card012">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ef5350"></div>012路分布</div><div class="right">0路÷3余0 | 1路÷3余1 | 2路÷3余2</div></div>
+    <div class="chart-box" style="height:160px"><canvas id="chart012"></canvas></div>
+  </div>
+  <div class="card" id="cardPrime">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#8d6e63"></div>质合比走势</div><div class="right">质数:2,3,5,7,11,13,17,19,23,29,31</div></div>
+    <div class="chart-box" style="height:140px"><canvas id="chartPrime"></canvas></div>
+  </div>
+  <div class="card" id="cardSeq">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff6f00"></div>连号·重号·跨度</div></div>
+    <div id="seqStats" class="stat-mini"></div>
+  </div>
+  <div class="card" id="cardOmit">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#d32f2f"></div>遗漏预警</div><div class="right">当前遗漏超过历史80%→预警</div></div>
+    <div id="omitWarn" class="stat-mini"></div>
   </div>
   <div class="card">
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--cyan)"></div>最新开奖</div></div>
@@ -11056,6 +11080,8 @@ function renderAnalysis(type, data) {
 
   // 走势图
   renderChart(type, useData);
+  // 012路/质合/连号重号/遗漏预警
+  renderAdvanced(type, data);
 }
 
 /* ===== 渲染走势图（使用内嵌 MiniChart，零外部依赖） ===== */
@@ -11107,6 +11133,127 @@ function renderChart(type, data) {
       { data: zoneData, color: "#4caf50", type: "bar" }
     ], {});
   }
+}
+
+/* ===== 新增: 012路/质合/连号重号/遗漏预警 ===== */
+function renderAdvanced(type, data) {
+  var cfg = C[type];
+  var useData = data.slice(0, 30);
+  var recent = useData.slice(0, 20);
+  recent.reverse(); // 旧→新
+
+  // -- 1. 012路图 --
+  var c012 = document.getElementById("chart012");
+  if (c012) {
+    MiniDestroy("chart012");
+    var lbl1=[], d0=[], d1=[], d2=[];
+    recent.forEach(function(item){
+      lbl1.push(item.p);
+      var ns=getNums(item); var c0=0,c1=0,c2=0;
+      ns.forEach(function(n){ var r=n%3; if(r===0)c0++; else if(r===1)c1++; else c2++; });
+      d0.push(c0); d1.push(c1); d2.push(c2);
+    });
+    MiniChart("chart012","line",lbl1,[
+      {data:d0,color:"#ef5350",label:"0路"},
+      {data:d1,color:"#42a5f5",label:"1路"},
+      {data:d2,color:"#66bb6a",label:"2路"}
+    ],{});
+  }
+
+  // -- 2. 质合比 --
+  var primes = new Set([2,3,5,7,11,13,17,19,23,29,31]);
+  var cP = document.getElementById("chartPrime");
+  if (cP) {
+    MiniDestroy("chartPrime");
+    var lbl2=[], primeCnt=[];
+    recent.forEach(function(item){
+      lbl2.push(item.p);
+      var ns=getNums(item); var p=0;
+      ns.forEach(function(n){ if(primes.has(n)) p++; });
+      primeCnt.push(p);
+    });
+    MiniChart("chartPrime","bar",lbl2,[
+      {data:primeCnt,color:"#8d6e63",type:"bar"}
+    ],{});
+  }
+
+  // -- 3. 连号/重号/跨度 --
+  if (recent.length >= 2) {
+    var newest = getNums(recent[recent.length-1]);
+    var prev = getNums(recent[recent.length-2]);
+    var sorted = newest.slice().sort(function(a,b){return a-b;});
+    
+    // 连号
+    var seqs = []; var streak = 1;
+    for (var si = 1; si < sorted.length; si++) {
+      if (sorted[si] === sorted[si-1] + 1) { streak++; }
+      else { if (streak >= 2) seqs.push(streak); streak = 1; }
+    }
+    if (streak >= 2) seqs.push(streak);
+    
+    // 重号
+    var prevSet = new Set(prev);
+    var repeats = newest.filter(function(n){ return prevSet.has(n); });
+    
+    // 跨度
+    var span = sorted[sorted.length-1] - sorted[0];
+    
+    var html = '<div class="sm-row"><span class="sm-label">最新期</span><span class="sm-nums">' + newest.join(' ') + '</span></div>';
+    html += '<div class="sm-row"><span class="sm-label">连号</span><span class="sm-val">' + (seqs.length > 0 ? seqs.join('连,') + '连' : '无') + '</span></div>';
+    html += '<div class="sm-row"><span class="sm-label">重号(与上期)</span><span class="sm-val">' + repeats.length + '个' + (repeats.length > 0 ? ' [' + repeats.join(',') + ']' : '') + '</span></div>';
+    html += '<div class="sm-row"><span class="sm-label">跨度</span><span class="sm-val">' + span + ' (' + sorted[0] + '→' + sorted[sorted.length-1] + ')</span></div>';
+    
+    var seqEl = document.getElementById("seqStats");
+    if (seqEl && (cfg.type === "lotto" || cfg.type === "keno")) seqEl.innerHTML = html;
+  }
+
+  // -- 4. 遗漏预警 --
+  var numMin = 1, numMax = cfg.rMax;
+  if (cfg.type === "digit") { numMin = 0; numMax = 9; }
+  
+  var lastSeen = {}, miss = {}, maxMiss = {};
+  for (var i = numMin; i <= numMax; i++) { lastSeen[i] = -1; maxMiss[i] = 0; }
+  
+  var fullData = data.slice().reverse(); // 旧→新
+  for (var di = 0; di < fullData.length; di++) {
+    var ns = getNums(fullData[di]);
+    ns.forEach(function(n) {
+      if (n >= numMin && n <= numMax) {
+        var gap = di - lastSeen[n];
+        if (gap > maxMiss[n]) maxMiss[n] = gap;
+        lastSeen[n] = di;
+      }
+    });
+  }
+  for (var i = numMin; i <= numMax; i++) {
+    miss[i] = fullData.length - 1 - lastSeen[i];
+  }
+  
+  // 找遗漏预警号: 当前遗漏 >= maxMiss * 0.8 且 >= 5
+  var warns = [];
+  for (var i = numMin; i <= numMax; i++) {
+    if (miss[i] >= 5 && maxMiss[i] > 0 && miss[i] >= maxMiss[i] * 0.8) {
+      warns.push({n: i, miss: miss[i], max: maxMiss[i]});
+    }
+  }
+  warns.sort(function(a,b){ return b.miss - a.miss; });
+  
+  var omitHtml = '<div class="sm-row"><span class="sm-label">冷号排行(遗漏值)</span><span class="sm-val">当前遗漏 / 历史最大</span></div>';
+  var shown = 0;
+  for (var i = numMin; i <= numMax; i++) {
+    if (miss[i] >= 8) {
+      var pct = maxMiss[i] > 0 ? Math.round(miss[i] * 100 / maxMiss[i]) : 0;
+      var warnTag = pct >= 80 ? '<span class="warn-tag">⚠回补</span>' : '';
+      if (pct >= 100) warnTag = '<span class="warn-tag">🔥破纪录</span>';
+      omitHtml += '<div class="sm-row"><span class="sm-label">号码' + String(i).padStart(2,'0') + '</span><span class="sm-val">' + miss[i] + '期 / ' + maxMiss[i] + '期 <span class="omit-bar" style="width:' + Math.min(pct,100) + 'px"></span>' + warnTag + '</span></div>';
+      shown++;
+      if (shown >= 6) break;
+    }
+  }
+  if (shown === 0) omitHtml += '<div class="sm-row"><span class="sm-label">暂无</span><span class="sm-val">所有号码遗漏正常</span></div>';
+  
+  var omEl = document.getElementById("omitWarn");
+  if (omEl) omEl.innerHTML = omitHtml;
 }
 
 /* ===== 渲染推荐 ===== */
