@@ -9458,234 +9458,169 @@ function recommendLotto(data, cfg) {
 
   var rMax = cfg.rMax, bMax = cfg.bMax, rC = cfg.rC, bC = cfg.bC;
 
-  /* === 新增：短期动量（最近5期×3，最近10期×2）=== */
-  var shortFreq = {};
-  for (var nn = 1; nn <= rMax; nn++) shortFreq[nn] = 0;
-  for (var t = 0; t < Math.min(10, recent.length); t++) {
-    var w = t < 5 ? 3 : 2;
-    var ns = getNums(recent[t]);
-    for (var ni = 0; ni < ns.length; ni++) {
-      shortFreq[ns[ni]] = (shortFreq[ns[ni]] || 0) + w;
-    }
-  }
-
-  /* === 新增：号码关联度（与最近一期同现的号码加分）=== */
-  var lastDraw = new Set();
-  var lastNums = getNums(recent[0]);
-  var pairScore = {};
-  for (var nn = 1; nn <= rMax; nn++) pairScore[nn] = 0;
-  for (var ni = 0; ni < lastNums.length; ni++) lastDraw.add(lastNums[ni]);
-  for (var t = 0; t < recent.length; t++) {
-    var nums = getNums(recent[t]);
-    var wt = t < 5 ? 3 : (t < 10 ? 2 : 1);
-    for (var ai = 0; ai < nums.length; ai++) {
-      if (lastDraw.has(nums[ai])) {
-        for (var bi = 0; bi < nums.length; bi++) {
-          if (nums[ai] !== nums[bi]) pairScore[nums[bi]] = (pairScore[nums[bi]] || 0) + wt;
-        }
-      }
-    }
-  }
-
   /* 红球分析 */
   var rFreq = countFreq(recent, getNums, 1, rMax);
   var rMiss = getMissMap(recent, getNums, 1, rMax);
 
-  /* EMA 热度分数 */
+  /* EMA 热度分数：把每个号码的出现/未出现序列做指数平滑，近期权重大 */
   var rEmaScore = {};
   for (var nn = 1; nn <= rMax; nn++) {
     var seq = buildBinarySeq(recent, getNums, nn);
-    rEmaScore[nn] = ema(seq, 0.35);
+    rEmaScore[nn] = ema(seq, 0.35); // alpha=0.35，近7期权重约90%
   }
 
+  /* 计算频率的标准差和变异系数，判断号码稳定性 */
   var freqValues = [];
   for (var nn = 1; nn <= rMax; nn++) freqValues.push(rFreq[nn] || 0);
   var freqMean = movingAvg(freqValues, freqValues.length);
   var freqSd = stdDev(freqValues);
   var freqCv = freqMean > 0 ? freqSd / freqMean : 0;
+
+  /* 卡方检验：整体分布是否显著偏离均匀 */
   var chiResult = chiSquareTest(freqValues, recent.length * rC, rMax);
 
-  /* 和值趋势 */
-  var recentSums = [];
-  for (var t = 0; t < Math.min(30, recent.length); t++) {
-    var ns = getNums(recent[t]), s = 0;
-    for (var ni = 0; ni < ns.length; ni++) s += ns[ni];
-    recentSums.push(s);
-  }
-  var avgSum = movingAvg(recentSums, recentSums.length);
-  var sumSd = stdDev(recentSums);
-  var isBigLotto = rMax === 35 && rC === 5;
-  var sumMargin = isBigLotto ? 1.8 : 1.15;
-  var targetSumMin = Math.round(avgSum - sumSd * sumMargin);
-  var targetSumMax = Math.round(avgSum + sumSd * sumMargin);
-
-  /* 奇偶比趋势 */
-  var oddRatios = [];
-  for (var t = 0; t < Math.min(20, recent.length); t++) {
-    var ns = getNums(recent[t]), oddC = 0;
-    for (var ni = 0; ni < ns.length; ni++) { if (ns[ni] % 2 === 1) oddC++; }
-    oddRatios.push(oddC / ns.length);
-  }
-  var avgOdd = movingAvg(oddRatios, oddRatios.length);
-  var targetOdd = Math.round(avgOdd * rC);
-
-  var macdNums = {};
-  var trendNums = {};
-  var gapNums = {};
-  var poissonNums = {};
+  /* 综合热度排名：EMA + MACD趋势 + 贝叶斯后验 + 泊松概率 + 线性趋势加权 */
+  var hotReds = [];
+  var macdNums = {}; // 每个号的MACD信号
+  var trendNums = {}; // 每个号的线性回归趋势
+  var gapNums = {};   // 每个号的间隔分析
+  var poissonNums = {}; // 每个号的泊松概率
   var totalDraws = recent.length;
-  var expectedFreq = totalDraws * rC / rMax;
+  var expectedFreq = totalDraws * rC / rMax; // 理论期望出现次数
 
   for (var nn = 1; nn <= rMax; nn++) {
     var seq = buildBinarySeq(recent, getNums, nn);
     macdNums[nn] = macdSignal(seq);
     trendNums[nn] = linearTrend(seq);
     gapNums[nn] = gapAnalysis(recent, getNums, nn);
-    poissonNums[nn] = poissonCumulative(expectedFreq, rFreq[nn] || 0);
+    // 泊松概率：P(X >= rFreq[nn]) — 越小说明该号高频越"异常"
+    var poissonP = poissonCumulative(expectedFreq, rFreq[nn] || 0);
+    poissonNums[nn] = poissonP;
   }
 
-  var maxPair = Math.max(1, Math.max.apply(null, Object.values(pairScore)));
-  var maxShort = Math.max(1, Math.max.apply(null, Object.values(shortFreq)));
-
-  var hotReds = [];
   for (var nn = 1; nn <= rMax; nn++) {
-    var emaW = rEmaScore[nn] * 0.35;
-    var zW = zScore(rFreq[nn]||0, freqMean, freqSd) * 0.10;
+    var emaW = rEmaScore[nn] * 0.50;
+    var zW = zScore(rFreq[nn]||0, freqMean, freqSd) * 0.15;
+    // MACD bullish→加分，bearish→降分
     var macdW = macdNums[nn].signal === 'bullish' ? macdNums[nn].macd * 5 : macdNums[nn].macd * 2;
+    // 贝叶斯后验调整
     var bayes = bayesianUpdate(recent, getNums, nn, 1, 1);
     var bayesW = bayes.mean * 0.10;
+    // 线性趋势：斜率>0(加热)加分，<0(降温)减分，r²高则趋势更可信
     var trend = trendNums[nn];
     var trendW = trend.slope * trend.r2 * 3;
-    var poissonW = (1 - poissonNums[nn]) * 0.10;
+    // 泊松概率：高频号(P小)加分，低频号(P大)减分
+    var poissonW = (1 - poissonNums[nn]) * 0.15;
+    // 间隔均匀度：间隔越均匀越有规律，加分
     var gapCon = gapNums[nn].consistency;
-    var gapW = (gapCon - 0.5) * 0.05;
-    /* === 新增特征 === */
-    var shortW = (shortFreq[nn] || 0) / maxShort * 0.20;
-    var pairW = (pairScore[nn] || 0) / maxPair * 0.10;
+    var gapW = (gapCon - 0.5) * 0.10;
 
-    hotReds.push({ n: nn, score: emaW + zW + macdW + bayesW + trendW + poissonW + gapW + shortW + pairW });
+    hotReds.push({ n: nn, score: emaW + zW + macdW + bayesW + trendW + poissonW + gapW });
   }
   hotReds.sort(function(a, b) { return b.score - a.score; });
   var hotRedNums = hotReds.map(function(x) { return x.n; });
 
   var coldReds = sortByMiss(rMiss, 1, rMax);
 
-  /* 蓝球分析（EMA+遗漏） */
+  /* 蓝球分析（如果有） */
   var hotBlues = [], coldBlues = [], bFreq = {}, bMiss = {};
   if (bC > 0 && bMax > 0) {
     bFreq = countFreq(recent, getBlues, 1, bMax);
     bMiss = getMissMap(recent, getBlues, 1, bMax);
-    var bScores = [];
-    for (var i = 1; i <= bMax; i++) {
-      var bSeq = buildBinarySeq(recent, getBlues, i);
-      bScores.push({ n: i, score: ema(bSeq, 0.4) * 0.5 + (bFreq[i] || 0) / recent.length * 0.3 + (bMiss[i] || 0) / recent.length * 0.2 });
-    }
-    bScores.sort(function(a, b) { return b.score - a.score; });
-    hotBlues = bScores.map(function(x) { return x.n; });
+    hotBlues = sortByFreq(bFreq, 1, bMax);
     coldBlues = sortByMiss(bMiss, 1, bMax);
   }
 
-  /* 区间定义 */
+  /* 区间定义（根据不同彩种） */
   var zones;
   if (rMax === 33) zones = [[1, 11], [12, 22], [23, 33]];
   else if (rMax === 35) zones = [[1, 12], [13, 23], [24, 35]];
   else if (rMax === 30) zones = [[1, 10], [11, 20], [21, 30]];
   else zones = [[1, Math.ceil(rMax / 3)], [Math.ceil(rMax / 3) + 1, Math.ceil(rMax * 2 / 3)], [Math.ceil(rMax * 2 / 3) + 1, rMax]];
 
-  /* === 新增：和值+奇偶+区间约束选择 === */
-  function constrain(nums, count) {
-    if (nums.length < count) return nums;
-    var best = nums.slice(0, count).sort(function(a, b) { return a - b; });
-    var bestScore = 0;
-    var oddTol = isBigLotto ? 3 : 2;
-    var sumLo = isBigLotto ? 0.70 : 0.85;
-    var sumHi = isBigLotto ? 1.30 : 1.15;
-    for (var attempt = 0; attempt < Math.min(50, nums.length); attempt++) {
-      var shuffled = nums.slice().sort(function() { return Math.random() - 0.5; });
-      var cand = shuffled.slice(0, count).sort(function(a, b) { return a - b; });
-      var sum = 0;
-      for (var ci = 0; ci < cand.length; ci++) sum += cand[ci];
-      var odd = 0;
-      for (var ci = 0; ci < cand.length; ci++) { if (cand[ci] % 2 === 1) odd++; }
-      var sumOk = sum >= targetSumMin * sumLo && sum <= targetSumMax * sumHi ? 1 : 0;
-      var oddOk = Math.abs(odd - targetOdd) <= oddTol ? 1 : 0;
-      var zoneOk = 0;
-      for (var zi = 0; zi < zones.length; zi++) {
-        for (var ci = 0; ci < cand.length; ci++) {
-          if (cand[ci] >= zones[zi][0] && cand[ci] <= zones[zi][1]) { zoneOk++; break; }
-        }
-      }
-      zoneOk = zoneOk >= 2 ? 1 : 0;
-      var sc = sumOk + oddOk * 0.5 + zoneOk;
-      if (sc > bestScore) { bestScore = sc; best = cand; }
-    }
-    return best;
-  }
-
+  /* 选号：EMA热度 + 区间均衡 + 稳定性筛选 */
   function pickHotBalanced(count) {
-    var pool = [];
-    for (var zi = 0; zi < zones.length; zi++) {
-      if (pool.length >= count) break;
-      var bestInZone = null;
-      for (var hi = 0; hi < hotReds.length; hi++) {
-        if (hotReds[hi].n >= zones[zi][0] && hotReds[hi].n <= zones[zi][1] && pool.indexOf(hotReds[hi].n) === -1) {
-          bestInZone = hotReds[hi].n; break;
-        }
-      }
-      if (bestInZone !== null) pool.push(bestInZone);
-    }
-    for (var hi = 0; hi < hotReds.length; hi++) {
-      if (pool.length >= count) break;
-      if (pool.indexOf(hotReds[hi].n) === -1) pool.push(hotReds[hi].n);
-    }
-    return constrain(pool, count);
+    var picked = [];
+    // 每区间选 EMA 分数最高的号码
+    zones.forEach(function(zn) {
+      if (picked.length >= count) return;
+      var bestInZone = hotReds.filter(function(x) {
+        return x.n >= zn[0] && x.n <= zn[1] && picked.indexOf(x.n) === -1;
+      });
+      if (bestInZone.length > 0) picked.push(bestInZone[0].n);
+    });
+    // 补齐剩余EMA高分号码
+    hotReds.forEach(function(x) {
+      if (picked.length >= count) return;
+      if (picked.indexOf(x.n) === -1) picked.push(x.n);
+    });
+    return uniqueSorted(picked).slice(0, count);
   }
 
+  /* 选号：冷号回补 + 区间均衡 */
   function pickColdBalanced(count) {
-    var pool = [];
-    for (var zi = 0; zi < zones.length; zi++) {
-      if (pool.length >= count) break;
-      for (var ci = 0; ci < coldReds.length; ci++) {
-        if (coldReds[ci] >= zones[zi][0] && coldReds[ci] <= zones[zi][1] && pool.indexOf(coldReds[ci]) === -1) {
-          pool.push(coldReds[ci]); break;
+    var picked = [];
+    zones.forEach(function(zn) {
+      if (picked.length >= count) return;
+      for (var i = 0; i < coldReds.length; i++) {
+        var n = coldReds[i];
+        if (n >= zn[0] && n <= zn[1] && picked.indexOf(n) === -1) {
+          picked.push(n); break;
         }
       }
-    }
-    for (var ci = 0; ci < coldReds.length; ci++) {
-      if (pool.length >= count) break;
-      if (pool.indexOf(coldReds[ci]) === -1) pool.push(coldReds[ci]);
-    }
-    return constrain(pool, count);
+    });
+    coldReds.forEach(function(n) {
+      if (picked.length >= count) return;
+      if (picked.indexOf(n) === -1) picked.push(n);
+    });
+    return uniqueSorted(picked).slice(0, count);
   }
 
+  /* 蓝球推荐 */
+  function pickBlue(fromList) {
+    if (fromList.length === 0) return [];
+    var picked = [];
+    picked.push(fromList[0]);
+    if (bC > 1 && fromList.length > 1) picked.push(fromList[1]);
+    return picked;
+  }
+
+  /* 基本推荐 */
   var basic1 = pickHotBalanced(rC);
   var basic2 = pickColdBalanced(rC);
-  var bRec1 = bC > 0 ? (hotBlues.length > 0 ? [hotBlues[0]] : []).concat(bC > 1 && hotBlues.length > 1 ? [hotBlues[1]] : []) : [];
-  var bRec2 = bC > 0 ? (coldBlues.length > 0 ? [coldBlues[0]] : []).concat(bC > 1 && coldBlues.length > 1 ? [coldBlues[1]] : []) : [];
+  var bRec1 = bC > 0 ? pickBlue(hotBlues) : [];
+  var bRec2 = bC > 0 ? pickBlue(coldBlues) : [];
 
   /* 胆拖推荐 */
   function makeDanTuo(danCount) {
     var dan = hotRedNums.slice(0, danCount);
     var danSet = {};
-    for (var di = 0; di < dan.length; di++) danSet[dan[di]] = 1;
+    dan.forEach(function(n) { danSet[n] = 1; });
     var tuoPool = [];
-    for (var hi = 0; hi < hotRedNums.length; hi++) { if (!danSet[hotRedNums[hi]]) tuoPool.push(hotRedNums[hi]); }
-    for (var ci = 0; ci < coldReds.length; ci++) { if (!danSet[coldReds[ci]]) tuoPool.push(coldReds[ci]); }
+    hotRedNums.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
+    coldReds.forEach(function(n) { if (!danSet[n]) tuoPool.push(n); });
+    // 拖码数量 = 选号总数 - 胆码数
     var tuoCount = rC - danCount;
+
+    // 蓝球推荐
     var blueDan = [];
     var blueTuo = [];
-    if (bC > 0 && hotBlues.length > 0) {
+    if (bC > 0) {
       if (bC === 1) {
-        blueDan = hotBlues.slice(0, 4).sort(function(a, b) { return a - b; });
+        // 双色球(1蓝)：直接推荐4个热蓝，不区分胆拖
+        blueDan = hotBlues.slice(0, 4).sort(function(a,b){return a-b;});
+        blueTuo = [];
       } else {
+        // 大乐透(2蓝)：前bC-1个热蓝作胆 + 剩余热蓝作拖
         var bDanCount = bC - 1;
-        blueDan = hotBlues.slice(0, bDanCount).sort(function(a, b) { return a - b; });
-        blueTuo = hotBlues.slice(bDanCount, bDanCount + 3).sort(function(a, b) { return a - b; });
+        blueDan = hotBlues.slice(0, bDanCount).sort(function(a,b){return a-b;});
+        blueTuo = hotBlues.slice(bDanCount, bDanCount + 3).sort(function(a,b){return a-b;});
       }
     }
+
     return {
       dan: dan.sort(function(a, b) { return a - b; }),
-      tuo: uniqueSorted(tuoPool).slice(0, tuoCount * 2).sort(function(a, b) { return a - b; }),
+      tuo: tuoPool.slice(0, tuoCount * 2).sort(function(a, b) { return a - b; }),
       count: rC,
       blueDan: blueDan,
       blueTuo: blueTuo,
@@ -9697,7 +9632,7 @@ function recommendLotto(data, cfg) {
   var dt3 = makeDanTuo(3);
   var dt4 = makeDanTuo(4);
 
-  /* 推荐依据 */
+  /* 推荐依据（含统计指标） */
   function reason(nums, style) {
     var sum = nums.reduce(function(s, n) { return s + n; }, 0);
     var odd = nums.filter(function(n) { return n % 2 === 1; }).length;
@@ -9705,17 +9640,18 @@ function recommendLotto(data, cfg) {
       return nums.some(function(n) { return n >= zn[0] && n <= zn[1]; });
     }).length;
     var emaFlag = nums.filter(function(n) { return rEmaScore[n] > 0.15; }).length;
+    // 泊松显著：P<0.05的号码个数（统计显著高频）
     var poissonSig = nums.filter(function(n) { return poissonNums[n] < 0.05; }).length;
+    // 趋势：斜率>0的号码个数（正在升温）
     var trendUp = nums.filter(function(n) { return trendNums[n].slope > 0.005 && trendNums[n].r2 > 0.1; }).length;
-    var shortFlag = nums.filter(function(n) { return (shortFreq[n] || 0) > 3; }).length;
     return style + ' | 和值' + sum + ' | 奇偶' + odd + ':' + (nums.length - odd)
       + ' | ' + zHit + '区覆盖 | EMA热' + emaFlag + '个 | 泊松显著' + poissonSig + '个'
-      + ' | 趋势升' + trendUp + '个 | 短期热' + shortFlag + '个 | p=' + chiResult[1].toFixed(3);
+      + ' | 趋势升' + trendUp + '个 | p=' + chiResult[1].toFixed(3);
   }
 
   return {
     basic: [
-      { nums: basic1, blues: bRec1, reason: reason(basic1, '热号+动量+关联') },
+      { nums: basic1, blues: bRec1, reason: reason(basic1, 'EMA热号+区间均衡') },
       { nums: basic2, blues: bRec2, reason: reason(basic2, '冷号回补+区间均衡') }
     ],
     dantuo: [
@@ -9735,30 +9671,30 @@ function recommendLotto(data, cfg) {
       emaScores: rEmaScore,
       chiSquare: chiResult,
       freqCv: freqCv.toFixed(3),
+      /* 数学增强指标 */
       poissonProb: (function() {
         var p = {}; for (var n=1; n<=rMax; n++) p[n] = poissonNums[n];
         return p;
       })(),
       linearTrend: (function() {
-        var t = {}; for (var n=1; n<=rMax; n++) t[n] = { slope: trendNums[n].slope.toFixed(4), r2: trendNums[n].r2.toFixed(3) };
+        var t = {}; for (var n=1; n<=rMax; n++) t[n] = { slope: trendNums[n].slope, r2: trendNums[n].r2 };
         return t;
       })(),
       gapStats: (function() {
         var g = {}; for (var n=1; n<=rMax; n++) g[n] = { meanGap: gapNums[n].meanGap, streak: gapNums[n].currentStreak, consistency: gapNums[n].consistency };
         return g;
-      })(),
-      shortMomentum: shortFreq,
-      pairScore: pairScore
+      })()
     },
+    /* 第二层：关联分析 */
     pairFreq: pairFrequency(recent, getNums, 1, rMax).topPairs.slice(0, 15),
     condProb: conditionalProb(recent, getNums, 1, rMax,
       { pairMap: pairFrequency(recent, getNums, 1, rMax).pairMap }).topConds.slice(0, 10),
+    /* 第三层：趋势检测 */
     bayesian: { top: bayesianUpdate(recent, getNums, hotRedNums[0], 1, 1) },
     redEntropy: entropy(rFreq, 1, rMax),
     macdHot: macdSignal(hotReds.map(function(x){ return x.score; }))
   };
 }
-
 
 
 /* ================================================================
@@ -10103,80 +10039,7 @@ function recommendDigit(data, cfg) {
     });
   }
 
-  /* ---- 
-  /* === 新增：大小预测（EMA on big/small binary）=== */
-  var sizePredict = [];
-  for (var sp = 0; sp < pos; sp++) {
-    var bsSeq = [];
-    for (var t = Math.min(30, recent.length) - 1; t >= 0; t--) {
-      var ns = getNums(recent[t]);
-      bsSeq.push(ns.length > sp && ns[sp] >= 5 ? 1 : 0);
-    }
-    var bsEma = 0;
-    for (var t2 = 0; t2 < bsSeq.length; t2++) {
-      bsEma = t2 === 0 ? bsSeq[t2] : 0.4 * bsSeq[t2] + 0.6 * bsEma;
-    }
-    // bsEma > 0.5 → 大(5-9), ≤0.5 → 小(0-4)
-    var predictBig = bsEma > 0.5;
-    var halfFreq = {};
-    for (var d2 = 0; d2 <= 9; d2++) halfFreq[d2] = 0;
-    for (var ti = 0; ti < recent.length; ti++) {
-      var ns2 = getNums(recent[ti]);
-      if (ns2.length > sp) {
-        var dv = ns2[sp];
-        if ((dv >= 5) === predictBig) halfFreq[dv] = (halfFreq[dv] || 0) + 1;
-      }
-    }
-    var topHalf = [];
-    for (var d2 = 0; d2 <= 9; d2++) {
-      if ((d2 >= 5) === predictBig) topHalf.push({ n: d2, f: halfFreq[d2] || 0 });
-    }
-    topHalf.sort(function(a, b) { return b.f - a.f; });
-    sizePredict.push({
-      pos: sp + 1,
-      predict: predictBig ? '大' : '小',
-      range: predictBig ? '5-9' : '0-4',
-      ema: bsEma.toFixed(3),
-      top3: topHalf.slice(0, 3).map(function(x) { return x.n; })
-    });
-  /* === 新增：大小预测（EMA on big/small binary）=== */
-  var sizePredict = [];
-  for (var sp = 0; sp < pos; sp++) {
-    var bsSeq = [];
-    for (var t = Math.min(30, recent.length) - 1; t >= 0; t--) {
-      var ns2 = getNums(recent[t]);
-      bsSeq.push(ns2.length > sp && ns2[sp] >= 5 ? 1 : 0);
-    }
-    var bsEma = 0;
-    for (var t2 = 0; t2 < bsSeq.length; t2++) {
-      bsEma = t2 === 0 ? bsSeq[t2] : 0.4 * bsSeq[t2] + 0.6 * bsEma;
-    }
-    var predictBig = bsEma > 0.5;
-    var halfFreq = {};
-    for (var d2 = 0; d2 <= 9; d2++) halfFreq[d2] = 0;
-    for (var ti = 0; ti < recent.length; ti++) {
-      var ns3 = getNums(recent[ti]);
-      if (ns3.length > sp) {
-        var dv = ns3[sp];
-        if ((dv >= 5) === predictBig) halfFreq[dv] = (halfFreq[dv] || 0) + 1;
-      }
-    }
-    var topHalf = [];
-    for (var d2 = 0; d2 <= 9; d2++) {
-      if ((d2 >= 5) === predictBig) topHalf.push({ n: d2, f: halfFreq[d2] || 0 });
-    }
-    topHalf.sort(function(a, b) { return b.f - a.f; });
-    sizePredict.push({
-      pos: sp + 1,
-      predict: predictBig ? '大' : '小',
-      range: predictBig ? '5-9' : '0-4',
-      ema: bsEma.toFixed(3),
-      top3: topHalf.slice(0, 3).map(function(x) { return x.n; })
-    });
-  }
-
-  }
-位置相关性分析（相邻位置之间的皮尔逊相关系数） ---- */
+  /* ---- 位置相关性分析（相邻位置之间的皮尔逊相关系数） ---- */
   var posCorr = [];
   for (var cp = 0; cp < pos - 1; cp++) {
     var xs = [], ys = [];
@@ -10340,8 +10203,7 @@ function recommendDigit(data, cfg) {
         reason: danCount + '胆拖 | ' + danCount + '热号作胆 + 邻号(±1)作拖'
       };
     }),
-    sizePredict: sizePredict,
-      analysis: {
+    analysis: {
       hotReds: hotFlat,
       coldReds: coldFlat,
       rMiss: rMissAll,
@@ -10513,95 +10375,6 @@ function buildRotationMatrix(type, candidates, cfg) {
 }
 
 
-/* ===== 智能增强推荐 ===== */
-function renderEnhanced(type, data, rec, cfg) {
-  var es = document.getElementById("enhancedSection");
-  var er = document.getElementById("enhancedRecs");
-  if (!es || !er) return;
-
-  var useData = data.slice(0, 50);
-  var numMin = cfg.type==="digit"?0:1, numMax = cfg.rMax;
-  if (cfg.type==="digit") numMax = 9;
-
-  // 1. 杀号列表
-  var freq = {}, lastSeen = {};
-  for (var i=numMin;i<=numMax;i++){freq[i]=0;lastSeen[i]=-1;}
-  for (var di=0;di<useData.length;di++){var ns=getNums(useData[di]);ns.forEach(function(n){if(n>=numMin&&n<=numMax){freq[n]++;lastSeen[n]=di;}});}
-  var miss={}, kills=[];
-  for (var i=numMin;i<=numMax;i++) miss[i]=useData.length-1-lastSeen[i];
-  for (var i=numMin;i<=numMax;i++){if(freq[i]===0&&miss[i]>=15)kills.push(i);else if(miss[i]>=12)kills.push(i);}
-  kills=kills.slice(0,5);
-  var killSet=new Set(kills);
-
-  // 2. 从热号中排除杀号
-  var hotList = rec.analysis && rec.analysis.hotReds ? rec.analysis.hotReds : [];
-  var cleanHots = hotList.filter(function(n){return !killSet.has(n);});
-  
-  // 3. 012路比例
-  var recent20 = useData.slice(0, 20);
-  var r012_0=0, r012_1=0, r012_2=0;
-  recent20.forEach(function(item){var ns=getNums(item);ns.forEach(function(n){var r=n%3;if(r===0)r012_0++;else if(r===1)r012_1++;else r012_2++;});});
-  var total012 = r012_0+r012_1+r012_2;
-  var target0=Math.round(r012_0/total012*cfg.rC), target1=Math.round(r012_1/total012*cfg.rC);
-  var target2=cfg.rC-target0-target1;
-
-  // 4. 质合比
-  var primes=new Set([2,3,5,7,11,13,17,19,23,29,31]);
-  var primeCount=0, total2=0;
-  recent20.forEach(function(item){var ns=getNums(item);ns.forEach(function(n){if(primes.has(n))primeCount++;total2++;});});
-  var targetPrime=Math.round(primeCount/total2*cfg.rC);
-
-  var html = '';
-
-  // 杀号精简推荐
-  if (kills.length > 0 && cleanHots.length >= cfg.rC) {
-    var pick = cleanHots.slice(0, cfg.rC);
-    html += '<div class="rec-card" style="border-left-color:#607d8b">';
-    html += '<div class="rec-header">✂ 杀号精简（排除'+kills.join(',')+'后）</div>';
-    html += '<div class="rec-balls">';
-    pick.forEach(function(n){html+='<span class="ball r">'+String(n).padStart(2,'0')+'</span>';});
-    html += '</div><div class="rec-reason">排除'+kills.length+'个极冷号后精选热号</div></div>';
-  }
-
-  // 012路约束
-  if (cfg.type === "lotto") {
-    var r0=[],r1=[],r2=[];
-    for (var i=numMin;i<=numMax;i++){if(killSet.has(i))continue;var r=i%3;if(r===0)r0.push({n:i,f:freq[i]||0});else if(r===1)r1.push({n:i,f:freq[i]||0});else r2.push({n:i,f:freq[i]||0});}
-    r0.sort(function(a,b){return b.f-a.f;});r1.sort(function(a,b){return b.f-a.f;});r2.sort(function(a,b){return b.f-a.f;});
-    var routePick=r0.slice(0,target0).concat(r1.slice(0,target1)).concat(r2.slice(0,target2));
-    if(routePick.length>=cfg.rC){routePick=routePick.slice(0,cfg.rC);
-    html+='<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路约束（0路'+target0+'个 1路'+target1+'个 2路'+target2+'个）</div><div class="rec-balls">';
-    routePick.forEach(function(x){html+='<span class="ball r">'+String(x.n).padStart(2,'0')+'</span>';});
-    html+='</div><div class="rec-reason">按近20期012路比例约束筛选</div></div>';}
-  }
-
-  // 独胆锁定 (数字彩)
-  if (cfg.type === "digit" && cleanHots.length > 0) {
-    var posCount = type === "pl5" ? 5 : 3;
-    html += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">🎯 独胆锁定（每位置EMA最强数字）</div>';
-    for (var pos=0;pos<posCount;pos++){
-      var emaBest={n:-1,v:-1};
-      for (var d=numMin;d<=numMax;d++){var seq=[];for(var j=Math.min(30,useData.length)-1;j>=0;j--){var ns2=getNums(useData[j]);seq.push(ns2.length>pos&&ns2[pos]===d?1:0);}var e=seq[0];for(var k=1;k<seq.length;k++)e=0.4*seq[k]+0.6*e;if(e>emaBest.v){emaBest={n:d,v:e};}}
-      html += '<span class="ball r" style="margin:2px">'+String(emaBest.n).padStart(2,'0')+'</span><span style="font-size:10px;color:#999;margin-right:6px">位'+(pos+1)+' EMA'+emaBest.v.toFixed(2)+'</span>';
-    }
-    html += '<div class="rec-reason">每位置EMA热度最高的数字</div></div>';
-  }
-
-  // 质合约束
-  if (cfg.type === "lotto" && cleanHots.length >= cfg.rC) {
-    var pn=cleanHots.filter(function(n){return primes.has(n);});
-    var cn=cleanHots.filter(function(n){return !primes.has(n);});
-    var pp=pn.slice(0,targetPrime), cp=cn.slice(0,cfg.rC-targetPrime);
-    if(pp.length+cp.length>=cfg.rC){var pq=pp.concat(cp).slice(0,cfg.rC);
-    html+='<div class="rec-card" style="border-left-color:#8d6e63"><div class="rec-header">🔢 质合约束（质数'+targetPrime+'个 合数'+(cfg.rC-targetPrime)+'个）</div><div class="rec-balls">';
-    pq.forEach(function(n){html+='<span class="ball r">'+String(n).padStart(2,'0')+'</span>';});
-    html+='</div><div class="rec-reason">按质合比历史趋势约束筛选</div></div>';}
-  }
-
-  if (html) { es.style.display = "block"; er.innerHTML = html; }
-  else { es.style.display = "none"; }
-}
-
 /* ===== 入口：根据彩种类型调用对应算法 ===== */
 function generateRecommend(data, cfg) {
   if (!data || data.length < 5) return null;
@@ -10695,6 +10468,18 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .stat-mini .sm-nums{font-family:monospace;font-size:13px;letter-spacing:1px;margin-left:8px}
 .stat-mini .warn-tag{display:inline-block;background:#ffebee;color:#c62828;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-left:4px}
 .omit-bar{display:inline-block;height:6px;border-radius:3px;background:#ef5350;vertical-align:middle;margin:0 4px}
+.ks-table-wrap{max-height:400px;overflow-y:auto;margin-top:8px;border-radius:8px;border:1px solid #eee}
+.ks-table{width:100%;border-collapse:collapse;font-size:11px}
+.ks-table th{position:sticky;top:0;background:#fff3e0;color:#e65100;font-weight:700;padding:6px 4px;text-align:center;border-bottom:2px solid #ff9800;z-index:1}
+.ks-table td{padding:5px 3px;text-align:center;border-bottom:1px solid #f5f5f5;color:#555}
+.ks-table tr:nth-child(even) td{background:#fafafa}
+.ks-table .hit-6{color:#2e7d32;font-weight:700}
+.ks-table .hit-5{color:#e65100;font-weight:700}
+.ks-table .hit-4{color:#f57f17}
+.ks-table .profit-pos{color:#2e7d32;font-weight:700}
+.ks-table .profit-neg{color:#c62828}
+.ks-toggle{display:block;width:100%;padding:8px;margin-top:8px;background:#fff;border:1px dashed #ff9800;border-radius:8px;color:#e65100;font-size:13px;cursor:pointer;text-align:center;transition:background .2s}
+.ks-toggle:hover{background:#fff3e0}
 .loading-skeleton{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0f172a;font-family:sans-serif}
 @keyframes pulse-skel{0%,100%{opacity:.5}50%{opacity:1}}
 .btn{padding:8px 16px;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
@@ -10908,6 +10693,13 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
         <div class="detail-row"><span class="detail-icon">⚡</span> 10中4基本保本（-30元）&nbsp;|&nbsp;10中5小赚&nbsp;|&nbsp;10中6大赚</div>
         <div class="detail-row"><span class="detail-icon">⏳</span> 最长连续亏损20期 &nbsp;|&nbsp; 守2个月盈利概率91%</div>
         <div class="detail-row"><span class="detail-icon">💡</span> 建议：至少守号2个月以上，不要中途换号</div>
+      </div>
+      <button class="ks-toggle" id="ksToggle" onclick="toggleKenoDetail()">📋 查看每期中奖明细 ▼</button>
+      <div class="ks-table-wrap" id="ksDetailBox" style="display:none">
+        <table class="ks-table" id="ksDetailTable">
+          <thead><tr><th>期号</th><th>日期</th><th>开奖号码(前20)</th><th>命中</th><th>奖金</th><th>成本</th><th>净盈亏</th><th>累计盈亏</th></tr></thead>
+          <tbody id="ksDetailBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -11724,7 +11516,137 @@ function renderRecommend(type, data) {
   if (dtEl) dtEl.innerHTML = dtHtml;
 
   /* ===== 智能增强推荐 ===== */
-  renderEnhanced(type, data, rec, cfg);
+  var _reUseData = data.slice(0, 50);
+  var _reNumMin = cfg.type === "digit" ? 0 : 1, _reNumMax = cfg.rMax;
+  if (cfg.type === "digit") _reNumMax = 9;
+  var _reFreq = {}, _reLastSeen = {};
+  for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) { _reFreq[_rei] = 0; _reLastSeen[_rei] = -1; }
+  for (var _rdi = 0; _rdi < _reUseData.length; _rdi++) {
+    var _rns = getNums(_reUseData[_rdi]);
+    _rns.forEach(function(_rn) { if (_rn >= _reNumMin && _rn <= _reNumMax) { _reFreq[_rn]++; _reLastSeen[_rn] = _rdi; } });
+  }
+  var _reMiss = {}, _reKills = [];
+  for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) _reMiss[_rei] = _reUseData.length - 1 - _reLastSeen[_rei];
+  for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
+    if (_reFreq[_rei] === 0 && _reMiss[_rei] >= 15) _reKills.push(_rei);
+    else if (_reMiss[_rei] >= 12) _reKills.push(_rei);
+  }
+  _reKills = _reKills.slice(0, 5);
+  var _reKillSet = new Set(_reKills);
+  var _reHotList = rec.analysis && rec.analysis.hotReds ? rec.analysis.hotReds : [];
+  var _reCleanHots = _reHotList.filter(function(n) { return !_reKillSet.has(n); });
+  var _reRecent20 = _reUseData.slice(0, 20);
+  var _re012_0 = 0, _re012_1 = 0, _re012_2 = 0;
+  _reRecent20.forEach(function(item) {
+    var ns = getNums(item);
+    ns.forEach(function(n) { var r = n % 3; if (r === 0) _re012_0++; else if (r === 1) _re012_1++; else _re012_2++; });
+  });
+  var _reTotal012 = _re012_0 + _re012_1 + _re012_2;
+  var _reTarget0 = Math.round(_re012_0 / _reTotal012 * cfg.rC), _reTarget1 = Math.round(_re012_1 / _reTotal012 * cfg.rC);
+  var _reTarget2 = cfg.rC - _reTarget0 - _reTarget1;
+  var _rePrimes = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]);
+  var _rePrimeCount = 0, _reTotal2 = 0;
+  _reRecent20.forEach(function(item) {
+    var ns = getNums(item);
+    ns.forEach(function(n) { if (_rePrimes.has(n)) _rePrimeCount++; _reTotal2++; });
+  });
+  var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
+  var _reHtml = "";
+  if (_reKills.length > 0 && _reCleanHots.length >= cfg.rC) {
+    var _rePick = _reCleanHots.slice(0, cfg.rC);
+    _reHtml += '<div class="rec-card" style="border-left-color:#607d8b">';
+    _reHtml += '<div class="rec-header">✂ 杀号精简（排除' + _reKills.join(",") + '后）</div>';
+    _reHtml += '<div class="rec-balls">';
+    _rePick.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
+    _reHtml += '</div><div class="rec-reason">排除' + _reKills.length + '个极冷号后精选热号</div></div>';
+  }
+  if (cfg.type === "lotto") {
+    var _reR0 = [], _reR1 = [], _reR2 = [];
+    for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
+      if (_reKillSet.has(_rei)) continue;
+      var _rer = _rei % 3;
+      if (_rer === 0) _reR0.push({ n: _rei, f: _reFreq[_rei] || 0 });
+      else if (_rer === 1) _reR1.push({ n: _rei, f: _reFreq[_rei] || 0 });
+      else _reR2.push({ n: _rei, f: _reFreq[_rei] || 0 });
+    }
+    _reR0.sort(function(a, b) { return b.f - a.f; });
+    _reR1.sort(function(a, b) { return b.f - a.f; });
+    _reR2.sort(function(a, b) { return b.f - a.f; });
+    var _reRoutePick = _reR0.slice(0, _reTarget0).concat(_reR1.slice(0, _reTarget1)).concat(_reR2.slice(0, _reTarget2));
+    if (_reRoutePick.length >= cfg.rC) {
+      _reRoutePick = _reRoutePick.slice(0, cfg.rC);
+      _reHtml += '<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路约束（0路' + _reTarget0 + '个 1路' + _reTarget1 + '个 2路' + _reTarget2 + '个）</div><div class="rec-balls">';
+      _reRoutePick.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x.n).padStart(2, "0") + "</span>"; });
+      _reHtml += '</div><div class="rec-reason">按近20期012路比例约束筛选</div></div>';
+    }
+  }
+  if (cfg.type === "digit" && _reCleanHots.length > 0) {
+    var _rePosCount = type === "pl5" ? 5 : 3;
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">🎯 独胆锁定（每位置EMA最强数字）</div>';
+    for (var _repos = 0; _repos < _rePosCount; _repos++) {
+      var _reEmaBest = { n: -1, v: -1 };
+      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
+        var _reseq = [];
+        for (var _rej = Math.min(30, _reUseData.length) - 1; _rej >= 0; _rej--) {
+          var _rens2 = getNums(_reUseData[_rej]);
+          _reseq.push(_rens2.length > _repos && _rens2[_repos] === _red ? 1 : 0);
+        }
+        var _ree = _reseq[0];
+        for (var _rek = 1; _rek < _reseq.length; _rek++) _ree = 0.4 * _reseq[_rek] + 0.6 * _ree;
+        if (_ree > _reEmaBest.v) _reEmaBest = { n: _red, v: _ree };
+      }
+      _reHtml += '<span class="ball r" style="margin:2px">' + String(_reEmaBest.n).padStart(2, "0") + '</span><span style="font-size:10px;color:#999;margin-right:6px">位' + (_repos + 1) + ' EMA' + _reEmaBest.v.toFixed(2) + '</span>';
+    }
+    _reHtml += '<div class="rec-reason">每位置EMA热度最高的数字</div></div>';
+  }
+  if (cfg.type === "lotto" && _reCleanHots.length >= cfg.rC) {
+    var _repn = _reCleanHots.filter(function(n) { return _rePrimes.has(n); });
+    var _recn = _reCleanHots.filter(function(n) { return !_rePrimes.has(n); });
+    var _repp = _repn.slice(0, _reTargetPrime), _recp = _recn.slice(0, cfg.rC - _reTargetPrime);
+    if (_repp.length + _recp.length >= cfg.rC) {
+      var _repq = _repp.concat(_recp).slice(0, cfg.rC);
+      _reHtml += '<div class="rec-card" style="border-left-color:#8d6e63"><div class="rec-header">🔢 质合约束（质数' + _reTargetPrime + '个 合数' + (cfg.rC - _reTargetPrime) + '个）</div><div class="rec-balls">';
+      _repq.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
+      _reHtml += '</div><div class="rec-reason">按质合比历史趋势约束筛选</div></div>';
+    }
+  }
+  /* 蓝球推荐（双色球1蓝/大乐透2蓝） */
+  if (cfg.type === "lotto" && cfg.bC > 0 && cfg.bMax > 0) {
+    var _reBHot = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : [];
+    if (_reBHot.length === 0) {
+      var _reBFreq = {};
+      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBFreq[_rbi] = 0;
+      _reUseData.forEach(function(_rbitem) {
+        var _rbb = getBlues(_rbitem);
+        _rbb.forEach(function(_rbn) { if (_rbn >= 1 && _rbn <= cfg.bMax) _reBFreq[_rbn]++; });
+      });
+      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBHot.push({n: _rbi, f: _reBFreq[_rbi]});
+      _reBHot.sort(function(a, b) { return b.f - a.f; });
+      _reBHot = _reBHot.map(function(x) { return x.n; });
+    }
+    if (_reBHot.length > 0) {
+      var _reBpick = _reBHot.slice(0, cfg.bC);
+      _reHtml += '<div class="rec-card" style="border-left-color:#1565c0"><div class="rec-header">🔵 蓝球推荐（热度Top' + cfg.bC + '）</div><div class="rec-balls">';
+      _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
+      _reHtml += '</div><div class="rec-reason">近50期蓝球出现频率最高的' + cfg.bC + '个</div></div>';
+      /* 蓝球冷热提醒 */
+      var _reBHotAll = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : _reBHot;
+      var _reBColdAll = rec.analysis && rec.analysis.coldBlues ? rec.analysis.coldBlues : [];
+      var _reBmaxMiss = cfg.bMax > 0 ? _reUseData.length : 0;
+      if (_reBColdAll.length > 0) {
+        _reHtml += '<div class="rec-card" style="border-left-color:#78909c"><div class="rec-header" style="font-size:13px">🌡 蓝球冷热对比</div><div class="rec-reason" style="font-size:11px;line-height:1.6">';
+        _reHtml += '🔥 最热蓝球：<span style="color:#e53935;font-weight:bold">' + _reBHotAll.slice(0,3).join(",") + '</span><br>';
+        _reHtml += '❄ 最冷蓝球：<span style="color:#2196f3;font-weight:bold">' + _reBColdAll.slice(0,3).join(",") + '</span>';
+        _reHtml += '</div></div>';
+      }
+    }
+  }
+  var _reEs = document.getElementById("enhancedSection");
+  var _reEr = document.getElementById("enhancedRecs");
+  if (_reEs && _reEr) {
+    if (_reHtml) { _reEs.style.display = "block"; _reEr.innerHTML = _reHtml; }
+    else { _reEs.style.display = "none"; }
+  }
 
   /* ===== 命中率 ===== */
   // 用用户实际看到的推荐 rec 来保存和对比命中率
@@ -11981,15 +11903,72 @@ function switchType(type) {
 
 /* ===== 快乐8 固定守号策略（选六复式） ===== */
 var _kenoStrategyInited = false;
+var _ksNums = [11, 14, 33, 38, 39, 43, 50, 62, 69, 75];
 function initKenoStrategy() {
   if (_kenoStrategyInited) return;
   _kenoStrategyInited = true;
-  var nums = [11, 14, 33, 38, 39, 43, 50, 62, 69, 75];
+  var nums = _ksNums;
   var html = "";
   nums.forEach(function(n) {
     html += '<span class="sn">' + String(n).padStart(2,"0") + '</span>';
   });
   document.getElementById("strategyNums").innerHTML = html;
+
+  /* 逐期明细 */
+  var data = cache["kl8"] || (window.__LOTTERY_DATA && window.__LOTTERY_DATA.kl8) || [];
+  if (data.length > 0) {
+    var tbody = document.getElementById("ksDetailBody");
+    var rows = "";
+    var cum = 0;
+    var numSet = {};
+    nums.forEach(function(n) { numSet[n] = true; });
+    // 日期从旧到新
+    var sorted = data.slice().reverse();
+    var C = {}; // binomial cache
+    function binom(n, k) {
+      if (k < 0 || k > n) return 0;
+      if (k === 0 || k === n) return 1;
+      var key = n + "_" + k;
+      if (C[key] !== undefined) return C[key];
+      C[key] = binom(n-1, k-1) + binom(n-1, k);
+      return C[key];
+    }
+    for (var i = 0; i < sorted.length; i++) {
+      var item = sorted[i];
+      var drawn = getNums(item);
+      var match = 0;
+      for (var di = 0; di < drawn.length; di++) {
+        if (numSet[drawn[di]]) match++;
+      }
+      // 选六复式 C(10,6)=210注, 每注2元, 总成本420元
+      var cost = 420;
+      // 奖金计算
+      var prize = binom(match, 6) * 3000 + binom(match, 5) * binom(10 - match, 1) * 30
+                + binom(match, 4) * binom(10 - match, 2) * 10 + binom(match, 3) * binom(10 - match, 3) * 3;
+      var net = prize - cost;
+      cum += net;
+      var hitClass = match >= 6 ? "hit-6" : match >= 5 ? "hit-5" : match >= 4 ? "hit-4" : "";
+      var profitClass = net > 0 ? "profit-pos" : net < 0 ? "profit-neg" : "";
+      // 显示前10个开奖号
+      var showNums = drawn.slice(0, 10).join(",") + (drawn.length > 10 ? "..." : "");
+      rows += '<tr><td>' + item.p + '</td><td>' + item.d + '</td><td style="font-size:10px;text-align:left">' + showNums + '</td>'
+        + '<td class="' + hitClass + '">' + match + '/10</td>'
+        + '<td>' + (prize > 0 ? '+' + prize : "0") + '</td>'
+        + '<td>-420</td>'
+        + '<td class="' + profitClass + '">' + (net >= 0 ? "+" : "") + net + '</td>'
+        + '<td class="' + (cum >= 0 ? "profit-pos" : "profit-neg") + '">' + (cum >= 0 ? "+" : "") + cum + '</td></tr>';
+    }
+    tbody.innerHTML = rows;
+  }
+}
+
+var _ksDetailOpen = false;
+function toggleKenoDetail() {
+  _ksDetailOpen = !_ksDetailOpen;
+  var box = document.getElementById("ksDetailBox");
+  var btn = document.getElementById("ksToggle");
+  if (box) box.style.display = _ksDetailOpen ? "block" : "none";
+  if (btn) btn.textContent = _ksDetailOpen ? "📋 收起明细 ▲" : "📋 查看每期中奖明细 ▼";
 }
 
 /* ===== 加载所有数据 ===== */
