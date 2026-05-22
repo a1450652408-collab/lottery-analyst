@@ -10702,6 +10702,10 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div class="chart-box"><canvas id="chartSum"></canvas></div>
   </div>
   <div class="card">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00897b"></div>和尾走势</div><div class="right">近20期 · 和值个位数</div></div>
+    <div class="chart-box" style="height:120px"><canvas id="chartSumTail"></canvas></div>
+  </div>
+  <div class="card">
     <div class="section-head"><div class="left"><div class="dot" style="background:var(--green)"></div>奇偶比分布</div></div>
     <div class="chart-box" style="height:180px"><canvas id="chartOdd"></canvas></div>
   </div>
@@ -11117,6 +11121,22 @@ function renderChart(type, data) {
     });
     MiniChart("chartSum", "line", labels, [
       { data: sums, color: "#e53935", fill: "rgba(229,57,53,0.08)" }
+    ], {});
+  }
+
+  /* ---------- 1.5. 和尾走势 → chartSumTail ---------- */
+  var canvasTail = document.getElementById("chartSumTail");
+  if (canvasTail) {
+    MiniDestroy("chartSumTail");
+    var labelsT = [], tails = [];
+    recent.forEach(function(item) {
+      labelsT.push(item.p);
+      var ns = getNums(item);
+      var ss = 0; ns.forEach(function(n) { ss += n; });
+      tails.push(ss % 10);
+    });
+    MiniChart("chartSumTail", "bar", labelsT, [
+      { data: tails, color: "#00897b", type: "bar" }
     ], {});
   }
 
