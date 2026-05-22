@@ -10513,6 +10513,95 @@ function buildRotationMatrix(type, candidates, cfg) {
 }
 
 
+/* ===== 智能增强推荐 ===== */
+function renderEnhanced(type, data, rec, cfg) {
+  var es = document.getElementById("enhancedSection");
+  var er = document.getElementById("enhancedRecs");
+  if (!es || !er) return;
+
+  var useData = data.slice(0, 50);
+  var numMin = cfg.type==="digit"?0:1, numMax = cfg.rMax;
+  if (cfg.type==="digit") numMax = 9;
+
+  // 1. 杀号列表
+  var freq = {}, lastSeen = {};
+  for (var i=numMin;i<=numMax;i++){freq[i]=0;lastSeen[i]=-1;}
+  for (var di=0;di<useData.length;di++){var ns=getNums(useData[di]);ns.forEach(function(n){if(n>=numMin&&n<=numMax){freq[n]++;lastSeen[n]=di;}});}
+  var miss={}, kills=[];
+  for (var i=numMin;i<=numMax;i++) miss[i]=useData.length-1-lastSeen[i];
+  for (var i=numMin;i<=numMax;i++){if(freq[i]===0&&miss[i]>=15)kills.push(i);else if(miss[i]>=12)kills.push(i);}
+  kills=kills.slice(0,5);
+  var killSet=new Set(kills);
+
+  // 2. 从热号中排除杀号
+  var hotList = rec.analysis && rec.analysis.hotReds ? rec.analysis.hotReds : [];
+  var cleanHots = hotList.filter(function(n){return !killSet.has(n);});
+  
+  // 3. 012路比例
+  var recent20 = useData.slice(0, 20);
+  var r012_0=0, r012_1=0, r012_2=0;
+  recent20.forEach(function(item){var ns=getNums(item);ns.forEach(function(n){var r=n%3;if(r===0)r012_0++;else if(r===1)r012_1++;else r012_2++;});});
+  var total012 = r012_0+r012_1+r012_2;
+  var target0=Math.round(r012_0/total012*cfg.rC), target1=Math.round(r012_1/total012*cfg.rC);
+  var target2=cfg.rC-target0-target1;
+
+  // 4. 质合比
+  var primes=new Set([2,3,5,7,11,13,17,19,23,29,31]);
+  var primeCount=0, total2=0;
+  recent20.forEach(function(item){var ns=getNums(item);ns.forEach(function(n){if(primes.has(n))primeCount++;total2++;});});
+  var targetPrime=Math.round(primeCount/total2*cfg.rC);
+
+  var html = '';
+
+  // 杀号精简推荐
+  if (kills.length > 0 && cleanHots.length >= cfg.rC) {
+    var pick = cleanHots.slice(0, cfg.rC);
+    html += '<div class="rec-card" style="border-left-color:#607d8b">';
+    html += '<div class="rec-header">✂ 杀号精简（排除'+kills.join(',')+'后）</div>';
+    html += '<div class="rec-balls">';
+    pick.forEach(function(n){html+='<span class="ball r">'+String(n).padStart(2,'0')+'</span>';});
+    html += '</div><div class="rec-reason">排除'+kills.length+'个极冷号后精选热号</div></div>';
+  }
+
+  // 012路约束
+  if (cfg.type === "lotto") {
+    var r0=[],r1=[],r2=[];
+    for (var i=numMin;i<=numMax;i++){if(killSet.has(i))continue;var r=i%3;if(r===0)r0.push({n:i,f:freq[i]||0});else if(r===1)r1.push({n:i,f:freq[i]||0});else r2.push({n:i,f:freq[i]||0});}
+    r0.sort(function(a,b){return b.f-a.f;});r1.sort(function(a,b){return b.f-a.f;});r2.sort(function(a,b){return b.f-a.f;});
+    var routePick=r0.slice(0,target0).concat(r1.slice(0,target1)).concat(r2.slice(0,target2));
+    if(routePick.length>=cfg.rC){routePick=routePick.slice(0,cfg.rC);
+    html+='<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路约束（0路'+target0+'个 1路'+target1+'个 2路'+target2+'个）</div><div class="rec-balls">';
+    routePick.forEach(function(x){html+='<span class="ball r">'+String(x.n).padStart(2,'0')+'</span>';});
+    html+='</div><div class="rec-reason">按近20期012路比例约束筛选</div></div>';}
+  }
+
+  // 独胆锁定 (数字彩)
+  if (cfg.type === "digit" && cleanHots.length > 0) {
+    var posCount = type === "pl5" ? 5 : 3;
+    html += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">🎯 独胆锁定（每位置EMA最强数字）</div>';
+    for (var pos=0;pos<posCount;pos++){
+      var emaBest={n:-1,v:-1};
+      for (var d=numMin;d<=numMax;d++){var seq=[];for(var j=Math.min(30,useData.length)-1;j>=0;j--){var ns2=getNums(useData[j]);seq.push(ns2.length>pos&&ns2[pos]===d?1:0);}var e=seq[0];for(var k=1;k<seq.length;k++)e=0.4*seq[k]+0.6*e;if(e>emaBest.v){emaBest={n:d,v:e};}}
+      html += '<span class="ball r" style="margin:2px">'+String(emaBest.n).padStart(2,'0')+'</span><span style="font-size:10px;color:#999;margin-right:6px">位'+(pos+1)+' EMA'+emaBest.v.toFixed(2)+'</span>';
+    }
+    html += '<div class="rec-reason">每位置EMA热度最高的数字</div></div>';
+  }
+
+  // 质合约束
+  if (cfg.type === "lotto" && cleanHots.length >= cfg.rC) {
+    var pn=cleanHots.filter(function(n){return primes.has(n);});
+    var cn=cleanHots.filter(function(n){return !primes.has(n);});
+    var pp=pn.slice(0,targetPrime), cp=cn.slice(0,cfg.rC-targetPrime);
+    if(pp.length+cp.length>=cfg.rC){var pq=pp.concat(cp).slice(0,cfg.rC);
+    html+='<div class="rec-card" style="border-left-color:#8d6e63"><div class="rec-header">🔢 质合约束（质数'+targetPrime+'个 合数'+(cfg.rC-targetPrime)+'个）</div><div class="rec-balls">';
+    pq.forEach(function(n){html+='<span class="ball r">'+String(n).padStart(2,'0')+'</span>';});
+    html+='</div><div class="rec-reason">按质合比历史趋势约束筛选</div></div>';}
+  }
+
+  if (html) { es.style.display = "block"; er.innerHTML = html; }
+  else { es.style.display = "none"; }
+}
+
 /* ===== 入口：根据彩种类型调用对应算法 ===== */
 function generateRecommend(data, cfg) {
   if (!data || data.length < 5) return null;
@@ -10772,6 +10861,10 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div class="rec-section">
       <div class="rec-title"><div class="dot" style="background:var(--orange)"></div>胆拖推荐（3注：2胆·3胆·4胆）</div>
       <div id="dantuoRecs"></div>
+    </div>
+    <div class="rec-section" id="enhancedSection" style="display:none">
+      <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>智能增强推荐（基于012路·质合·杀号·独胆）</div>
+      <div id="enhancedRecs"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:10px">
       <button class="btn btn-smart btn-sm" id="btnRefreshAll" style="flex:1">换一批推荐</button>
@@ -11629,6 +11722,9 @@ function renderRecommend(type, data) {
   }
   var dtEl = document.getElementById("dantuoRecs");
   if (dtEl) dtEl.innerHTML = dtHtml;
+
+  /* ===== 智能增强推荐 ===== */
+  renderEnhanced(type, data, rec, cfg);
 
   /* ===== 命中率 ===== */
   // 用用户实际看到的推荐 rec 来保存和对比命中率
