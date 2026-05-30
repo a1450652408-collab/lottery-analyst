@@ -1,7 +1,10 @@
 name: 每日更新开奖数据
 on:
+  # 北京时间 00:00 = UTC 16:00
   schedule:
     - cron: '0 16 * * *'
+  # 备用调度：每2小时检查一次（如果主调度漏了，这个也能兜底）
+    - cron: '0 */2 * * *'
   workflow_dispatch:
   repository_dispatch:
     types: [auto-update]
