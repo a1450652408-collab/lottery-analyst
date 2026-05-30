@@ -16751,7 +16751,45 @@ function renderRecommend(type, data) {
     ns.forEach(function(n) { if (_rePrimes.has(n)) _rePrimeCount++; _reTotal2++; });
   });
   var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
+  // ★ 增强推荐号码卡片（6策略融合投票，优先于分析卡片）
   var _reHtml = "";
+  var _rePickScores = {};
+  for (var _repsi = _reNumMin; _repsi <= _reNumMax; _repsi++) {
+    if (_reKillSet.has(_repsi)) continue;
+    var _reps = 0;
+    var _refr = _reFreq[_repsi] || 0;
+    var _rems = _reMiss[_repsi] || 100;
+    var _reem = rec.analysis && rec.analysis.emaScores ? (rec.analysis.emaScores[_repsi] || 0) : 0;
+    _reps += _refr * 2;                             // s1: 频率权重
+    if (_rems >= 1 && _rems <= 6) _reps += 2;       // s2: 适中间隔回补
+    _reps += Math.round(_reem * 15);                 // s3: EMA热度
+    if (_reCleanHots.indexOf(_repsi) >= 0 && _reCleanHots.indexOf(_repsi) < Math.min(15, _reCleanHots.length)) _reps += 3; // s4: 热号候选
+    for (var _relz = 0; _relz < Math.min(5, _reUseData.length); _relz++) {
+      if (getNums(_reUseData[_relz]).indexOf(_repsi) >= 0) { _reps += 2; break; } // s5: 最近出现
+    }
+    if (cfg.rMax <= 35) {
+      if (cfg.type === "lotto" && _rePrimes.has(_repsi) && _reps > 0) _reps += 1; // s6: 质数加成(lotto)
+    } else {
+      if (_repsi % 2 === 1 && _reps > 0) _reps += 1; // s6: 奇数加成(keno)
+    }
+    _rePickScores[_repsi] = _reps;
+  }
+  var _reSortedPicks = Object.keys(_rePickScores).map(Number).sort(function(a,b){return _rePickScores[b]-_rePickScores[a]});
+  var _reEnhancedPicks = _reSortedPicks.slice(0, cfg.rC);
+  if (_reEnhancedPicks.length >= cfg.rC) {
+    _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
+    _reHtml += '<div class="rec-header">🏆 增强推荐号码（6策略融合）</div><div class="rec-balls">';
+    _reEnhancedPicks.forEach(function(n) {
+      _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';
+    });
+    if (cfg.type === "lotto" && cfg.bC > 0 && rec.analysis && rec.analysis.hotBlues) {
+      _reHtml += '<span style="margin:0 4px;color:#fff;font-weight:bold">+</span>';
+      rec.analysis.hotBlues.slice(0, cfg.bC).forEach(function(n) {
+        _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>';
+      });
+    }
+    _reHtml += '</div><div class="rec-reason">频率×2 + EMA×15 + 热号候选 + 遗漏回补 + 质数/奇数加权</div></div>';
+  }
   if (_reKills.length > 0 && _reCleanHots.length >= cfg.rC) {
     var _rePick = _reCleanHots.slice(0, cfg.rC);
     _reHtml += '<div class="rec-card" style="border-left-color:#607d8b">';
