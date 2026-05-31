@@ -15893,7 +15893,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <!-- 快乐8 固定守号策略 -->
     <div class="strategy-box" id="kenoStrategyBox" style="display:none">
       <div class="strategy-head">📌 守号策略：固定10码选六复式</div>
-      <div class="strategy-desc">基于近90期数据选号，固定守号3个月，每90期自动更新一轮</div>
+      <div class="strategy-desc">基于近90期数据选号，固定守号3个月，今日起开始累计盈亏</div>
       <div class="strategy-nums" id="strategyNums"></div>
       <div class="strategy-stats">
         <div class="stat-item">
@@ -15905,23 +15905,14 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
           <div class="stat-label">每期成本</div>
         </div>
         <div class="stat-item">
-          <div class="stat-val" id="ksTotalProfit" style="color:#2e7d32">-</div>
-          <div class="stat-label"><span id="ksPeriodCount">-</span>期净利润</div>
+          <div class="stat-val" id="ksTotalProfit" style="color:#999">0</div>
+          <div class="stat-label">今日起净利润</div>
         </div>
         <div class="stat-item">
-          <div class="stat-val" id="ksReturnRate" style="color:#e65100">-</div>
-          <div class="stat-label">回报率</div>
-        </div>
-      </div>
-      <div class="strategy-stats" style="margin-top:4px;padding-top:8px;border-top:1px dashed #e0e0e0">
-        <div class="stat-item">
-          <div class="stat-val" id="ksTodayProfit" style="color:#2e7d32">0</div>
-          <div class="stat-label">今日起守号净利润</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val" id="ksTodayRate" style="color:#999">0%</div>
+          <div class="stat-val" id="ksReturnRate" style="color:#999">0%</div>
           <div class="stat-label">今日起回报率</div>
         </div>
+      </div>
       </div>
       <div class="strategy-detail">
         <div class="detail-row"><span class="detail-icon">🎯</span> 中6/6=5次（每次+4,440元）&nbsp;|&nbsp;中5/6=10次（每次+530元）</div>
@@ -17354,23 +17345,11 @@ function initKenoStrategy() {
         + '<td class="' + (cum >= 0 ? "profit-pos" : "profit-neg") + '">' + (cum >= 0 ? "+" : "") + cum + '</td></tr>';
     }
     tbody.innerHTML = rows;
-    // 回测统计数据（全量历史）
+    // 今日起统计数据（从今天开始，往未来累计）
     var _ksProfitEl = document.getElementById("ksTotalProfit");
-    var _ksPeriodEl = document.getElementById("ksPeriodCount");
     var _ksRateEl = document.getElementById("ksReturnRate");
-    if (_ksProfitEl) _ksProfitEl.textContent = (cum >= 0 ? "+" : "") + cum.toLocaleString();
-    if (_ksPeriodEl) _ksPeriodEl.textContent = sorted.length;
-    if (_ksRateEl) {
-      var _ksTotalCost = sorted.length * 420;
-      var _ksRate = _ksTotalCost > 0 ? ((cum / _ksTotalCost) * 100).toFixed(1) : "0.0";
-      _ksRateEl.textContent = _ksRate + "%";
-      _ksRateEl.style.color = cum >= 0 ? "#2e7d32" : "#c62828";
-    }
-    // 今日起守号统计数据（从今天开始，往未来累计）
-    var _ksTodayProfitEl = document.getElementById("ksTodayProfit");
-    var _ksTodayRateEl = document.getElementById("ksTodayRate");
-    if (_ksTodayProfitEl) { _ksTodayProfitEl.textContent = "0"; _ksTodayProfitEl.style.color = "#999"; }
-    if (_ksTodayRateEl) { _ksTodayRateEl.textContent = "0%"; _ksTodayRateEl.style.color = "#999"; }
+    if (_ksProfitEl) { _ksProfitEl.textContent = "0"; _ksProfitEl.style.color = "#999"; }
+    if (_ksRateEl) { _ksRateEl.textContent = "0%"; _ksRateEl.style.color = "#999"; }
   }
 }
 
