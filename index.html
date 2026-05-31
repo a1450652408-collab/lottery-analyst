@@ -16910,7 +16910,8 @@ function renderRecommend(type, data) {
       _reHtml += '<div style="display:flex;align-items:center;margin:4px 0;font-size:13px">';
       _reHtml += '<span style="display:inline-block;width:44px;font-weight:bold;color:#7b1fa2;text-align:right;margin-right:6px">'+_reDNames[_rdp]+'</span>';
       _rdTop5.forEach(function(n) {
-        var _rdIsHot = _rdScores.indexOf(_rdScores.find(function(x){return x.n===n;})) < 2;
+        var _rdIdx = -1; for (var _rdi3 = 0; _rdi3 < _rdScores.length; _rdi3++) { if (_rdScores[_rdi3].n === n) { _rdIdx = _rdi3; break; } }
+        var _rdIsHot = _rdIdx >= 0 && _rdIdx < 2;
         var bg = _rdIsHot ? 'linear-gradient(135deg,#7b1fa2,#ce93d8)' : 'rgba(123,31,162,0.12)';
         var cl = _rdIsHot ? '#fff' : '#7b1fa2';
         _reHtml += '<span style="display:inline-block;background:'+bg+';color:'+cl+';border-radius:50%;width:28px;height:28px;line-height:28px;text-align:center;font-size:13px;font-weight:bold;margin:0 2px">'+n+'</span>';
