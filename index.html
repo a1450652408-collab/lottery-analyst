@@ -15873,7 +15873,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div id="dantuoRecs"></div>
     </div>
     <div class="rec-section" id="enhancedSection" style="display:none">
-      <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>智能增强推荐（基于012路·质合·杀号·独胆）</div>
+      <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>🎯 增强推荐（大复试+胆拖）</div>
       <div id="enhancedRecs"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:10px">
@@ -16776,7 +16776,7 @@ function renderRecommend(type, data) {
     ns.forEach(function(n) { if (_rePrimes.has(n)) _rePrimeCount++; _reTotal2++; });
   });
   var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
-  // ★ 增强推荐号码卡片（6策略融合投票，优先于分析卡片）
+  // ★ 增强推荐：大复试 + 胆拖
   var _reHtml = "";
   var _rePickScores = {};
   for (var _repsi = _reNumMin; _repsi <= _reNumMax; _repsi++) {
@@ -16785,140 +16785,55 @@ function renderRecommend(type, data) {
     var _refr = _reFreq[_repsi] || 0;
     var _rems = _reMiss[_repsi] || 100;
     var _reem = rec.analysis && rec.analysis.emaScores ? (rec.analysis.emaScores[_repsi] || 0) : 0;
-    _reps += _refr * 2;                             // s1: 频率权重
-    if (_rems >= 1 && _rems <= 6) _reps += 2;       // s2: 适中间隔回补
-    _reps += Math.round(_reem * 15);                 // s3: EMA热度
-    if (_reCleanHots.indexOf(_repsi) >= 0 && _reCleanHots.indexOf(_repsi) < Math.min(15, _reCleanHots.length)) _reps += 3; // s4: 热号候选
+    _reps += _refr * 2;
+    if (_rems >= 1 && _rems <= 6) _reps += 2;
+    _reps += Math.round(_reem * 15);
+    if (_reCleanHots.indexOf(_repsi) >= 0 && _reCleanHots.indexOf(_repsi) < Math.min(15, _reCleanHots.length)) _reps += 3;
     for (var _relz = 0; _relz < Math.min(5, _reUseData.length); _relz++) {
-      if (getNums(_reUseData[_relz]).indexOf(_repsi) >= 0) { _reps += 2; break; } // s5: 最近出现
+      if (getNums(_reUseData[_relz]).indexOf(_repsi) >= 0) { _reps += 2; break; }
     }
     if (cfg.rMax <= 35) {
-      if (cfg.type === "lotto" && _rePrimes.has(_repsi) && _reps > 0) _reps += 1; // s6: 质数加成(lotto)
+      if (cfg.type === "lotto" && _rePrimes.has(_repsi) && _reps > 0) _reps += 1;
     } else {
-      if (_repsi % 2 === 1 && _reps > 0) _reps += 1; // s6: 奇数加成(keno)
+      if (_repsi % 2 === 1 && _reps > 0) _reps += 1;
     }
     _rePickScores[_repsi] = _reps;
   }
   var _reSortedPicks = Object.keys(_rePickScores).map(Number).sort(function(a,b){return _rePickScores[b]-_rePickScores[a]});
-  var _reEnhancedPicks = _reSortedPicks.slice(0, cfg.rC);
-  if (_reEnhancedPicks.length >= cfg.rC) {
+
+  /* 大复试号码（乐透选前12红+前3蓝，快乐8选前20码） */
+  var _reRCount = cfg.type === "lotto" ? Math.min(12, _reSortedPicks.length) : Math.min(cfg.rC, _reSortedPicks.length);
+  var _reBigPicks = _reSortedPicks.slice(0, _reRCount);
+  if (_reBigPicks.length > 0) {
     _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
-    _reHtml += '<div class="rec-header">🏆 增强推荐号码（6策略融合）</div><div class="rec-balls">';
-    _reEnhancedPicks.forEach(function(n) {
-      _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';
+    _reHtml += '<div class="rec-header">📊 大复试（' + _reRCount + '码）</div><div class="rec-balls">';
+    _reBigPicks.forEach(function(n) {
+      _reHtml += '<span class="ball r" style="width:34px;height:34px;line-height:34px;font-size:13px">' + String(n).padStart(2,"0") + '</span>';
     });
     if (cfg.type === "lotto" && cfg.bC > 0 && rec.analysis && rec.analysis.hotBlues) {
       _reHtml += '<span style="margin:0 4px;color:#fff;font-weight:bold">+</span>';
-      rec.analysis.hotBlues.slice(0, cfg.bC).forEach(function(n) {
+      rec.analysis.hotBlues.slice(0, Math.min(3, cfg.bC * 2)).forEach(function(n) {
         _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>';
       });
     }
-    _reHtml += '</div><div class="rec-reason">频率×2 + EMA×15 + 热号候选 + 遗漏回补 + 质数/奇数加权</div></div>';
+    _reHtml += '</div><div class="rec-reason">6策略融合评分TOP' + _reRCount + ' · 适用于复式投注</div></div>';
+  }
 
-    /* 增强胆拖（2胆~4胆） */
-    var _reTuoPool = cfg.rC < 20 ? _reSortedPicks : _reEnhancedPicks;
-    for (var _redc = 2; _redc <= 4; _redc++) {
-      var _redDan = _reEnhancedPicks.slice(0, _redc);
-      var _redSet = new Set(_redDan);
-      var _redTuo = _reTuoPool.filter(function(n){return !_redSet.has(n);}).slice(0, cfg.rC + 6);
-      if (_redTuo.length > 0) {
-        _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:6px">';
-        _reHtml += '<div class="rec-header">🔗 ' + _redc + '胆拖</div>';
-        _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:32px">胆</span><div class="dt-balls">';
-        _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
-        _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:32px">拖</span><div class="dt-balls">';
-        _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
-        _reHtml += '</div></div></div>';
-      }
-    }
-  }
-  if (_reKills.length > 0 && _reCleanHots.length >= cfg.rC) {
-    var _rePick = _reCleanHots.slice(0, cfg.rC);
-    _reHtml += '<div class="rec-card" style="border-left-color:#607d8b">';
-    _reHtml += '<div class="rec-header">✂ 杀号精简（排除' + _reKills.join(",") + '后）</div>';
-    _reHtml += '<div class="rec-balls">';
-    _rePick.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
-    _reHtml += '</div><div class="rec-reason">排除' + _reKills.length + '个极冷号后精选热号</div></div>';
-  }
-  if (cfg.type === "lotto") {
-    var _reR0 = [], _reR1 = [], _reR2 = [];
-    for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
-      if (_reKillSet.has(_rei)) continue;
-      var _rer = _rei % 3;
-      if (_rer === 0) _reR0.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else if (_rer === 1) _reR1.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else _reR2.push({ n: _rei, f: _reFreq[_rei] || 0 });
-    }
-    _reR0.sort(function(a, b) { return b.f - a.f; });
-    _reR1.sort(function(a, b) { return b.f - a.f; });
-    _reR2.sort(function(a, b) { return b.f - a.f; });
-    var _reRoutePick = _reR0.slice(0, _reTarget0).concat(_reR1.slice(0, _reTarget1)).concat(_reR2.slice(0, _reTarget2));
-    if (_reRoutePick.length >= cfg.rC) {
-      _reRoutePick = _reRoutePick.slice(0, cfg.rC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路约束（0路' + _reTarget0 + '个 1路' + _reTarget1 + '个 2路' + _reTarget2 + '个）</div><div class="rec-balls">';
-      _reRoutePick.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x.n).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">按近20期012路比例约束筛选</div></div>';
-    }
-  }
-  if (cfg.type === "digit" && _reCleanHots.length > 0) {
-    var _rePosCount = type === "pl5" ? 5 : 3;
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">🎯 独胆锁定（每位置EMA最强数字）</div>';
-    for (var _repos = 0; _repos < _rePosCount; _repos++) {
-      var _reEmaBest = { n: -1, v: -1 };
-      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
-        var _reseq = [];
-        for (var _rej = Math.min(30, _reUseData.length) - 1; _rej >= 0; _rej--) {
-          var _rens2 = getNums(_reUseData[_rej]);
-          _reseq.push(_rens2.length > _repos && _rens2[_repos] === _red ? 1 : 0);
-        }
-        var _ree = _reseq[0];
-        for (var _rek = 1; _rek < _reseq.length; _rek++) _ree = 0.4 * _reseq[_rek] + 0.6 * _ree;
-        if (_ree > _reEmaBest.v) _reEmaBest = { n: _red, v: _ree };
-      }
-      _reHtml += '<span class="ball r" style="margin:2px">' + String(_reEmaBest.n).padStart(2, "0") + '</span><span style="font-size:10px;color:#999;margin-right:6px">位' + (_repos + 1) + ' EMA' + _reEmaBest.v.toFixed(2) + '</span>';
-    }
-    _reHtml += '<div class="rec-reason">每位置EMA热度最高的数字</div></div>';
-  }
-  if (cfg.type === "lotto" && _reCleanHots.length >= cfg.rC) {
-    var _repn = _reCleanHots.filter(function(n) { return _rePrimes.has(n); });
-    var _recn = _reCleanHots.filter(function(n) { return !_rePrimes.has(n); });
-    var _repp = _repn.slice(0, _reTargetPrime), _recp = _recn.slice(0, cfg.rC - _reTargetPrime);
-    if (_repp.length + _recp.length >= cfg.rC) {
-      var _repq = _repp.concat(_recp).slice(0, cfg.rC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#8d6e63"><div class="rec-header">🔢 质合约束（质数' + _reTargetPrime + '个 合数' + (cfg.rC - _reTargetPrime) + '个）</div><div class="rec-balls">';
-      _repq.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">按质合比历史趋势约束筛选</div></div>';
-    }
-  }
-  /* 蓝球推荐（双色球1蓝/大乐透2蓝） */
-  if (cfg.type === "lotto" && cfg.bC > 0 && cfg.bMax > 0) {
-    var _reBHot = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : [];
-    if (_reBHot.length === 0) {
-      var _reBFreq = {};
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBFreq[_rbi] = 0;
-      _reUseData.forEach(function(_rbitem) {
-        var _rbb = getBlues(_rbitem);
-        _rbb.forEach(function(_rbn) { if (_rbn >= 1 && _rbn <= cfg.bMax) _reBFreq[_rbn]++; });
-      });
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBHot.push({n: _rbi, f: _reBFreq[_rbi]});
-      _reBHot.sort(function(a, b) { return b.f - a.f; });
-      _reBHot = _reBHot.map(function(x) { return x.n; });
-    }
-    if (_reBHot.length > 0) {
-      var _reBpick = _reBHot.slice(0, cfg.bC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#1565c0"><div class="rec-header">🔵 蓝球推荐（热度Top' + cfg.bC + '）</div><div class="rec-balls">';
-      _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">近50期蓝球出现频率最高的' + cfg.bC + '个</div></div>';
-      /* 蓝球冷热提醒 */
-      var _reBHotAll = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : _reBHot;
-      var _reBColdAll = rec.analysis && rec.analysis.coldBlues ? rec.analysis.coldBlues : [];
-      var _reBmaxMiss = cfg.bMax > 0 ? _reUseData.length : 0;
-      if (_reBColdAll.length > 0) {
-        _reHtml += '<div class="rec-card" style="border-left-color:#78909c"><div class="rec-header" style="font-size:13px">🌡 蓝球冷热对比</div><div class="rec-reason" style="font-size:11px;line-height:1.6">';
-        _reHtml += '🔥 最热蓝球：<span style="color:#e53935;font-weight:bold">' + _reBHotAll.slice(0,3).join(",") + '</span><br>';
-        _reHtml += '❄ 最冷蓝球：<span style="color:#2196f3;font-weight:bold">' + _reBColdAll.slice(0,3).join(",") + '</span>';
-        _reHtml += '</div></div>';
-      }
+  /* 增强胆拖（2胆~4胆） */
+  var _reEnPicks = _reSortedPicks.slice(0, cfg.rC);
+  var _reTuoPool = _reSortedPicks;
+  for (var _redc = 2; _redc <= 4; _redc++) {
+    var _redDan = _reEnPicks.slice(0, _redc);
+    var _redSet = new Set(_redDan);
+    var _redTuo = _reTuoPool.filter(function(n){return !_redSet.has(n);}).slice(0, cfg.rC + 6);
+    if (_redTuo.length > 0) {
+      _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:6px">';
+      _reHtml += '<div class="rec-header">🔗 ' + _redc + '胆拖（大复试胆拖）</div>';
+      _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:32px">胆</span><div class="dt-balls">';
+      _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
+      _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:32px">拖</span><div class="dt-balls">';
+      _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
+      _reHtml += '</div></div></div>';
     }
   }
   var _reEs = document.getElementById("enhancedSection");
