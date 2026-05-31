@@ -15905,11 +15905,11 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
           <div class="stat-label">每期成本</div>
         </div>
         <div class="stat-item">
-          <div class="stat-val" style="color:#2e7d32">+18,470</div>
-          <div class="stat-label">115期净利润</div>
+          <div class="stat-val" id="ksTotalProfit" style="color:#2e7d32">-</div>
+          <div class="stat-label"><span id="ksPeriodCount">-</span>期净利润</div>
         </div>
         <div class="stat-item">
-          <div class="stat-val" style="color:#e65100">138.2%</div>
+          <div class="stat-val" id="ksReturnRate" style="color:#e65100">-</div>
           <div class="stat-label">回报率</div>
         </div>
       </div>
@@ -17328,6 +17328,18 @@ function initKenoStrategy() {
         + '<td class="' + (cum >= 0 ? "profit-pos" : "profit-neg") + '">' + (cum >= 0 ? "+" : "") + cum + '</td></tr>';
     }
     tbody.innerHTML = rows;
+    // 动态更新顶部统计数据
+    var _ksProfitEl = document.getElementById("ksTotalProfit");
+    var _ksPeriodEl = document.getElementById("ksPeriodCount");
+    var _ksRateEl = document.getElementById("ksReturnRate");
+    if (_ksProfitEl) _ksProfitEl.textContent = (cum >= 0 ? "+" : "") + cum.toLocaleString();
+    if (_ksPeriodEl) _ksPeriodEl.textContent = sorted.length;
+    if (_ksRateEl) {
+      var _ksTotalCost = sorted.length * 420;
+      var _ksRate = _ksTotalCost > 0 ? ((cum / _ksTotalCost) * 100).toFixed(1) : "0.0";
+      _ksRateEl.textContent = _ksRate + "%";
+      _ksRateEl.style.color = cum >= 0 ? "#2e7d32" : "#c62828";
+    }
   }
 }
 
