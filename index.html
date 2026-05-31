@@ -16958,7 +16958,7 @@ function renderRecommend(type, data) {
       _reHtml += '</div></div>';
     }
     for (var _rd2 = 2; _rd2 <= 9; _rd2++) {
-      var _rdD2 = _danStableRanked.slice(0, _rd2);
+      var _rdD2 = _rd2 <= 2 ? _reKeno20.slice(0, _rd2) : _danStableRanked.slice(0, _rd2);
       var _rdS2 = new Set(_rdD2);
       var _rdT2 = _reKeno20.filter(function(n){return !_rdS2.has(n);});
       if (_rdT2.length > 0) {

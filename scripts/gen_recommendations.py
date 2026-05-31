@@ -116,13 +116,15 @@ def recommend_kl8_enhanced(recent, rMax=80, rC=20):
 
 def kl8_dantuo(vl, recent=None, rC=20):
     cards = []
-    # 置信度筛选: 按稳定度重排序(低方差号码优先做胆)
-    dan_pool = list(vl[:rC])
+    # 原始评分排序(用于2胆)
+    dan_pool_raw = list(vl[:rC])
+    # 置信度筛选(用于3胆及以上)
+    dan_pool_stable = list(vl[:rC])
     if recent and len(recent) > 5:
         import math
         win = min(30, len(recent))
         stability = {}
-        for n in dan_pool:
+        for n in dan_pool_stable:
             pat = [1 if n in get_nums(d) else 0 for d in recent[:win]]
             avg = sum(pat) / win if win > 0 else 0
             var = sum((v - avg)**2 for v in pat) / win if win > 0 else 0
@@ -133,10 +135,10 @@ def kl8_dantuo(vl, recent=None, rC=20):
                 stability[n] = f * 100
             else:
                 stability[n] = 0
-        # 按稳定度降序, 相同则按原始排名
-        dan_pool = sorted(dan_pool, key=lambda n: (-stability[n], vl.index(n)))
+        dan_pool_stable = sorted(dan_pool_stable, key=lambda n: (-stability[n], vl.index(n)))
     for dc in range(2,10):
-        dan = sorted(dan_pool[:dc])
+        pool = dan_pool_stable if dc >= 3 else dan_pool_raw
+        dan = sorted(pool[:dc])
         ds = set(dan)
         tuo = sorted([n for n in vl[:rC] if n not in ds])
         cards.append({"dan":dan,"tuo":tuo})
