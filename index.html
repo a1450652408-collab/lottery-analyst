@@ -14660,13 +14660,22 @@ function recommendLotto(data, cfg) {
 
   /* 红球分析 */
   var rFreq = countFreq(recent, getNums, 1, rMax);
+
+  /* 给最近5期出现过的号码频率加倍（让新数据影响更大） */
+  for (var _wf = 0; _wf < Math.min(5, recent.length); _wf++) {
+    var _wnums = getNums(recent[_wf]);
+    for (var _wi = 0; _wi < _wnums.length; _wi++) {
+      if (_wnums[_wi] >= 1 && _wnums[_wi] <= rMax) rFreq[_wnums[_wi]] = (rFreq[_wnums[_wi]] || 0) + 1;
+    }
+  }
+
   var rMiss = getMissMap(recent, getNums, 1, rMax);
 
   /* EMA 热度分数：把每个号码的出现/未出现序列做指数平滑，近期权重大 */
   var rEmaScore = {};
   for (var nn = 1; nn <= rMax; nn++) {
     var seq = buildBinarySeq(recent, getNums, nn);
-    rEmaScore[nn] = ema(seq, 0.35); // alpha=0.35，近7期权重约90%
+    rEmaScore[nn] = ema(seq, 0.5); // alpha=0.5，最近3期权重约88%
   }
 
   /* 计算频率的标准差和变异系数，判断号码稳定性 */
@@ -14922,6 +14931,13 @@ function recommendKeno(data, cfg) {
 
   /* 频率统计 */
   var freq = countFreq(recent, getNums, 1, rMax);
+  /* 最近5期加权：新数据加倍计数 */
+  for (var _wk = 0; _wk < Math.min(5, recent.length); _wk++) {
+    var _wkNums = getNums(recent[_wk]);
+    for (var _wki = 0; _wki < _wkNums.length; _wki++) {
+      if (_wkNums[_wki] >= 1 && _wkNums[_wki] <= rMax) freq[_wkNums[_wki]] = (freq[_wkNums[_wki]] || 0) + 1;
+    }
+  }
   /* 遗漏值 */
   var miss = getMissMap(recent, getNums, 1, rMax);
 
@@ -14930,7 +14946,7 @@ function recommendKeno(data, cfg) {
   var cvScore = {}; // 变异系数：越大=越不稳定=越有参考价值
   for (var i = 1; i <= rMax; i++) {
     var seq = buildBinarySeq(recent, getNums, i);
-    emaScore[i] = ema(seq, 0.3);
+    emaScore[i] = ema(seq, 0.5);
     cvScore[i] = coeffVar(seq);
   }
 
@@ -15111,6 +15127,15 @@ function recommendDigit(data, cfg) {
       return nums.length > p ? [nums[p]] : [];
     }, 0, 9);
 
+    // 最近5期加权
+    for (var _wd = 0; _wd < Math.min(5, recent.length); _wd++) {
+      var _wdNums = getNums(recent[_wd]);
+      if (_wdNums.length > p) {
+        var _wdv = _wdNums[p];
+        if (_wdv >= 0 && _wdv <= 9) pFreq[_wdv] = (pFreq[_wdv] || 0) + 1;
+      }
+    }
+
     // 该位遗漏（0-9）
     var pMiss = getMissMap(recent, function(d) {
       var nums = getNums(d);
@@ -15124,7 +15149,7 @@ function recommendDigit(data, cfg) {
         var ns = getNums(dd);
         return ns.length > p ? [ns[p]] : [];
       }, d);
-      pEma[d] = ema(seq, 0.35);
+      pEma[d] = ema(seq, 0.5);
     }
 
     // 该位卡方检验
@@ -15963,14 +15988,14 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 
 /* ===== 彩种配置（recPeriod: 乐透30期 / 每日100期） ===== */
 window._C = {
-  ssq:{name:"双色球",type:"lotto",rMax:33,bMax:16,rC:6,bC:1,recPeriod:30},
-  dlt:{name:"大乐透",type:"lotto",rMax:35,bMax:12,rC:5,bC:2,recPeriod:30},
-  qlc:{name:"七乐彩",type:"lotto",rMax:30,bMax:0,rC:7,bC:0,recPeriod:30},
-  kl8:{name:"快乐8",type:"keno",rMax:80,bMax:0,rC:20,bC:0,recPeriod:100},
-  fc3d:{name:"福彩3D",type:"digit",rMax:9,rC:3,recPeriod:100},
-  pl3:{name:"排列三",type:"digit",rMax:9,rC:3,recPeriod:100},
-  pl5:{name:"排列五",type:"digit",rMax:9,rC:5,recPeriod:100},
-  qxc:{name:"七星彩",type:"digit",rMax:9,rC:7,recPeriod:100}
+  ssq:{name:"双色球",type:"lotto",rMax:33,bMax:16,rC:6,bC:1,recPeriod:15},
+  dlt:{name:"大乐透",type:"lotto",rMax:35,bMax:12,rC:5,bC:2,recPeriod:15},
+  qlc:{name:"七乐彩",type:"lotto",rMax:30,bMax:0,rC:7,bC:0,recPeriod:15},
+  kl8:{name:"快乐8",type:"keno",rMax:80,bMax:0,rC:20,bC:0,recPeriod:30},
+  fc3d:{name:"福彩3D",type:"digit",rMax:9,rC:3,recPeriod:30},
+  pl3:{name:"排列三",type:"digit",rMax:9,rC:3,recPeriod:30},
+  pl5:{name:"排列五",type:"digit",rMax:9,rC:5,recPeriod:30},
+  qxc:{name:"七星彩",type:"digit",rMax:9,rC:7,recPeriod:30}
 };
 var C = window._C;
 var cur = "ssq", charts = {}, cache = {};

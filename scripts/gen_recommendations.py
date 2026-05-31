@@ -32,7 +32,7 @@ def recommend_kl8(recent, rMax=80, rC=20):
     for n in range(1, rMax+1):
         seq = [1 if n in get_nums(d) else 0 for d in recent]
         ema = seq[0] if seq else 0
-        for v in seq[1:]: ema = 0.4*v+0.6*ema
+        for v in seq[1:]: ema = 0.5*v+0.5*ema
         ema_score[n] = ema
     s1 = set(hot_nums[:rC])
     s2 = set()
@@ -77,7 +77,7 @@ def recommend_kl8_enhanced(recent, rMax=80, rC=20):
     for n in range(1, rMax+1):
         seq = [1 if n in get_nums(d) else 0 for d in recent]
         ema = seq[0] if seq else 0
-        for v in seq[1:]: ema = 0.4*v+0.6*ema
+        for v in seq[1:]: ema = 0.5*v+0.5*ema
         ema_score[n] = ema
     s1 = set(hot_nums[:rC])
     s2 = set()
@@ -139,7 +139,7 @@ def recommend_lotto_blue(recent, bMax, bC):
     for n in range(1,bMax+1):
         seq=[1 if n in get_blue(d) else 0 for d in recent]
         e=seq[0] if seq else 0
-        for v in seq[1:]: e=0.4*v+0.6*e; ema_b[n]=e
+        for v in seq[1:]: e=0.5*v+0.5*e; ema_b[n]=e
     b_scores={}
     for n in range(1,bMax+1):
         b_scores[n]=(freq_b[n]/freq_b_mean*10 if freq_b_mean>0 else 0)+miss_b[n]/total*8+ema_b[n]*12
@@ -161,7 +161,7 @@ def recommend_lotto(recent, rMax, rC, bMax, bC):
     for n in range(1,rMax+1):
         seq=[1 if n in get_nums(d) else 0 for d in recent]
         e=seq[0] if seq else 0
-        for v in seq[1:]: e=0.4*v+0.6*e; ema_r[n]=e
+        for v in seq[1:]: e=0.5*v+0.5*e; ema_r[n]=e
     s1=set(hot_r[:rC])
     s2=set()
     for si in range(0,len(hot_r),2):
@@ -223,7 +223,7 @@ def recommend_lotto_enhanced(recent, rMax, rC, bMax, bC):
     for n in range(1,rMax+1):
         seq=[1 if n in get_nums(d) else 0 for d in recent]
         e=seq[0] if seq else 0
-        for v in seq[1:]: e=0.4*v+0.6*e; ema_r[n]=e
+        for v in seq[1:]: e=0.5*v+0.5*e; ema_r[n]=e
     # 质数
     primes=set()
     for n in range(2,rMax+1):
@@ -342,9 +342,9 @@ def add_rec(t, period, date, basic_items, dantuo_data, multi=None, enhanced=None
 
 kl8d=data.get("kl8",[])
 if len(kl8d)>50:
-    b20,vl=recommend_kl8(kl8d[:100])
+    b20,vl=recommend_kl8(kl8d[:30])
     dt=kl8_dantuo(vl)
-    e20,evl=recommend_kl8_enhanced(kl8d[:100])
+    e20,evl=recommend_kl8_enhanced(kl8d[:30])
     edt=kl8_dantuo(evl)
     add_rec("kl8",kl8d[0]["p"],kl8d[0]["d"],[{"nums":b20,"blues":[]}],dt,
             enhanced={"nums":e20,"dantuo":edt})
@@ -352,31 +352,31 @@ if len(kl8d)>50:
 
 ssqd=data.get("ssq",[])
 if len(ssqd)>5:
-    r=recommend_lotto(ssqd[:30],33,6,16,1)
-    er=recommend_lotto_enhanced(ssqd[:30],33,6,16,1)
+    r=recommend_lotto(ssqd[:15],33,6,16,1)
+    er=recommend_lotto_enhanced(ssqd[:15],33,6,16,1)
     add_rec("ssq",ssqd[0]["p"],ssqd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
             enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
     print(f"ssq({ssqd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
 
 dltd=data.get("dlt",[])
 if len(dltd)>5:
-    r=recommend_lotto(dltd[:30],35,5,12,2)
-    er=recommend_lotto_enhanced(dltd[:30],35,5,12,2)
+    r=recommend_lotto(dltd[:15],35,5,12,2)
+    er=recommend_lotto_enhanced(dltd[:15],35,5,12,2)
     add_rec("dlt",dltd[0]["p"],dltd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
             enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
     print(f"dlt({dltd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
 
 qlcd=data.get("qlc",[])
 if len(qlcd)>5:
-    r=recommend_lotto(qlcd[:30],30,7,1,0)
-    er=recommend_lotto_enhanced(qlcd[:30],30,7,1,0)
+    r=recommend_lotto(qlcd[:15],30,7,1,0)
+    er=recommend_lotto_enhanced(qlcd[:15],30,7,1,0)
     add_rec("qlc",qlcd[0]["p"],qlcd[0]["d"],[{"nums":r["reds"],"blues":[]}],r["dantuo"],
             enhanced={"nums":er["reds"],"dantuo":er["dantuo"]})
     print(f"qlc({qlcd[0]['p']}): {r['reds']}, {len(r['dantuo'])}组胆拖")
 
 fc3d=data.get("fc3d",[])
 if len(fc3d)>5:
-    r=recommend_digit(fc3d[:100],3)
+    r=recommend_digit(fc3d[:30],3)
     add_rec("fc3d",fc3d[0]["p"],fc3d[0]["d"],
         [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
          {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
@@ -386,7 +386,7 @@ if len(fc3d)>5:
 
 pl3d=data.get("pl3",[])
 if len(pl3d)>5:
-    r=recommend_digit(pl3d[:100],3)
+    r=recommend_digit(pl3d[:30],3)
     add_rec("pl3",pl3d[0]["p"],pl3d[0]["d"],
         [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
          {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
@@ -396,7 +396,7 @@ if len(pl3d)>5:
 
 pl5d=data.get("pl5",[])
 if len(pl5d)>5:
-    r=recommend_digit(pl5d[:100],5)
+    r=recommend_digit(pl5d[:30],5)
     add_rec("pl5",pl5d[0]["p"],pl5d[0]["d"],
         [{"nums":[r["basic"][i][0] for i in range(5)],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
@@ -404,7 +404,7 @@ if len(pl5d)>5:
 
 qxcd=data.get("qxc",[])
 if len(qxcd)>5:
-    r=recommend_digit(qxcd[:100],7)
+    r=recommend_digit(qxcd[:30],7)
     add_rec("qxc",qxcd[0]["p"],qxcd[0]["d"],
         [{"nums":[r["basic"][i][0] for i in range(7)],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
