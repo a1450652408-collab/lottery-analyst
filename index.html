@@ -15893,7 +15893,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <!-- 快乐8 固定守号策略 -->
     <div class="strategy-box" id="kenoStrategyBox" style="display:none">
       <div class="strategy-head">📌 守号策略：固定10码选六复式</div>
-      <div class="strategy-desc">基于115期历史回测验证，同组号码长期守号</div>
+      <div class="strategy-desc">基于近30期热号排名自动生成，每次开奖后自动更新</div>
       <div class="strategy-nums" id="strategyNums"></div>
       <div class="strategy-stats">
         <div class="stat-item">
@@ -17270,13 +17270,24 @@ function switchType(type) {
   loadAll(type);
 }
 
-/* ===== 快乐8 固定守号策略（选六复式） ===== */
-var _kenoStrategyInited = false;
-var _ksNums = [11, 14, 33, 38, 39, 43, 50, 62, 69, 75];
+/* ===== 快乐8 守号策略（选六复式，热号自动生成） ===== */
 function initKenoStrategy() {
-  if (_kenoStrategyInited) return;
-  _kenoStrategyInited = true;
-  var nums = _ksNums;
+  var data = cache["kl8"] || (window.__LOTTERY_DATA && window.__LOTTERY_DATA.kl8) || [];
+  if (data.length < 10) return;
+
+  /* 从最新30期热号中选10码 */
+  var _ksRecent = data.slice(0, 30);
+  var _ksFreq = {}; for (var _kf = 1; _kf <= 80; _kf++) _ksFreq[_kf] = 0;
+  _ksRecent.forEach(function(item) {
+    getNums(item).forEach(function(n) { if (n >= 1 && n <= 80) _ksFreq[n]++; });
+  });
+  // 近5期加权
+  for (var _kw = 0; _kw < Math.min(5, _ksRecent.length); _kw++) {
+    getNums(_ksRecent[_kw]).forEach(function(n) { if (n >= 1 && n <= 80) _ksFreq[n] = (_ksFreq[n] || 0) + 2; });
+  }
+  var _ksTop = Object.keys(_ksFreq).map(Number).sort(function(a,b){return _ksFreq[b]-_ksFreq[a]}).slice(0, 10).sort(function(a,b){return a-b;});
+
+  var nums = _ksTop;
   var html = "";
   nums.forEach(function(n) {
     html += '<span class="sn">' + String(n).padStart(2,"0") + '</span>';
