@@ -114,10 +114,29 @@ def recommend_kl8_enhanced(recent, rMax=80, rC=20):
     enhanced_list = sorted(range(1, rMax+1), key=lambda n: (-vote6[n], -freq[n]))
     return sorted(enhanced_list[:rC]), enhanced_list
 
-def kl8_dantuo(vl, rC=20):
+def kl8_dantuo(vl, recent=None, rC=20):
     cards = []
+    # 置信度筛选: 按稳定度重排序(低方差号码优先做胆)
+    dan_pool = list(vl[:rC])
+    if recent and len(recent) > 5:
+        import math
+        win = min(30, len(recent))
+        stability = {}
+        for n in dan_pool:
+            pat = [1 if n in get_nums(d) else 0 for d in recent[:win]]
+            avg = sum(pat) / win if win > 0 else 0
+            var = sum((v - avg)**2 for v in pat) / win if win > 0 else 0
+            f = sum(pat)
+            if var > 0 and f > 0:
+                stability[n] = f / math.sqrt(var)
+            elif var == 0 and f > 0:
+                stability[n] = f * 100
+            else:
+                stability[n] = 0
+        # 按稳定度降序, 相同则按原始排名
+        dan_pool = sorted(dan_pool, key=lambda n: (-stability[n], vl.index(n)))
     for dc in range(2,10):
-        dan = sorted(vl[:dc])
+        dan = sorted(dan_pool[:dc])
         ds = set(dan)
         tuo = sorted([n for n in vl[:rC] if n not in ds])
         cards.append({"dan":dan,"tuo":tuo})
@@ -343,9 +362,9 @@ def add_rec(t, period, date, basic_items, dantuo_data, multi=None, enhanced=None
 kl8d=data.get("kl8",[])
 if len(kl8d)>50:
     b20,vl=recommend_kl8(kl8d[:30])
-    dt=kl8_dantuo(vl)
+    dt=kl8_dantuo(vl, kl8d[:30])
     e20,evl=recommend_kl8_enhanced(kl8d[:30])
-    edt=kl8_dantuo(evl)
+    edt=kl8_dantuo(evl, kl8d[:30])
     add_rec("kl8",kl8d[0]["p"],kl8d[0]["d"],[{"nums":b20,"blues":[]}],dt,
             enhanced={"nums":e20,"dantuo":edt})
     print(f"kl8({kl8d[0]['p']}): 普通{len(b20)}码+{len(dt)}组胆拖 增强{len(e20)}码+{len(edt)}组胆拖")

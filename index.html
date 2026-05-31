@@ -16928,6 +16928,25 @@ function renderRecommend(type, data) {
   } else if (cfg.type === "keno") {
     /* 快乐8：多策略融合推荐 20码 + 2胆~9胆 */
     var _reKeno20 = _reSortedPicks.slice(0, 20);
+    /* ---- 置信度优化: 胆码按稳定度重排序 (低方差号码优先) ---- */
+    var _danWin = Math.min(30, _reUseData.length);
+    var _danStability = {};
+    for (var _dsi = 0; _dsi < _reKeno20.length; _dsi++) {
+      var _dn = _reKeno20[_dsi];
+      var _dpat = [];
+      for (var _dpi = 0; _dpi < _danWin; _dpi++) {
+        _dpat.push(getNums(_reUseData[_dpi]).indexOf(_dn) >= 0 ? 1 : 0);
+      }
+      var _davg = 0; for (var _dpi2 = 0; _dpi2 < _dpat.length; _dpi2++) _davg += _dpat[_dpi2];
+      _davg /= _dpat.length;
+      var _dvar = 0; for (var _dpi3 = 0; _dpi3 < _dpat.length; _dpi3++) _dvar += (_dpat[_dpi3] - _davg) * (_dpat[_dpi3] - _davg);
+      _dvar /= _dpat.length;
+      var _df = _reFreq[_dn] || 0;
+      if (_dvar > 0 && _df > 0) _danStability[_dn] = _df / Math.sqrt(_dvar);
+      else if (_dvar === 0 && _df > 0) _danStability[_dn] = _df * 100;
+      else _danStability[_dn] = 0;
+    }
+    var _danStableRanked = _reKeno20.slice().sort(function(a,b){return _danStability[b] - _danStability[a];});
     if (_reKeno20.length >= 20) {
       _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
       _reHtml += '<div class="rec-header">🏆 多策略融合推荐（6种算法加权评分）</div>';
@@ -16939,7 +16958,7 @@ function renderRecommend(type, data) {
       _reHtml += '</div></div>';
     }
     for (var _rd2 = 2; _rd2 <= 9; _rd2++) {
-      var _rdD2 = _reKeno20.slice(0, _rd2);
+      var _rdD2 = _danStableRanked.slice(0, _rd2);
       var _rdS2 = new Set(_rdD2);
       var _rdT2 = _reKeno20.filter(function(n){return !_rdS2.has(n);});
       if (_rdT2.length > 0) {
