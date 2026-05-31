@@ -116,29 +116,30 @@ def recommend_kl8_enhanced(recent, rMax=80, rC=20):
 
 def kl8_dantuo(vl, recent=None, rC=20):
     cards = []
-    # 原始评分排序(用于2胆)
-    dan_pool_raw = list(vl[:rC])
-    # 置信度筛选(用于3胆及以上)
-    dan_pool_stable = list(vl[:rC])
+    dan_pool = list(vl[:rC])
     if recent and len(recent) > 5:
         import math
+        # 计算频率(和页面_reFreq一致: 30期原始计数)
+        freq = {n:0 for n in dan_pool}
+        for d in recent[:30]:
+            for n in get_nums(d):
+                if n in freq: freq[n] += 1
         win = min(30, len(recent))
         stability = {}
-        for n in dan_pool_stable:
+        for n in dan_pool:
             pat = [1 if n in get_nums(d) else 0 for d in recent[:win]]
             avg = sum(pat) / win if win > 0 else 0
             var = sum((v - avg)**2 for v in pat) / win if win > 0 else 0
-            f = sum(pat)
+            f = freq.get(n, 0)
             if var > 0 and f > 0:
                 stability[n] = f / math.sqrt(var)
             elif var == 0 and f > 0:
                 stability[n] = f * 100
             else:
                 stability[n] = 0
-        dan_pool_stable = sorted(dan_pool_stable, key=lambda n: (-stability[n], vl.index(n)))
+        dan_pool = sorted(dan_pool, key=lambda n: (-stability[n], vl.index(n)))
     for dc in range(2,10):
-        pool = dan_pool_stable if dc >= 3 else dan_pool_raw
-        dan = sorted(pool[:dc])
+        dan = sorted(dan_pool[:dc])
         ds = set(dan)
         tuo = sorted([n for n in vl[:rC] if n not in ds])
         cards.append({"dan":dan,"tuo":tuo})
