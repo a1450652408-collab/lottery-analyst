@@ -16778,38 +16778,58 @@ function renderRecommend(type, data) {
   var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
   // ★ 增强推荐：大复试 + 胆拖
   
+  
   var _reHtml = "";
 
-  /* ---- 大复试号码 ---- */
+  /* ---- 多策略评分 ---- */
+  var _rePickScores2 = {};
+  for (var _rep2 = _reNumMin; _rep2 <= _reNumMax; _rep2++) {
+    if (_reKillSet.has(_rep2)) continue;
+    var _rps = 0;
+    var _rf = _reFreq[_rep2] || 0;
+    var _rm = _reMiss[_rep2] || 100;
+    var _re2 = rec.analysis && rec.analysis.emaScores ? (rec.analysis.emaScores[_rep2] || 0) : 0;
+    _rps += _rf * 2;
+    if (_rm >= 1 && _rm <= 6) _rps += 2;
+    _rps += Math.round(_re2 * 15);
+    if (_reCleanHots.indexOf(_rep2) >= 0 && _reCleanHots.indexOf(_rep2) < Math.min(15, _reCleanHots.length)) _rps += 3;
+    for (var _rl2 = 0; _rl2 < Math.min(5, _reUseData.length); _rl2++) {
+      if (getNums(_reUseData[_rl2]).indexOf(_rep2) >= 0) { _rps += 2; break; }
+    }
+    if (cfg.rMax <= 35) {
+      if (cfg.type === "lotto" && _rePrimes.has(_rep2) && _rps > 0) _rps += 1;
+    } else {
+      if (_rep2 % 2 === 1 && _rps > 0) _rps += 1;
+    }
+    _rePickScores2[_rep2] = _rps;
+  }
+  var _reSortedPicks = Object.keys(_rePickScores2).map(Number).sort(function(a,b){return _rePickScores2[b]-_rePickScores2[a]});
+
+  /* ---- 渲染：乐透型 = 大复试(8红+3蓝) + 2-4胆拖 ---- */
   if (cfg.type === "lotto") {
-    /* 取前8红 + 前3蓝 */
     var _reRed8 = _reSortedPicks.slice(0, 8);
     var _reBlue3 = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues.slice(0, 3) : [1,2,3];
     if (_reRed8.length >= 6) {
       _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
-      _reHtml += '<div class="rec-header">🏆 大复试推荐（8红+3蓝）</div>';
-      _reHtml += '<div class="rec-balls">';
+      _reHtml += '<div class="rec-header">🏆 大复试推荐（8红+3蓝）</div><div class="rec-balls">';
       _reRed8.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><div class="rec-balls" style="margin-top:4px">';
       _reBlue3.forEach(function(n) { _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div>';
-      var _reZ012 = "红球012路均衡";  // 描述文字
-      _reHtml += '<div class="rec-reason" style="display:flex;justify-content:space-between;align-items:center">';
-      _reHtml += '<span>C(8,5)×3 = 168注 | 336元 | ' + _reZ012 + ' + 蓝球热度Top3</span>';
+      _reHtml += '</div><div class="rec-reason" style="display:flex;justify-content:space-between;align-items:center">';
+      _reHtml += '<span>C(8,5)×3 = 168注 | 336元 | 红球012路均衡 + 蓝球热度Top3</span>';
       _reHtml += '</div></div>';
     }
-    /* 增强胆拖（2胆~4胆） */
-    for (var _redc = 2; _redc <= 4; _redc++) {
-      var _redDan = _reSortedPicks.slice(0, _redc);
-      var _redSet = new Set(_redDan);
-      var _redTuo = _reSortedPicks.filter(function(n){return !_redSet.has(n);}).slice(0, 14);
-      if (_redTuo.length > 0) {
+    for (var _rdc = 2; _rdc <= 4; _rdc++) {
+      var _rdDan = _reSortedPicks.slice(0, _rdc);
+      var _rdSet = new Set(_rdDan);
+      var _rdTuo = _reSortedPicks.filter(function(n){return !_rdSet.has(n);}).slice(0, 14);
+      if (_rdTuo.length > 0) {
         _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:4px">';
-        _reHtml += '<div class="rec-header" style="font-size:12px">🔗 ' + _redc + '胆拖（大复试胆拖）</div>';
+        _reHtml += '<div class="rec-header" style="font-size:12px">🔗 ' + _rdc + '胆拖（大复试胆拖）</div>';
         _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:28px;font-size:11px">胆</span><div class="dt-balls">';
-        _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
+        _rdDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
         _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:28px;font-size:11px">拖</span><div class="dt-balls">';
-        _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
+        _rdTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
         _reHtml += '</div></div></div>';
       }
     }
@@ -16823,20 +16843,19 @@ function renderRecommend(type, data) {
       _reKeno20.forEach(function(n) { _reHtml += '<span class="ball r" style="width:32px;height:32px;line-height:32px;font-size:12px">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div></div>';
     }
-    /* 2胆~9胆 */
-    for (var _redc2 = 2; _redc2 <= 9; _redc2++) {
-      var _rdDan = _reKeno20.slice(0, _redc2);
-      var _rdSet = new Set(_rdDan);
-      var _rdTuo = _reKeno20.filter(function(n){return !_rdSet.has(n);});
-      if (_rdTuo.length > 0) {
+    for (var _rd2 = 2; _rd2 <= 9; _rd2++) {
+      var _rdD2 = _reKeno20.slice(0, _rd2);
+      var _rdS2 = new Set(_rdD2);
+      var _rdT2 = _reKeno20.filter(function(n){return !_rdS2.has(n);});
+      if (_rdT2.length > 0) {
         _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:1px;margin-top:3px;padding:6px 8px">';
-        _reHtml += '<div class="rec-header" style="font-size:11px">🔗 ' + _redc2 + '胆拖</div>';
+        _reHtml += '<div class="rec-header" style="font-size:11px">🔗 ' + _rd2 + '胆拖</div>';
         _reHtml += '<div style="display:flex;align-items:center;gap:4px;margin:2px 0;font-size:11px">';
         _reHtml += '<span style="color:#7b1fa2;font-weight:bold;width:20px">胆</span>';
-        _rdDan.forEach(function(n){_reHtml += '<span style="display:inline-block;background:linear-gradient(135deg,#7b1fa2,#ce93d8);color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px;font-weight:bold">'+String(n).padStart(2,"0")+'</span>';});
+        _rdD2.forEach(function(n){_reHtml += '<span style="display:inline-block;background:linear-gradient(135deg,#7b1fa2,#ce93d8);color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px;font-weight:bold">'+String(n).padStart(2,"0")+'</span>';});
         _reHtml += '</div><div style="display:flex;align-items:center;gap:4px;font-size:11px">';
         _reHtml += '<span style="color:#999;width:20px">拖</span>';
-        _rdTuo.forEach(function(n){_reHtml += '<span style="display:inline-block;border:1px solid rgba(123,31,162,0.3);color:#7b1fa2;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px">'+String(n).padStart(2,"0")+'</span>';});
+        _rdT2.forEach(function(n){_reHtml += '<span style="display:inline-block;border:1px solid rgba(123,31,162,0.3);color:#7b1fa2;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px">'+String(n).padStart(2,"0")+'</span>';});
         _reHtml += '</div></div>';
       }
     }
