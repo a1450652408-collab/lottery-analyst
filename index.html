@@ -15919,7 +15919,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
         <div class="detail-row"><span class="detail-icon">⏳</span> 最长连续亏损20期 &nbsp;|&nbsp; 守2个月盈利概率91%</div>
         <div class="detail-row"><span class="detail-icon">💡</span> 建议：至少守号2个月以上，不要中途换号</div>
       </div>
-      <button class="ks-toggle" id="ksToggle" onclick="toggleKenoDetail()">📋 查看每期中奖明细 ▼</button>
+      <button class="ks-toggle" id="ksToggle">📋 查看每期中奖明细 ▼</button>
       <div class="ks-table-wrap" id="ksDetailBox" style="display:none">
         <table class="ks-table" id="ksDetailTable">
           <thead><tr><th>期号</th><th>日期</th><th>开奖号码(前20)</th><th>命中</th><th>奖金</th><th>成本</th><th>净盈亏</th><th>累计盈亏</th></tr></thead>
@@ -17339,6 +17339,11 @@ function toggleKenoDetail() {
   if (box) box.style.display = _ksDetailOpen ? "block" : "none";
   if (btn) btn.textContent = _ksDetailOpen ? "📋 收起明细 ▲" : "📋 查看每期中奖明细 ▼";
 }
+// 用事件监听替代 onclick，更可靠
+document.addEventListener("click", function(e) {
+  var t = e.target;
+  if (t && t.id === "ksToggle") toggleKenoDetail();
+});
 
 /* ===== 加载所有数据 ===== */
 function loadAll(type) {
