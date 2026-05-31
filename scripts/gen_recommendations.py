@@ -328,7 +328,7 @@ def recommend_digit(recent, pos):
     for pi in range(pos):
         if pi%2==0: z4.append(scored_pos[pi][0])
         else: z4.append(scored_pos[pi][1])
-    return {"basic":basic,"dantuo":dantuo,"multi":[z1,z2,z3,z4]}
+    return {"basic":basic,"dantuo":dantuo,"multi":[z1,z2,z3,z4],"scored_pos":scored_pos}
 
 now = int(time.time())
 recs = []
@@ -382,7 +382,9 @@ if len(fc3d)>5:
          {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
          {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"])
+        multi=r["multi"],
+        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
+                  "names":["百位","十位","个位"]})
 
 pl3d=data.get("pl3",[])
 if len(pl3d)>5:
@@ -392,7 +394,9 @@ if len(pl3d)>5:
          {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
          {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"])
+        multi=r["multi"],
+        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
+                  "names":["百位","十位","个位"]})
 
 pl5d=data.get("pl5",[])
 if len(pl5d)>5:
@@ -400,7 +404,9 @@ if len(pl5d)>5:
     add_rec("pl5",pl5d[0]["p"],pl5d[0]["d"],
         [{"nums":[r["basic"][i][0] for i in range(5)],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"])
+        multi=r["multi"],
+        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(5)],
+                  "names":["万位","千位","百位","十位","个位"]})
 
 qxcd=data.get("qxc",[])
 if len(qxcd)>5:
@@ -408,7 +414,9 @@ if len(qxcd)>5:
     add_rec("qxc",qxcd[0]["p"],qxcd[0]["d"],
         [{"nums":[r["basic"][i][0] for i in range(7)],"blues":[]}],
         [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"])
+        multi=r["multi"],
+        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(7)],
+                  "names":["第1位","第2位","第3位","第4位","第5位","第6位","第7位"]})
 
 saved_path = 'data/saved_recs.json'
 existing = []
