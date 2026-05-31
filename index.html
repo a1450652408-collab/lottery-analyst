@@ -16787,7 +16787,7 @@ function renderRecommend(type, data) {
     var _reBlue3 = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues.slice(0, 3) : [1,2,3];
     if (_reRed8.length >= 6) {
       _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
-      _reHtml += '<div class="rec-header">🏆 大复试推荐（8红+3蓝）<span class="copy-btn" style="float:right;font-size:11px;color:#7b1fa2;cursor:pointer" onclick="copyRec(this,'re')">📋复制</span></div>';
+      _reHtml += '<div class="rec-header">🏆 大复试推荐（8红+3蓝）</div>';
       _reHtml += '<div class="rec-balls">';
       _reRed8.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><div class="rec-balls" style="margin-top:4px">';
