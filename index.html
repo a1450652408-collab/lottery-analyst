@@ -15873,7 +15873,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div id="dantuoRecs"></div>
     </div>
     <div class="rec-section" id="enhancedSection" style="display:none">
-      <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>🎯 增强推荐（大复试+胆拖）</div>
+      <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>智能增强推荐（基于012路·质合·杀号·独胆）</div>
       <div id="enhancedRecs"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:10px">
@@ -16777,64 +16777,71 @@ function renderRecommend(type, data) {
   });
   var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
   // ★ 增强推荐：大复试 + 胆拖
+  
   var _reHtml = "";
-  var _rePickScores = {};
-  for (var _repsi = _reNumMin; _repsi <= _reNumMax; _repsi++) {
-    if (_reKillSet.has(_repsi)) continue;
-    var _reps = 0;
-    var _refr = _reFreq[_repsi] || 0;
-    var _rems = _reMiss[_repsi] || 100;
-    var _reem = rec.analysis && rec.analysis.emaScores ? (rec.analysis.emaScores[_repsi] || 0) : 0;
-    _reps += _refr * 2;
-    if (_rems >= 1 && _rems <= 6) _reps += 2;
-    _reps += Math.round(_reem * 15);
-    if (_reCleanHots.indexOf(_repsi) >= 0 && _reCleanHots.indexOf(_repsi) < Math.min(15, _reCleanHots.length)) _reps += 3;
-    for (var _relz = 0; _relz < Math.min(5, _reUseData.length); _relz++) {
-      if (getNums(_reUseData[_relz]).indexOf(_repsi) >= 0) { _reps += 2; break; }
-    }
-    if (cfg.rMax <= 35) {
-      if (cfg.type === "lotto" && _rePrimes.has(_repsi) && _reps > 0) _reps += 1;
-    } else {
-      if (_repsi % 2 === 1 && _reps > 0) _reps += 1;
-    }
-    _rePickScores[_repsi] = _reps;
-  }
-  var _reSortedPicks = Object.keys(_rePickScores).map(Number).sort(function(a,b){return _rePickScores[b]-_rePickScores[a]});
 
-  /* 大复试号码（乐透选前12红+前3蓝，快乐8选前20码） */
-  var _reRCount = cfg.type === "lotto" ? Math.min(12, _reSortedPicks.length) : Math.min(cfg.rC, _reSortedPicks.length);
-  var _reBigPicks = _reSortedPicks.slice(0, _reRCount);
-  if (_reBigPicks.length > 0) {
-    _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
-    _reHtml += '<div class="rec-header">📊 大复试（' + _reRCount + '码）</div><div class="rec-balls">';
-    _reBigPicks.forEach(function(n) {
-      _reHtml += '<span class="ball r" style="width:34px;height:34px;line-height:34px;font-size:13px">' + String(n).padStart(2,"0") + '</span>';
-    });
-    if (cfg.type === "lotto" && cfg.bC > 0 && rec.analysis && rec.analysis.hotBlues) {
-      _reHtml += '<span style="margin:0 4px;color:#fff;font-weight:bold">+</span>';
-      rec.analysis.hotBlues.slice(0, Math.min(3, cfg.bC * 2)).forEach(function(n) {
-        _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>';
-      });
+  /* ---- 大复试号码 ---- */
+  if (cfg.type === "lotto") {
+    /* 取前8红 + 前3蓝 */
+    var _reRed8 = _reSortedPicks.slice(0, 8);
+    var _reBlue3 = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues.slice(0, 3) : [1,2,3];
+    if (_reRed8.length >= 6) {
+      _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
+      _reHtml += '<div class="rec-header">🏆 大复试推荐（8红+3蓝）<span class="copy-btn" style="float:right;font-size:11px;color:#7b1fa2;cursor:pointer" onclick="copyRec(this,'re')">📋复制</span></div>';
+      _reHtml += '<div class="rec-balls">';
+      _reRed8.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div><div class="rec-balls" style="margin-top:4px">';
+      _reBlue3.forEach(function(n) { _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div>';
+      var _reZ012 = "红球012路均衡";  // 描述文字
+      _reHtml += '<div class="rec-reason" style="display:flex;justify-content:space-between;align-items:center">';
+      _reHtml += '<span>C(8,5)×3 = 168注 | 336元 | ' + _reZ012 + ' + 蓝球热度Top3</span>';
+      _reHtml += '</div></div>';
     }
-    _reHtml += '</div><div class="rec-reason">6策略融合评分TOP' + _reRCount + ' · 适用于复式投注</div></div>';
-  }
-
-  /* 增强胆拖（2胆~4胆） */
-  var _reEnPicks = _reSortedPicks.slice(0, cfg.rC);
-  var _reTuoPool = _reSortedPicks;
-  for (var _redc = 2; _redc <= 4; _redc++) {
-    var _redDan = _reEnPicks.slice(0, _redc);
-    var _redSet = new Set(_redDan);
-    var _redTuo = _reTuoPool.filter(function(n){return !_redSet.has(n);}).slice(0, cfg.rC + 6);
-    if (_redTuo.length > 0) {
-      _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:6px">';
-      _reHtml += '<div class="rec-header">🔗 ' + _redc + '胆拖（大复试胆拖）</div>';
-      _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:32px">胆</span><div class="dt-balls">';
-      _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
-      _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:32px">拖</span><div class="dt-balls">';
-      _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
-      _reHtml += '</div></div></div>';
+    /* 增强胆拖（2胆~4胆） */
+    for (var _redc = 2; _redc <= 4; _redc++) {
+      var _redDan = _reSortedPicks.slice(0, _redc);
+      var _redSet = new Set(_redDan);
+      var _redTuo = _reSortedPicks.filter(function(n){return !_redSet.has(n);}).slice(0, 14);
+      if (_redTuo.length > 0) {
+        _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:4px">';
+        _reHtml += '<div class="rec-header" style="font-size:12px">🔗 ' + _redc + '胆拖（大复试胆拖）</div>';
+        _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:28px;font-size:11px">胆</span><div class="dt-balls">';
+        _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:28px;font-size:11px">拖</span><div class="dt-balls">';
+        _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:11px;width:28px;height:28px;line-height:28px">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div></div></div>';
+      }
     }
+  } else if (cfg.type === "keno") {
+    /* 快乐8：多策略融合推荐 20码 + 2胆~9胆 */
+    var _reKeno20 = _reSortedPicks.slice(0, 20);
+    if (_reKeno20.length >= 20) {
+      _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
+      _reHtml += '<div class="rec-header">🏆 多策略融合推荐（6种算法加权评分）</div>';
+      _reHtml += '<div class="rec-balls" style="max-width:680px">';
+      _reKeno20.forEach(function(n) { _reHtml += '<span class="ball r" style="width:32px;height:32px;line-height:32px;font-size:12px">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div></div>';
+    }
+    /* 2胆~9胆 */
+    for (var _redc2 = 2; _redc2 <= 9; _redc2++) {
+      var _rdDan = _reKeno20.slice(0, _redc2);
+      var _rdSet = new Set(_rdDan);
+      var _rdTuo = _reKeno20.filter(function(n){return !_rdSet.has(n);});
+      if (_rdTuo.length > 0) {
+        _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:1px;margin-top:3px;padding:6px 8px">';
+        _reHtml += '<div class="rec-header" style="font-size:11px">🔗 ' + _redc2 + '胆拖</div>';
+        _reHtml += '<div style="display:flex;align-items:center;gap:4px;margin:2px 0;font-size:11px">';
+        _reHtml += '<span style="color:#7b1fa2;font-weight:bold;width:20px">胆</span>';
+        _rdDan.forEach(function(n){_reHtml += '<span style="display:inline-block;background:linear-gradient(135deg,#7b1fa2,#ce93d8);color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px;font-weight:bold">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div><div style="display:flex;align-items:center;gap:4px;font-size:11px">';
+        _reHtml += '<span style="color:#999;width:20px">拖</span>';
+        _rdTuo.forEach(function(n){_reHtml += '<span style="display:inline-block;border:1px solid rgba(123,31,162,0.3);color:#7b1fa2;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:10px">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div></div>';
+      }
+    }
+  } else if (cfg.type === "digit") {
+    /* 数字彩不展示增强推荐 */
   }
   var _reEs = document.getElementById("enhancedSection");
   var _reEr = document.getElementById("enhancedRecs");
