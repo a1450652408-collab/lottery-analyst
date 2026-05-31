@@ -145,6 +145,76 @@ def kl8_dantuo(vl, recent=None, rC=20):
         cards.append({"dan":dan,"tuo":tuo})
     return cards
 
+def select_kl8_9dan(recent, vl):
+    """35码池综合方法选9胆(选七复式)"""
+    import math
+    pool35 = list(vl[:35])
+    freq = {n:0 for n in pool35}
+    for d in recent[:30]:
+        for n in get_nums(d):
+            if n in freq: freq[n] += 1
+    prev = set(get_nums(recent[0])) if len(recent) > 1 else set()
+    # 动量
+    mom = {}
+    for n in pool35:
+        r5 = sum(1 for d in recent[:5] if n in get_nums(d))
+        seq = [1 if n in get_nums(d) else 0 for d in recent[:30]]
+        e = seq[0] if seq else 0
+        for v in seq[1:]: e = 0.5*v + 0.5*e
+        mom[n] = r5*3 + e*12 + freq.get(n,0)*0.5
+    # 重号/回补/热号注入
+    miss = {}
+    for n in pool35:
+        for i,d in enumerate(recent[:30]):
+            if n in get_nums(d): miss[n]=i; break
+        else: miss[n]=30
+    must = set()
+    for n in pool35:
+        if n in prev: must.add(n)
+        if 6 <= miss.get(n,100) <= 12: must.add(n)
+        if sum(1 for d in recent[:5] if n in get_nums(d)) >= 2: must.add(n)
+    sel = sorted(pool35, key=lambda n:-mom[n])[:9]
+    for n in must:
+        if n not in sel: sel[-1]=n; sel.sort(key=lambda n:-mom[n])
+    # 分区
+    for _ in range(5):
+        zc = {}
+        for n in sel: z=(n-1)//20; zc[z]=zc.get(z,0)+1
+        overload = [z for z,c in zc.items() if c>3]
+        if not overload: break
+        for oz in overload:
+            on = [n for n in sel if (n-1)//20==oz]
+            other = [n for n in pool35 if (n-1)//20!=oz and n not in sel]
+            other.sort(key=lambda n:-mom[n])
+            if other: sel.remove(min(on,key=lambda n:mom[n])); sel.append(other[0])
+    # 尾数
+    th = {}
+    for t in range(10): th[t] = sum(1 for d in recent[:10] for nn in get_nums(d) if nn%10==t)
+    for _ in range(3):
+        ti = set(n%10 for n in sel)
+        if len(ti) >= 5: break
+        ct = [t for t in range(10) if t not in ti]
+        if ct:
+            bt = max(ct, key=lambda t:th[t])
+            cands = [n for n in pool35 if n%10==bt and n not in sel]
+            cands.sort(key=lambda n:-mom[n])
+            if cands: sel[-1]=cands[0]; sel.sort(key=lambda n:-mom[n])
+    # 奇偶
+    oc = sum(1 for n in sel if n%2==1)
+    if oc > 5:
+        extra = [n for n in sel if n%2==1]; extra.sort(key=lambda n:mom[n])
+        for n in extra:
+            if oc <= 5: break
+            opp = [x for x in pool35 if x%2==0 and x not in sel]; opp.sort(key=lambda n:-mom[n])
+            if opp: sel.remove(n); sel.append(opp[0]); oc -= 1
+    if oc < 3:
+        extra = [n for n in sel if n%2==0]; extra.sort(key=lambda n:mom[n])
+        for n in extra:
+            if oc >= 3: break
+            opp = [x for x in pool35 if x%2==1 and x not in sel]; opp.sort(key=lambda n:-mom[n])
+            if opp: sel.remove(n); sel.append(opp[0]); oc += 1
+    return sorted(sel[:9])
+
 def recommend_lotto_blue(recent, bMax, bC):
     """蓝球多因素评分"""
     if bC<=0: return []
@@ -368,8 +438,10 @@ if len(kl8d)>50:
     dt=kl8_dantuo(vl, kl8d[:30])
     e20,evl=recommend_kl8_enhanced(kl8d[:30])
     edt=kl8_dantuo(evl, kl8d[:30])
+    # 35码池综合方法选9胆
+    d9=select_kl8_9dan(kl8d[:30], evl)
     add_rec("kl8",kl8d[0]["p"],kl8d[0]["d"],[{"nums":b20,"blues":[]}],dt,
-            enhanced={"nums":e20,"dantuo":edt})
+            enhanced={"nums":e20,"dantuo":edt,"d9dan":d9})
     print(f"kl8({kl8d[0]['p']}): 普通{len(b20)}码+{len(dt)}组胆拖 增强{len(e20)}码+{len(edt)}组胆拖")
 
 ssqd=data.get("ssq",[])
