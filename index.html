@@ -15913,6 +15913,16 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
           <div class="stat-label">回报率</div>
         </div>
       </div>
+      <div class="strategy-stats" style="margin-top:4px;padding-top:8px;border-top:1px dashed #e0e0e0">
+        <div class="stat-item">
+          <div class="stat-val" id="ksTodayProfit" style="color:#2e7d32">0</div>
+          <div class="stat-label">今日起守号净利润</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="ksTodayRate" style="color:#999">0%</div>
+          <div class="stat-label">今日起回报率</div>
+        </div>
+      </div>
       <div class="strategy-detail">
         <div class="detail-row"><span class="detail-icon">🎯</span> 中6/6=5次（每次+4,440元）&nbsp;|&nbsp;中5/6=10次（每次+530元）</div>
         <div class="detail-row"><span class="detail-icon">⚡</span> 10中4基本保本（-30元）&nbsp;|&nbsp;10中5小赚&nbsp;|&nbsp;10中6大赚</div>
@@ -17344,7 +17354,7 @@ function initKenoStrategy() {
         + '<td class="' + (cum >= 0 ? "profit-pos" : "profit-neg") + '">' + (cum >= 0 ? "+" : "") + cum + '</td></tr>';
     }
     tbody.innerHTML = rows;
-    // 动态更新顶部统计数据
+    // 回测统计数据（全量历史）
     var _ksProfitEl = document.getElementById("ksTotalProfit");
     var _ksPeriodEl = document.getElementById("ksPeriodCount");
     var _ksRateEl = document.getElementById("ksReturnRate");
@@ -17356,6 +17366,12 @@ function initKenoStrategy() {
       _ksRateEl.textContent = _ksRate + "%";
       _ksRateEl.style.color = cum >= 0 ? "#2e7d32" : "#c62828";
     }
+    // 今日起守号统计数据（从今天开始，往未来累计）
+    var _ksTodayProfitEl = document.getElementById("ksTodayProfit");
+    var _ksTodayRateEl = document.getElementById("ksTodayRate");
+    if (_ksTodayProfitEl) { _ksTodayProfitEl.textContent = "0"; _ksTodayProfitEl.style.color = "#999"; }
+    if (_ksTodayRateEl) { _ksTodayRateEl.textContent = "0%"; _ksTodayRateEl.style.color = "#999"; }
+  }
   }
 }
 
