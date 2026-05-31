@@ -16814,6 +16814,23 @@ function renderRecommend(type, data) {
       });
     }
     _reHtml += '</div><div class="rec-reason">频率×2 + EMA×15 + 热号候选 + 遗漏回补 + 质数/奇数加权</div></div>';
+
+    /* 增强胆拖（2胆~4胆） */
+    var _reTuoPool = cfg.rC < 20 ? _reSortedPicks : _reEnhancedPicks;
+    for (var _redc = 2; _redc <= 4; _redc++) {
+      var _redDan = _reEnhancedPicks.slice(0, _redc);
+      var _redSet = new Set(_redDan);
+      var _redTuo = _reTuoPool.filter(function(n){return !_redSet.has(n);}).slice(0, cfg.rC + 6);
+      if (_redTuo.length > 0) {
+        _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-left-width:2px;margin-top:6px">';
+        _reHtml += '<div class="rec-header">🔗 ' + _redc + '胆拖</div>';
+        _reHtml += '<div class="dt-row"><span class="dt-label" style="min-width:32px">胆</span><div class="dt-balls">';
+        _redDan.forEach(function(n){_reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8);font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div></div><div class="dt-row"><span class="dt-label" style="min-width:32px">拖</span><div class="dt-balls">';
+        _redTuo.forEach(function(n){_reHtml += '<span class="dt-ball tuo" style="background:rgba(123,31,162,0.15);color:#7b1fa2;font-size:12px;width:30px;height:30px;line-height:30px">'+String(n).padStart(2,"0")+'</span>';});
+        _reHtml += '</div></div></div>';
+      }
+    }
   }
   if (_reKills.length > 0 && _reCleanHots.length >= cfg.rC) {
     var _rePick = _reCleanHots.slice(0, cfg.rC);
