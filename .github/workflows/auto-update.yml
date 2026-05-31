@@ -1,9 +1,7 @@
 name: 每日更新开奖数据
 on:
-  # 北京时间 00:00 = UTC 16:00
   schedule:
     - cron: '0 16 * * *'
-  # 备用调度：每2小时检查一次（如果主调度漏了，这个也能兜底）
     - cron: '0 */2 * * *'
   workflow_dispatch:
   repository_dispatch:
@@ -26,13 +24,55 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Fetch data
         run: python3 scripts/fetch_data.py
+
       - name: Compute recommendations
         run: python3 scripts/gen_recommendations.py
-      - name: Commit and push
+
+      - name: Commit, push & chain-trigger next run
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # === 1. 提交数据变化 ===
+          DATA_CHANGED=false
           git add index.html data/saved_recs.json
-          if git diff --staged --quiet; then echo "No changes"; else git commit -m "data: auto-update $(date +%Y-%m-%d)"; git push; fi
+          if ! git diff --staged --quiet; then
+            DATA_CHANGED=true
+            git commit -m "data: auto-update $(date +%Y-%m-%d)"
+            git push
+            echo "✅ 数据已更新并推送"
+          else
+            echo "📭 数据无变化"
+          fi
+
+          # === 2. 自链式触发：push时间戳保活，维持工作流链 ===
+          # 读取最后推送时间
+          LAST_PUSH_FILE=.last-push
+          if [ -f "$LAST_PUSH_FILE" ]; then
+            LAST_TS=$(cat "$LAST_PUSH_FILE" | head -1)
+          else
+            LAST_TS=0
+          fi
+          NOW=$(date +%s)
+          HOURS_SINCE=$(( (NOW - LAST_TS) / 3600 ))
+
+          # 如果超过6小时没有push任何东西，就push时间戳来触发下一轮
+          if [ "$HOURS_SINCE" -ge 6 ]; then
+            echo "$NOW" > "$LAST_PUSH_FILE"
+            git add "$LAST_PUSH_FILE"
+            git commit -m "chore: keep-alive $(date +%Y-%m-%d_%H:%M)"
+            git push
+            echo "✅ 保活推送成功，工作流链已维持（上次推送 ${HOURS_SINCE}h 前）"
+          else
+            echo "🕐 距上次推送仅 ${HOURS_SINCE}h（<6h），跳过保活推送"
+            if [ "$DATA_CHANGED" = "false" ]; then
+              echo "⚠️  无数据变化且未到保活时间，工作流链暂停"
+              echo "   下次触发需等待：push / workflow_dispatch / schedule"
+            fi
+          fi
