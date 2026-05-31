@@ -16805,18 +16805,31 @@ function renderRecommend(type, data) {
   }
   var _reSortedPicks = Object.keys(_rePickScores2).map(Number).sort(function(a,b){return _rePickScores2[b]-_rePickScores2[a]});
 
-  /* ---- 渲染：乐透型 = 大复试(9红+3蓝) + 2-4胆拖 ---- */
+  /* ---- 渲染：乐透型 = SSQ(9红+3蓝) DLT(8红+3蓝) QLC(9红) + 2-4胆拖 ---- */
   if (cfg.type === "lotto") {
-    var _reRed9 = _reSortedPicks.slice(0, 9);
-    var _reBlue3 = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues.slice(0, 3) : [1,2,3];
-    if (_reRed9.length >= 6) {
+    var _reLotName = type;
+    var _reRedCnt = (_reLotName === "dlt") ? 8 : 9;
+    var _reShowRed = _reSortedPicks.slice(0, _reRedCnt);
+    var _reHasBlue = cfg.bMax > 0;
+    var _reShowBlue = _reHasBlue && rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues.slice(0, 3) : [];
+    var _reLabel = "", _reCalc = "";
+    if (_reLotName === "ssq") {
+      _reLabel = "9红+3蓝"; _reCalc = "C(9,6)×3 = 252注 | 504元";
+    } else if (_reLotName === "dlt") {
+      _reLabel = "8红+3蓝"; _reCalc = "C(8,5)×3 = 168注 | 336元";
+    } else {
+      _reLabel = "9码复试"; _reCalc = "C(9,7) = 36注 | 72元";
+    }
+    if (_reShowRed.length >= 6) {
       _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;border-width:3px;background:linear-gradient(135deg,rgba(123,31,162,0.08),transparent)">';
-      _reHtml += '<div class="rec-header">🏆 大复试推荐（9红+3蓝）</div><div class="rec-balls">';
-      _reRed9.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div><div class="rec-balls" style="margin-top:4px">';
-      _reBlue3.forEach(function(n) { _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '<div class="rec-header">🏆 大复试推荐（'+_reLabel+'）</div><div class="rec-balls">';
+      _reShowRed.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+      if (_reShowBlue.length > 0) {
+        _reHtml += '</div><div class="rec-balls" style="margin-top:4px">';
+        _reShowBlue.forEach(function(n) { _reHtml += '<span class="ball b">' + String(n).padStart(2,"0") + '</span>'; });
+      }
       _reHtml += '</div><div class="rec-reason" style="display:flex;justify-content:space-between;align-items:center">';
-      _reHtml += '<span>C(9,6)×3 = 252注 | 504元 | 红球012路均衡 + 蓝球热度Top3</span>';
+      _reHtml += '<span>'+_reCalc+' | 红球012路均衡' + (_reShowBlue.length > 0 ? ' + 蓝球热度Top3' : '') + '</span>';
       _reHtml += '</div></div>';
     }
     for (var _rdc = 2; _rdc <= 4; _rdc++) {
