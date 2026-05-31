@@ -16822,13 +16822,66 @@ function renderRecommend(type, data) {
     _knFusionTop20.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">杀号+10 | 遗漏+8 | 热+12/温+8/冷+4 | 分区+6 | 奇偶+5 | 尾数+5 | 频率×5 | 总分Top20</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
 
-    // --- 胆拖推荐：基于融合Top20 ---
-    var _knFusionRaw = _knFusionList.slice(0, 20).map(function(x) { return x.n; });
+    // --- 胆拖推荐：基于35码池+综合方法二次筛选 ---
+    // 取融合Top35作为候选池
+    var _krPool35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; });
+    // 动量评分：近5期×3 + EMA(30期)×12 + 频率×0.5
+    var _krMom = {};
+    _krPool35.forEach(function(n) {
+      var _rm5 = 0;
+      for (var _rmi = 0; _rmi < Math.min(5, _reUseData.length); _rmi++) {
+        if (getNums(_reUseData[_rmi]).indexOf(n) >= 0) _rm5++;
+      }
+      var _rme = 0, _rms = [];
+      for (var _rsi = 0; _rsi < Math.min(30, _reUseData.length); _rsi++) {
+        _rms.push(getNums(_reUseData[_rsi]).indexOf(n) >= 0 ? 1 : 0);
+      }
+      if (_rms.length > 0) { _rme = _rms[0]; for (var _rvi = 1; _rvi < _rms.length; _rvi++) _rme = 0.5 * _rms[_rvi] + 0.5 * _rme; }
+      _krMom[n] = _rm5 * 3 + _rme * 12 + (_reFreq[n] || 0) * 0.5;
+    });
+    // 强制注入：重号 + 回补号(遗漏≥8期) + 热号(近30期≥3次)
+    var _krRebound = [];
+    for (var _kri = 1; _kri <= 80; _kri++) {
+      if (_reKillSet[_kri]) continue;
+      if ((_reMiss[_kri] || 0) >= 8) _krRebound.push(_kri);
+    }
+    _krRebound.sort(function(a,b){return (_krMom[b]||0)-(_krMom[a]||0);});
+    // 综合排序：基础动量分 + 重号+15 + 回补+10 + 热号+5
+    var _krPrevSet = data.length > 1 ? new Set(getNums(data[1])) : new Set();
+    var _krCands = _krPool35.slice();
+    _krCands.forEach(function(n) {
+      if (_krPrevSet.has(n)) _krMom[n] += 15;
+      if (_krRebound.indexOf(n) >= 0) _krMom[n] += 10;
+      // 近30期出现≥3次加分
+      var _hc = 0;
+      for (var _hi = 0; _hi < Math.min(30, _reUseData.length); _hi++) {
+        if (getNums(_reUseData[_hi]).indexOf(n) >= 0) _hc++;
+      }
+      if (_hc >= 3) _krMom[n] += 5;
+    });
+    _krCands.sort(function(a,b){return _krMom[b]-_krMom[a];});
+    // 综合校正选出最终9胆：分区(每区≤3) + 尾数覆盖(≥5种) + 奇偶(3-5奇)
+    var _krFinal9 = [], _krZCnt = [0,0,0,0], _krTails = {}, _krOdds = 0;
+    var _krZoneOf = function(n) { return Math.floor((n-1)/20); };
+    _krCands.forEach(function(n) {
+      if (_krFinal9.length >= 9) return;
+      var z = _krZoneOf(n), t = n % 10;
+      if (_krZCnt[z] >= 3) return; // 每区最多3个
+      var _tu = Object.keys(_krTails).length;
+      if (_tu < 5 && _krTails[t] && _krCands.slice(_krCands.indexOf(n)+1).some(function(x){return !_krTails[x%10];})) return;
+      if (_krOdds + (n%2) > 5 && _krFinal9.length < 8) return; // 奇数不超过5
+      _krFinal9.push(n); _krZCnt[z]++; _krTails[t] = true; if (n%2) _krOdds++;
+    });
+    if (_krFinal9.length < 9) { // 补足
+      _krCands.forEach(function(n) { if (_krFinal9.length >= 9) return; if (_krFinal9.indexOf(n)<0) _krFinal9.push(n); });
+    }
+    _krFinal9.sort(function(a,b){return a-b;});
+    // 卡片渲染：2胆拖 ~ 9胆拖（风格不变）
     for (var _kndc = 2; _kndc <= 9; _kndc++) {
-      var _kndan = _knFusionRaw.slice(0, _kndc).sort(function(a,b){return a-b;});
-      var _kndanSet = {}; _kndan.forEach(function(n) { _kndanSet[n] = true; });
-      var _kntuo = _knFusionRaw.filter(function(n) { return !_kndanSet[n]; }).sort(function(a,b){return a-b;});
-      _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">' + _kndc + '胆拖（融合推荐）</div>';
+      var _kndan = _krFinal9.slice(0, _kndc);
+      var _kndanS = {}; _kndan.forEach(function(x) { _kndanS[x] = true; });
+      var _kntuo = _krPool35.filter(function(x) { return !_kndanS[x]; }).sort(function(a,b){return a-b;});
+      _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">' + _kndc + '胆拖（综合方案）</div>';
       _reHtml += '<div class="dt-row"><span class="dt-label">胆码</span><div class="dt-balls">';
       _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div></div>';
@@ -16837,7 +16890,7 @@ function renderRecommend(type, data) {
         _kntuo.forEach(function(n) { _reHtml += '<span class="dt-ball tuo">' + String(n).padStart(2,"0") + '</span>'; });
         _reHtml += '</div></div>';
       }
-      _reHtml += '<div class="rec-reason">' + _kndc + '个融合Top号作胆 | ' + _kntuo.length + '个作拖</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+      _reHtml += '<div class="rec-reason">' + _kndc + '胆 | 35码池综合方案 | 余' + _kntuo.length + '拖</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     }
   }
 
