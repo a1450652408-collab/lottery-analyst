@@ -16817,10 +16817,10 @@ function renderRecommend(type, data) {
     var _knFusionList = [];
     for (var _kni = 1; _kni <= _knTotal; _kni++) _knFusionList.push({ n: _kni, s: _knFusion[_kni] });
     _knFusionList.sort(function(a, b) { return b.s - a.s; });
-    var _knFusionTop20 = _knFusionList.slice(0, 20).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 多策略融合推荐（6种算法加权评分）</div><div class="rec-balls">';
-    _knFusionTop20.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
-    _reHtml += '</div><div class="rec-reason">杀号+10 | 遗漏+8 | 热+12/温+8/冷+4 | 分区+6 | 奇偶+5 | 尾数+5 | 频率×5 | 总分Top20</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    var _knFusionTop35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 多策略融合推荐（6种算法加权评分·Top35码池）</div><div class="rec-balls">';
+    _knFusionTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div><div class="rec-reason">杀号+10 | 遗漏+8 | 热+12/温+8/冷+4 | 分区+6 | 奇偶+5 | 尾数+5 | 频率×5 | 总分Top35</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
 
     // --- 胆拖推荐：基于35码池+综合方法二次筛选 ---
     // 取融合Top35作为候选池
