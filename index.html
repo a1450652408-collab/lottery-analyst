@@ -16689,6 +16689,111 @@ function renderRecommend(type, data) {
   var dtSection = document.getElementById("dantuoSection");
   var dadiSection = document.getElementById("digitDadiSection");
   
+  /* ===== 数字彩大底（定义提前，确保作用域正确） ===== */
+  function renderDigitDadi(type, data, cfg) {
+    var dadiSection = document.getElementById("digitDadiSection");
+    if (!dadiSection) return;
+    dadiSection.style.display = "block";
+    var period = Math.min(50, data.length - 1);
+    var recent = data.slice(1, period + 1);
+    var posCount = cfg.rC;
+    var numMin = 0, numMax = 9;
+    var posFreq = [];
+    for (var p = 0; p < posCount; p++) {
+      var f = {};
+      for (var n = numMin; n <= numMax; n++) f[n] = 0;
+      posFreq.push(f);
+    }
+    recent.forEach(function(d) {
+      var nums = getNums(d);
+      for (var p = 0; p < Math.min(posCount, nums.length); p++) posFreq[p][nums[p]]++;
+    });
+    var posMiss = [];
+    for (var p = 0; p < posCount; p++) {
+      var m = {};
+      for (var n = numMin; n <= numMax; n++) {
+        var found = false;
+        for (var i = 0; i < recent.length; i++) {
+          if (getNums(recent[i])[p] === n) { m[n] = i; found = true; break; }
+        }
+        if (!found) m[n] = period;
+      }
+      posMiss.push(m);
+    }
+    var posKeep = 5;
+    var posCandidates = [];
+    var totalCombos = 1;
+    for (var p = 0; p < posCount; p++) {
+      var scored = [];
+      for (var n = numMin; n <= numMax; n++) {
+        var s = (posFreq[p][n] / Math.max(1, period / 10)) * 10 + ((period - posMiss[p][n]) / period) * 8;
+        scored.push({ n: n, s: s });
+      }
+      scored.sort(function(a, b) { return b.s - a.s; });
+      var cand = scored.slice(0, posKeep).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+      posCandidates.push(cand);
+      totalCombos *= cand.length;
+    }
+    var infoEl = document.getElementById("digitDadiInfo");
+    if (infoEl) {
+      infoEl.innerHTML = '每位置候选' + posKeep + '个 × ' + posCount + '位 = <b>' + totalCombos + '</b> 注大底 | ';
+    }
+    var recsEl = document.getElementById("digitDadiRecs");
+    if (!recsEl) return;
+    if (totalCombos > 500) {
+      var txtHtml = '<div style="font-size:11px;color:#999;padding:4px">大底注数过多（' + totalCombos + '注），显示前500组</div>';
+      var chunkSize = Math.ceil(totalCombos / Math.min(500, totalCombos));
+      var allCombos = [];
+      (function gen(pos, prefix) {
+        if (pos >= posCount) { allCombos.push(prefix); return; }
+        posCandidates[pos].forEach(function(n) { gen(pos + 1, prefix + String(n)); });
+      })(0, "");
+      var chunked = [];
+      for (var ci = 0; ci < allCombos.length; ci += chunkSize) {
+        chunked.push(allCombos.slice(ci, ci + chunkSize));
+      }
+      txtHtml += '<div style="display:flex;flex-wrap:wrap;gap:3px;max-height:400px;overflow-y:auto;padding:4px">';
+      chunked.slice(0, 500).forEach(function(chunk) {
+        txtHtml += '<span style="display:inline-block;padding:2px 5px;background:#f5f5f5;border-radius:4px;font-family:monospace;font-size:11px">' + chunk.join(' ') + '</span>';
+      });
+      txtHtml += '</div>';
+      recsEl.innerHTML = txtHtml;
+    } else {
+      var html2 = '<div style="display:flex;flex-wrap:wrap;gap:3px;max-height:400px;overflow-y:auto;padding:4px">';
+      for (var i = 0; i < allCombos.length; i++) {
+        html2 += '<span style="display:inline-block;padding:2px 5px;background:#f5f5f5;border-radius:4px;font-family:monospace;font-size:11px">' + allCombos[i] + '</span>';
+      }
+      html2 += '</div>';
+      recsEl.innerHTML = html2;
+    }
+    window._digitDadiCache = window._digitDadiCache || {};
+    window._digitDadiCache[type] = { combos: allCombos, period: data[0].p, candidates: posCandidates };
+    var latestDraw = data[0];
+    var latestDrawStr = getNums(latestDraw).join("");
+    var dadiHit = allCombos.indexOf(latestDrawStr) !== -1;
+    var hitCount = 0, hitPeriods = [];
+    var checkCount = Math.min(data.length - 1, 30);
+    for (var bi = 1; bi <= checkCount; bi++) {
+      var testDraw = getNums(data[bi]).join("");
+      if (allCombos.indexOf(testDraw) !== -1) {
+        hitCount++;
+        if (hitPeriods.length < 5) hitPeriods.push(data[bi].p);
+      }
+    }
+    var dadiInfo = document.getElementById("digitDadiInfo");
+    if (dadiInfo) {
+      var orgText = dadiInfo.innerHTML;
+      var hitHtml = '<div style="margin-top:4px;padding:6px 8px;border-radius:6px;font-size:12px;' +
+        (dadiHit ? 'background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32' : 'background:#ffebee;border:1px solid #ffcdd2;color:#c62828') + '">';
+      hitHtml += '📌 最新' + data[0].p + '期开奖号 <b>' + latestDrawStr + '</b> ';
+      hitHtml += dadiHit ? '✅ <b>在大底中！</b>' : '❌ 未覆盖';
+      hitHtml += ' | 近' + checkCount + '期覆盖 <b>' + hitCount + '/' + checkCount + '</b>（' + (checkCount>0?(hitCount/checkCount*100).toFixed(1):'0') + '%）';
+      if (hitPeriods.length > 0) hitHtml += ' | 命中期：' + hitPeriods.join('、');
+      hitHtml += '</div>';
+      dadiInfo.innerHTML = orgText + hitHtml;
+    }
+  }
+  
   /* 数字彩：隐藏胆拖，显示大底 */
   if (cfg.type === "digit") {
     if (dtSection) dtSection.style.display = "none";
@@ -17273,123 +17378,6 @@ function renderRecommend(type, data) {
     else { _reEs.style.display = "none"; }
   }
 
-  /* ===== 数字彩大底 ===== */
-  function renderDigitDadi(type, data, cfg) {
-    var dadiSection = document.getElementById("digitDadiSection");
-    if (!dadiSection) return;
-    dadiSection.style.display = "block";
-
-    var period = Math.min(50, data.length - 1);
-    var recent = data.slice(1, period + 1);  // 排除最新开奖号
-    var posCount = cfg.rC;
-    var numMin = 0, numMax = 9;
-
-    var posFreq = [];
-    for (var p = 0; p < posCount; p++) {
-      var f = {};
-      for (var n = numMin; n <= numMax; n++) f[n] = 0;
-      posFreq.push(f);
-    }
-    recent.forEach(function(d) {
-      var nums = getNums(d);
-      for (var p = 0; p < Math.min(posCount, nums.length); p++) posFreq[p][nums[p]]++;
-    });
-
-    var posMiss = [];
-    for (var p = 0; p < posCount; p++) {
-      var m = {};
-      for (var n = numMin; n <= numMax; n++) {
-        var found = false;
-        for (var i = 0; i < recent.length; i++) {
-          if (getNums(recent[i])[p] === n) { m[n] = i; found = true; break; }
-        }
-        if (!found) m[n] = period;
-      }
-      posMiss.push(m);
-    }
-
-    var posKeep = type === "qxc" ? 3 : type === "pl5" ? 7 : 7;
-    var posCandidates = [];
-    var totalCombos = 1;
-
-    for (var p = 0; p < posCount; p++) {
-      var scored = [];
-      for (var n = numMin; n <= numMax; n++) {
-        scored.push({ n: n, s: posFreq[p][n] * 1.5 + posMiss[p][n] * 1.0 });
-      }
-      scored.sort(function(a, b) { return b.s - a.s; });
-      var cand = scored.slice(0, posKeep).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
-      posCandidates.push(cand);
-      totalCombos *= cand.length;
-    }
-
-    var infoEl = document.getElementById("digitDadiInfo");
-    if (infoEl) {
-      infoEl.innerHTML = '每位置候选' + posKeep + '个 × ' + posCount + '位 = <b>' + totalCombos + '</b> 注大底 | ';
-      for (var p = 0; p < posCount; p++) {
-        infoEl.innerHTML += '位' + (p+1) + ':[' + posCandidates[p].join('') + '] ';
-      }
-    }
-
-    var recsEl = document.getElementById("digitDadiRecs");
-    if (!recsEl) return;
-
-    var allCombos = [];
-    (function gen(pos, prefix) {
-      if (pos >= posCount) { allCombos.push(prefix); return; }
-      posCandidates[pos].forEach(function(n) { gen(pos + 1, prefix + String(n)); });
-    })(0, "");
-
-    // 全部显示（超过500注用紧凑文字，否则用标签）
-    if (allCombos.length > 500) {
-      var chunkSize = posCount <= 5 ? 10 : 5;
-      var txtHtml = '<div style="max-height:400px;overflow-y:auto;font-size:11px;font-family:monospace;line-height:1.6;padding:4px;background:#fafafa;border-radius:6px">';
-      for (var ci = 0; ci < allCombos.length; ci += chunkSize) {
-        txtHtml += allCombos.slice(ci, ci + chunkSize).join("  ") + '\n';
-      }
-      txtHtml += '</div>';
-      recsEl.innerHTML = txtHtml;
-    } else {
-      var html2 = '<div style="display:flex;flex-wrap:wrap;gap:3px;max-height:400px;overflow-y:auto;padding:4px">';
-      for (var i = 0; i < allCombos.length; i++) {
-        html2 += '<span style="display:inline-block;padding:2px 5px;background:#f5f5f5;border-radius:4px;font-family:monospace;font-size:11px">' + allCombos[i] + '</span>';
-      }
-      html2 += '</div>';
-      recsEl.innerHTML = html2;
-    }
-
-    window._digitDadiCache = window._digitDadiCache || {};
-    window._digitDadiCache[type] = { combos: allCombos, period: data[0].p, candidates: posCandidates };
-
-    // ===== 大底命中追踪：检查最新开奖是否在大底中 =====
-    var latestDraw = data[0];
-    var latestDrawStr = getNums(latestDraw).join("");
-    var dadiHit = allCombos.indexOf(latestDrawStr) !== -1;
-
-    // 回测最近30期命中率
-    var hitCount = 0, hitPeriods = [];
-    var checkCount = Math.min(data.length - 1, 30);
-    for (var bi = 1; bi <= checkCount; bi++) {
-      var testDraw = getNums(data[bi]).join("");
-      if (allCombos.indexOf(testDraw) !== -1) {
-        hitCount++;
-        if (hitPeriods.length < 5) hitPeriods.push(data[bi].p);
-      }
-    }
-
-    var dadiInfo = document.getElementById("digitDadiInfo");
-    if (dadiInfo) {
-      var orgText = dadiInfo.innerHTML;
-      var hitHtml = '<div style="margin-top:4px;padding:6px 8px;border-radius:6px;font-size:12px;' +
-        (dadiHit ? 'background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32' : 'background:#ffebee;border:1px solid #ffcdd2;color:#c62828') + '">';
-      hitHtml += '📌 最新' + data[0].p + '期开奖号 <b>' + latestDrawStr + '</b> ';
-      hitHtml += dadiHit ? '✅ <b>在大底中！</b>' : '❌ 未覆盖';
-      hitHtml += ' | 近' + checkCount + '期覆盖 <b>' + hitCount + '/' + checkCount + '</b>（' + (checkCount>0?(hitCount/checkCount*100).toFixed(1):'0') + '%）';
-      if (hitPeriods.length > 0) hitHtml += ' | 命中期：' + hitPeriods.join('、');
-      hitHtml += '</div>';
-      dadiInfo.innerHTML = orgText + hitHtml;
-    }
-  }
 
   /* ===== 命中率 ===== */
   // 用用户实际看到的推荐 rec 来保存和对比命中率
