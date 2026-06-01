@@ -17167,49 +17167,98 @@ function renderRecommend(type, data) {
         _reHtml+='<div class="rec-reason">杀1号+EMA评分(近期热度+中期频率+动量+位置均匀度) | V2优化版</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div><div style="font-size:9px;color:#999;margin-top:2px;padding:2px 4px;background:#fff5f5;border-radius:4px">📊 3年回测1120期: 5码全中9次(×10万) | 相比旧版(6次)提升50%</div></div>';
       }
     }
-    /* 二同推荐 */
-    var etEng = _plBuild("et");
-    if (etEng.n >= 10) {
-      var oddR2=_plDynRange("et","odd"), bigR2=_plDynRange("et","big"), luR2=_plDynRange("et","lu0");
-      var primeR2=_plDynRange("et","prime"), sumR2=_plDynRange("et","sum"), spanR2=_plDynRange("et","span");
-      var kk2=_plKill(), dm2=_plDanma(etEng.mf);
-      var cand2=[]; for(var i=0;i<=9;i++){if(!kk2[i])cand2.push(i);}
-      if(cand2.indexOf(dm2[0])<0)cand2.push(dm2[0]); if(cand2.indexOf(dm2[1])<0)cand2.push(dm2[1]);
-      var scored2=[], all4=_combN(cand2,4);
-      var fq2={}; for(var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq2[nd[k]]=(fq2[nd[k]]||0)+1;}
-      for(var m=0;m<all4.length;m++){
-        var c=all4[m]; if(c.indexOf(dm2[0])<0) continue;
-        for(var pr=0;pr<4;pr++){
-          var rp=c[pr]; var n5=c.concat([rp]);
-          var o=n5.filter(function(x){return x%2===1;}).length;
-          var b=n5.filter(function(x){return x>=5;}).length;
-          var l=n5.filter(function(x){return x%3===0;}).length;
-          var p=n5.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
-          var su=n5.reduce(function(a,b){return a+b;},0);
-          var sp=Math.max.apply(null,n5)-Math.min.apply(null,n5);
-          if(oddR2&&oddR2.indexOf(o)<0)continue; if(bigR2&&bigR2.indexOf(b)<0)continue;
-          if(luR2&&luR2.indexOf(l)<0)continue; if(primeR2&&primeR2.indexOf(p)<0)continue;
-          if(sumR2&&sumR2.indexOf(su)<0)continue; if(spanR2&&spanR2.indexOf(sp)<0)continue;
-          var heat=(fq2[c[0]]||0)+(fq2[c[1]]||0)+(fq2[c[2]]||0)+(fq2[c[3]]||0);
-          var spec=((etEng.mf[c[0]]||0)+(etEng.mf[c[1]]||0)+(etEng.mf[c[2]]||0)+(etEng.mf[c[3]]||0))*1.5;
-          var follow=0;
-          for(var pa=0;pa<4;pa++)for(var pb=pa+1;pb<4;pb++){var pv=c[pa]<c[pb]?c[pa]+','+c[pb]:c[pb]+','+c[pa];follow+=(etEng.pf[pv]||0)/Math.max(etEng.n,1);}
-          var rpBonus=(etEng.rf[rp]||0)*2;
-          scored2.push({combo:c,repeat:rp,score:heat+spec+follow*20+rpBonus+_plPairScore(c)*3});
+    /* 二同推荐 (V2: 杀2个+EMA评分) */
+    function _plBuildEtStats() {
+      var mf2={}, pf2={}, rf2={}, etN2=0;
+      var ema2={}, mom52={}, prev2={};
+      for(var i=0;i<=9;i++){ema2[i]=0;mom52[i]=0;prev2[i]=0;}
+      for(var j=0;j<_reUseData.length;j++){
+        var nd=getNums(_reUseData[j]); var ct2={};
+        for(var k=0;k<nd.length;k++) ct2[nd[k]]=(ct2[nd[k]]||0)+1;
+        var hasDupe=false; for(var k in ct2){if(ct2[k]===2){hasDupe=true;break;}}
+        if(!hasDupe) continue;
+        etN2++; var s2={}; for(var k=0;k<nd.length;k++) s2[nd[k]]=true;
+        for(var k in s2){var ki=k|0; mf2[ki]=(mf2[ki]||0)+1;}
+        var keys2=Object.keys(s2).map(function(x){return x|0;});
+        for(var a=0;a<keys2.length;a++) for(var b=a+1;b<keys2.length;b++){
+          var pk=keys2[a]<keys2[b]?keys2[a]+','+keys2[b]:keys2[b]+','+keys2[a];
+          pf2[pk]=(pf2[pk]||0)+1;
+        }
+        for(var k in ct2){if(ct2[k]===2) rf2[k]=(rf2[k]||0)+1;}
+        for(var k=0;k<=9;k++){
+          var inSet=s2[k]?1:0;
+          ema2[k]=ema2[k]*0.7+inSet*0.3;
+          if(j<5&&inSet) mom52[k]=(mom52[k]||0)+1;
+          else if(j>=5&&j<10&&inSet) prev2[k]=(prev2[k]||0)+1;
         }
       }
-      scored2.sort(function(a,b){return b.score-a.score;});
-      var seen2={}, top5et=[];
-      for(var m=0;m<scored2.length;m++){var k=scored2[m].combo.slice().sort().join(',');if(!seen2[k]){seen2[k]=true;top5et.push(scored2[m]);if(top5et.length>=5)break;}}
-      if(top5et.length>0){
-        _reHtml+='<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（' + top5et.length + '组×60注=' + (top5et.length*60) + '注/' + (top5et.length*120) + '元）</div>';
-        for(var g=0;g<top5et.length;g++){
-          var gc=top5et[g].combo.slice().sort(function(a,b){return a-b;});
-          _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
-          gc.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
-          _reHtml+='<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ce93d8,#ab47bc);color:#fff">重'+String(top5et[g].repeat).padStart(2,'0')+'</span></div></div>';
+      return {mf:mf2,pf:pf2,rf:rf2,n:etN2,ema:ema2,mom5:mom52,prev10:prev2};
+    }
+    function _plKillEt(killN) {
+      if(killN===undefined) killN=2;
+      var ks2={};
+      var last5=getNums(_reUseData[0]);
+      ks2[(last5[4]*2+3)%10]=true;
+      if(killN<=1) return ks2;
+      var n2=_reUseData.length;
+      var r52={}; for(var i=0;i<=9;i++) r52[i]=0;
+      for(var j=0;j<Math.min(5,n2);j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++){var ik=nd[k]|0;if(ik>=0&&ik<=9)r52[ik]=(r52[ik]||0)+1;}}
+      var miss2={}; for(var i=0;i<=9;i++) miss2[i]=n2;
+      for(var j=0;j<n2;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++){var ik=nd[k]|0;if(ik>=0&&ik<=9&&miss2[ik]>j)miss2[ik]=j;}}
+      var killCands2=[];
+      for(var i=0;i<=9;i++){if(ks2[i]) continue;var s=r52[i]*2+miss2[i]*0.5;killCands2.push({n:i,s:s});}
+      killCands2.sort(function(a,b){return a.s-b.s;});
+      var needed2=killN-Object.keys(ks2).length;
+      for(var i=0;i<Math.min(needed2,killCands2.length);i++) ks2[killCands2[i].n]=true;
+      return ks2;
+    }
+    var etStats=_plBuildEtStats();
+    if (etStats && etStats.n >= 10) {
+      var etKk=_plKillEt(2);
+      var etCand=[]; for(var i=0;i<=9;i++){if(!etKk[i])etCand.push(i);}
+      if(etCand.length<7){for(var i=0;i<=9;i++){if(etCand.indexOf(i)<0)etCand.push(i);if(etCand.length>=7)break;}}
+      // EMA评分
+      var etScores2={};
+      for(var d=0;d<=9;d++){
+        var freq2=(etStats.mf[d]||0)/Math.max(etStats.n,1)*2.0;
+        var emaVal=(etStats.ema[d]||0)*3.0;
+        var momVal=((etStats.mom5[d]||0)-(etStats.prev10[d]||0))/Math.max(etStats.prev10[d]||0,1)*1.5;
+        momVal=Math.max(-2,Math.min(2,momVal));
+        etScores2[d]=freq2+emaVal+momVal;
+      }
+      var etRanked=[]; for(var i=0;i<=9;i++) etRanked.push({n:i,s:etScores2[i]||0});
+      etRanked.sort(function(a,b){return b.s-a.s;});
+      var etDm2=[etRanked[0].n,etRanked[1].n];
+      if(etCand.indexOf(etDm2[0])<0)etCand.push(etDm2[0]);
+      if(etCand.indexOf(etDm2[1])<0)etCand.push(etDm2[1]);
+      var etAll4=_combN(etCand,4);
+      var etScored2=[];
+      for(var m=0;m<etAll4.length;m++){
+        var c=etAll4[m]; if(c.indexOf(etDm2[0])<0) continue;
+        for(var pr=0;pr<4;pr++){
+          var rp=c[pr];
+          var cs2=0; for(var k=0;k<c.length;k++)cs2+=(etScores2[c[k]]||0);
+          var follow2=0;
+          for(var pa=0;pa<4;pa++)for(var pb=pa+1;pb<4;pb++){var pv=c[pa]<c[pb]?c[pa]+','+c[pb]:c[pb]+','+c[pa];follow2+=(etStats.pf[pv]||0)/Math.max(etStats.n,1);}
+          var rpBonus2=(etStats.rf[rp]||0)*2;
+          var ps2=_plPairScore(c)*2;
+          etScored2.push({combo:c,repeat:rp,score:cs2+follow2*15+rpBonus2+ps2});
         }
-        _reHtml+='<div class="rec-reason">杀号+定胆+奇偶/大小/012路/质合/和值/跨度+跟随 | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div><div style="font-size:9px;color:#999;margin-top:2px;padding:2px 4px;background:#f3e5f5;border-radius:4px">📊 3年回测1150期: 5码全中5次(×10万) | 二同需开奖号有重复数字,中4码及以下不算中奖</div></div>';
+      }
+      if(etScored2.length>0){
+        etScored2.sort(function(a,b){return b.score-a.score;});
+        var seen2={}, top5et=[];
+        for(var m=0;m<etScored2.length;m++){var k=etScored2[m].combo.slice().sort().join(',');if(!seen2[k]){seen2[k]=true;top5et.push(etScored2[m]);if(top5et.length>=5)break;}}
+        if(top5et.length>0){
+          _reHtml+='<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（' + top5et.length + '组×60注=' + (top5et.length*60) + '注/' + (top5et.length*120) + '元）</div>';
+          for(var g=0;g<top5et.length;g++){
+            var gc=top5et[g].combo.slice().sort(function(a,b){return a-b;});
+            _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
+            gc.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
+            _reHtml+='<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ce93d8,#ab47bc);color:#fff">重'+String(top5et[g].repeat).padStart(2,'0')+'</span></div></div>';
+          }
+          _reHtml+='<div class="rec-reason">杀2号+EMA评分(频率+EMA热度+动量+跟随+重号) | V2优化版</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div><div style="font-size:9px;color:#999;margin-top:2px;padding:2px 4px;background:#f3e5f5;border-radius:4px">📊 3年回测1120期: 5码全中5次(×10万) | 二同需开奖号有重复数字,中4码及以下不算中奖</div></div>';
+        }
       }
     }
   }

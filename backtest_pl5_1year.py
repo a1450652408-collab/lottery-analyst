@@ -214,45 +214,97 @@ for i in range(WINDOW, len(pl5_data)):
                 best_wb[mh]=best_wb.get(mh,0)+1
                 wb_all.append((test["p"],test["d"],test_nums,groups,hits,mh))
 
-    # 二同
-    et_eng=pl_build(train,"et")
-    if et_eng["n"]>=10:
-        odd_r2=pl_dyn_range(train,"et","odd"); big_r2=pl_dyn_range(train,"et","big")
-        lu_r2=pl_dyn_range(train,"et","lu0"); prime_r2=pl_dyn_range(train,"et","prime")
-        sum_r2=pl_dyn_range(train,"et","sum"); span_r2=pl_dyn_range(train,"et","span")
-        kk2=pl_kill(train); dm2=pl_danma(train,et_eng["mf"])
+    # 二同 (V2: 杀2个+W80+EMA评分)
+    def build_et_stats(data):
+        n2=len(data)
+        if n2<10: return None
+        mf2={i:0 for i in range(10)}; pf2={}; rf2={}; et_n2=0
+        ema_hot2={i:0.0 for i in range(10)}
+        recent52={i:0 for i in range(10)}
+        prev52={i:0 for i in range(10)}
+        for jj in range(n2):
+            nd2=get_nums(data[jj]); ct2={}
+            for kk in nd2: ct2[kk]=ct2.get(kk,0)+1
+            if not any(v2==2 for v2 in ct2.values()): continue
+            et_n2+=1; s2=set(nd2)
+            for kk in s2: mf2[kk]=mf2.get(kk,0)+1
+            keys2=list(s2)
+            for aa in range(len(keys2)):
+                for bb in range(aa+1,len(keys2)):
+                    pkk=f"{min(keys2[aa],keys2[bb])},{max(keys2[aa],keys2[bb])}"
+                    pf2[pkk]=pf2.get(pkk,0)+1
+            for kk,vv in ct2.items():
+                if vv==2: rf2[kk]=rf2.get(kk,0)+1
+            for kk in range(10):
+                if kk in s2: ema_hot2[kk]=ema_hot2.get(kk,0)*0.7+1.0*0.3
+                else: ema_hot2[kk]=ema_hot2.get(kk,0)*0.7+0.0*0.3
+                if jj<5 and kk in s2: recent52[kk]+=1
+                elif 5<=jj<10 and kk in s2: prev52[kk]+=1
+        return {"mf":mf2,"pf":pf2,"rf":rf2,"n":et_n2,"ema":ema_hot2,"mom5":recent52,"mom10_prev":prev52}
+    
+    def pl_kill_et(data, kill_n2=2):
+        ks2=set()
+        l5=get_nums(data[0])
+        ks2.add(int(l5[4]*2+3)%10)
+        if kill_n2<=1: return ks2
+        n2=len(data)
+        r52={i:0 for i in range(10)}
+        for jj in range(min(5,n2)):
+            for kk in get_nums(data[jj]): 
+                ik2=int(kk)
+                if 0<=ik2<=9: r52[ik2]=r52.get(ik2,0)+1
+        miss2={i:n2 for i in range(10)}
+        for jj in range(n2):
+            for kk in get_nums(data[jj]):
+                ik2=int(kk)
+                if 0<=ik2<=9 and miss2[ik2]>jj: miss2[ik2]=jj
+        kill_cands2=[]
+        for ii in range(10):
+            if ii in ks2: continue
+            s2=r52[ii]*2+miss2[ii]*0.5
+            kill_cands2.append((ii,s2))
+        kill_cands2.sort(key=lambda x2:x2[1])
+        needed2=kill_n2-len(ks2)
+        for idx2 in range(min(needed2, len(kill_cands2))):
+            ks2.add(kill_cands2[idx2][0])
+        return ks2
+    
+    et_stats=build_et_stats(train)
+    if et_stats and et_stats["n"]>=10:
+        kk2=pl_kill_et(train,2)
         cand2=[i for i in range(10) if i not in kk2]
+        if len(cand2)<7:
+            for jj in range(10):
+                if jj not in cand2: cand2.append(jj)
+                if len(cand2)>=7: break
+        digit_scores2={}
+        for dd in range(10):
+            freq2=et_stats["mf"].get(dd,0)/max(et_stats["n"],1)*2.0
+            ema2=et_stats["ema"].get(dd,0)*3.0
+            mom2=(et_stats["mom5"].get(dd,0)-et_stats["mom10_prev"].get(dd,0))/max(et_stats["mom10_prev"].get(dd,0),1)*1.5
+            mom2=max(-2,min(2,mom2))
+            digit_scores2[dd]=freq2+ema2+mom2
+        ranked2=sorted(digit_scores2.items(), key=lambda x3:-x3[1])
+        dm2=[ranked2[0][0], ranked2[1][0]]
         if dm2[0] not in cand2: cand2.append(dm2[0])
         if dm2[1] not in cand2: cand2.append(dm2[1])
         all4=comb_n(cand2,4)
-        fq2={}
-        for item in train:
-            for k in get_nums(item): fq2[k]=fq2.get(k,0)+1
         scored2=[]
         for c in all4:
             if dm2[0] not in c: continue
             for pr in range(4):
-                rp=c[pr]; n5=c+[rp]
-                o=sum(1 for x in n5 if x%2==1); b=sum(1 for x in n5 if x>=5)
-                l=sum(1 for x in n5 if x%3==0); p=sum(1 for x in n5 if x in (2,3,5,7))
-                su=sum(n5); sp=max(n5)-min(n5)
-                if odd_r2 and o not in odd_r2: continue
-                if big_r2 and b not in big_r2: continue
-                if lu_r2 and l not in lu_r2: continue
-                if prime_r2 and p not in prime_r2: continue
-                if sum_r2 and su not in sum_r2: continue
-                if span_r2 and sp not in span_r2: continue
-                heat=sum(fq2.get(k,0) for k in c)
-                spec=sum(et_eng["mf"].get(k,0)*1.5 for k in c)
-                follow=0
+                rp=c[pr]
+                cs2=sum(digit_scores2.get(kk,0) for kk in c)
+                follow2=0
                 for pa in range(4):
                     for pb in range(pa+1,4):
                         pv=f"{min(c[pa],c[pb])},{max(c[pa],c[pb])}"
-                        follow+=et_eng["pf"].get(pv,0)/max(et_eng["n"],1)
-                rp_bonus=et_eng["rf"].get(rp,0)*2
-                scored2.append({"combo":c,"repeat":rp,"score":heat+spec+follow*20+rp_bonus+pl_pair_score(c)*3})
+                        follow2+=et_stats["pf"].get(pv,0)/max(et_stats["n"],1)
+                rp_bonus2=et_stats["rf"].get(rp,0)*2
+                ps2=pl_pair_score(c)*2
+                scored2.append({"combo":c,"repeat":rp,"score":cs2+follow2*15+rp_bonus2+ps2})
         if scored2:
-            scored2.sort(key=lambda x:-x["score"])
+            scored2.sort(key=lambda x4:-x4["score"])
             seen2=set(); groups2=[]
             for s in scored2:
                 k=str(sorted(s["combo"]))
@@ -262,16 +314,14 @@ for i in range(WINDOW, len(pl5_data)):
             if groups2:
                 et_trials+=1
                 hits2=[]
-                # 验证开奖号是否是真正的二同走势图（有重复数字）
                 test_ct={}
                 for k in test_nums: test_ct[k]=test_ct.get(k,0)+1
-                draw_is_et = any(v==2 for v in test_ct.values())
-                sorted_draw = sorted(test_nums)
+                draw_is_et=any(v==2 for v in test_ct.values())
+                sorted_draw=sorted(test_nums)
                 for g,rp in groups2:
-                    sorted_combo5 = sorted(sorted(g)+[rp])
-                    hc = sum(1 for i in range(5) if sorted_combo5[i]==sorted_draw[i])
-                    if hc==5 and not draw_is_et:
-                        hc=4
+                    sorted_combo5=sorted(sorted(g)+[rp])
+                    hc=sum(1 for i in range(5) if sorted_combo5[i]==sorted_draw[i])
+                    if hc==5 and not draw_is_et: hc=4
                     hits2.append(hc)
                 mh2=max(hits2)
                 best_et[mh2]=best_et.get(mh2,0)+1
