@@ -9,6 +9,22 @@
 <title>福彩数据分析师 · v26</title>
 <!-- Built: 2026-06-01 00:19:26 | v1780244366 | Self-contained, zero external dependencies -->
 <script>
+/* 缓存强制刷新 */
+(function(){
+  var V = '20260601v3';
+  try {
+    var lv = localStorage.getItem('_app_v');
+    if (lv && lv !== V) {
+      localStorage.clear();
+      localStorage.setItem('_app_v', V);
+      document.cookie.split(";").forEach(function(c){ document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+      location.reload(true);
+    } else if (!lv) {
+      localStorage.setItem('_app_v', V);
+      location.reload(true);
+    }
+  } catch(e){}
+})();
 window.onerror=function(msg,url,line){document.body.insertAdjacentHTML('afterbegin','<div style="background:#fff3cd;padding:12px 16px;font:14px monospace;color:#856404;border-bottom:2px solid #ffc107;z-index:99999">JS Error: '+msg+'<br>File: '+url+' Line: '+line+'</div>')};
 </script>
 <!-- MiniChart: 极简 Canvas 图表引擎（零外部依赖，支持折线/柱状） -->
