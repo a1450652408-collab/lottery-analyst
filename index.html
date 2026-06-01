@@ -16710,6 +16710,19 @@ function renderRecommend(type, data) {
     var _rns = getNums(_reUseData[_rdi]);
     _rns.forEach(function(_rn) { if (_rn >= _reNumMin && _rn <= _reNumMax) { _reFreq[_rn]++; _reLastSeen[_rn] = _rdi; } });
   }
+  /* EMA 指数移动平均 */
+  var _reEma = {};
+  for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
+    var _reSeq = [];
+    for (var _esi = 0; _esi < _reUseData.length; _esi++) {
+      _reSeq.push(getNums(_reUseData[_esi]).indexOf(_rei) >= 0 ? 1 : 0);
+    }
+    var _reEmaVal = _reSeq[0] || 0;
+    for (var _esi2 = 1; _esi2 < _reSeq.length; _esi2++) {
+      _reEmaVal = 0.5 * _reSeq[_esi2] + 0.5 * _reEmaVal;
+    }
+    _reEma[_rei] = _reEmaVal;
+  }
   var _reMiss = {}, _reKills = [];
   for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) _reMiss[_rei] = _reUseData.length - 1 - _reLastSeen[_rei];
   for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
