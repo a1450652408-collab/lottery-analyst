@@ -10432,6 +10432,11 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .rec-card .rec-header{font-size:11px;color:var(--sub);margin-bottom:4px}
 .rec-card .rec-balls{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
 .rec-card .rec-reason{font-size:10px;color:var(--sub);line-height:1.5}
+.rec-card .rec-row{display:flex;align-items:center;gap:4px;margin:2px 0;font-size:11px;flex-wrap:wrap}
+.rec-card .rec-row .dt-balls{display:flex;flex-wrap:wrap;gap:3px}
+.rec-card .rec-row .dt-label{font-weight:600;min-width:26px;color:#666;font-size:10px}
+.rec-row-copy{font-size:9px;cursor:pointer;color:#999;padding:1px 3px;border:1px solid #ddd;border-radius:3px;user-select:none}
+.rec-row-copy:hover{background:#eee}
 .hit-rate-box{margin-top:12px;background:linear-gradient(135deg,#f0fdf4,#fff);border:1px solid rgba(76,175,80,.15);border-radius:12px;padding:12px;text-align:left}
 .hit-rate-label{font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:6px;text-align:center}
 .hit-rate-label span{font-weight:400;color:#666;font-size:11px;display:block;margin-top:2px}
@@ -11658,9 +11663,9 @@ function renderRecommend(type, data) {
         for (var _ci = 0; _ci < 10; _ci++) _c10 = Math.round(_c10 * (_kndan.length - _ci) / (_ci + 1));
       }
       var _c10Str = _kndan.length >= 10 ? _c10 + '注' + (_c10*2) + '元' : '选十需≥10胆';
-      _reHtml += '<div class="rec-row"><span class="dt-label" style="font-size:10px;width:30px">' + _kndc + '胆</span><div class="dt-balls">';
+      _reHtml += '<div class="rec-row"><span class="dt-label">' + _kndc + '胆</span><div class="dt-balls">';
       _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div><span style="font-size:8px;color:#999;display:inline-block;vertical-align:middle">' + _c10Str + '</span></div>';
+      _reHtml += '</div><span style="font-size:8px;color:#999">' + _c10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
@@ -12724,6 +12729,74 @@ if (document.readyState === "loading") {
 }
 
 })();
+
+/* ===== 复制函数 ===== */
+function _copyNums(el) {
+  var card = el.closest('.rec-card') || el.closest('.dantuo-card');
+  if (!card) return;
+  var parts = [];
+  var dtRows = card.querySelectorAll('.dt-row, .rec-row');
+  if (dtRows.length > 0) {
+    dtRows.forEach(function(row) {
+      var label = row.querySelector('.dt-label');
+      var balls = row.querySelectorAll('.dt-ball, .ball');
+      if (label && balls.length > 0) {
+        var nums = [];
+        balls.forEach(function(b) { nums.push(b.textContent.trim()); });
+        parts.push(label.textContent.trim() + ': ' + nums.join(' '));
+      }
+    });
+  } else {
+    var rBalls = card.querySelectorAll('.ball.r');
+    var bBalls = card.querySelectorAll('.ball.b');
+    if (rBalls.length > 0 && bBalls.length > 0) {
+      var rNums = [], bNums = [];
+      rBalls.forEach(function(b) { rNums.push(b.textContent.trim()); });
+      bBalls.forEach(function(b) { bNums.push(b.textContent.trim()); });
+      parts.push('红: ' + rNums.join(' '));
+      parts.push('蓝: ' + bNums.join(' '));
+    } else {
+      var allBalls = card.querySelectorAll('.ball');
+      var nums = [];
+      allBalls.forEach(function(b) { nums.push(b.textContent.trim()); });
+      parts.push(nums.join(' '));
+    }
+  }
+  var text = parts.join('\n');
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function(){});
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+  el.textContent = '\u2705\u5df2\u590d\u5236';
+  setTimeout(function(){ el.textContent = '\uD83D\uDCCB\u590d\u5236'; }, 2000);
+}
+function _copyKenoRow(el) {
+  var row = el.closest('.rec-row');
+  if (!row) return;
+  var label = row.querySelector('.dt-label');
+  var balls = row.querySelectorAll('.dt-ball');
+  if (!balls.length) return;
+  var nums = [];
+  balls.forEach(function(b) { nums.push(b.textContent.trim()); });
+  var text = (label ? label.textContent.trim() + ': ' : '') + nums.join(' ');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function(){});
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+  el.textContent = '\u2705';
+  setTimeout(function(){ el.textContent = '\uD83D\uDCCB'; }, 2000);
+}
 </script>
 </body>
 </html>
