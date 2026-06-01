@@ -11658,8 +11658,8 @@ function renderRecommend(type, data) {
         for (var _ci = 0; _ci < 10; _ci++) _c10 = Math.round(_c10 * (_kndan.length - _ci) / (_ci + 1));
       }
       var _c10Str = _kndan.length >= 10 ? _c10 + '注' + (_c10*2) + '元' : '选十需≥10胆';
-      _reHtml += '<div class="rec-row"><span class="dt-label" style="font-size:10px;width:30px">' + _kndc + '胆</span><div class="dt-balls" style="display:inline">';
-      _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan" style="width:18px;height:18px;font-size:9px;margin:1px">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '<div class="rec-row"><span class="dt-label" style="font-size:10px;width:30px">' + _kndc + '胆</span><div class="dt-balls">';
+      _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><span style="font-size:8px;color:#999;display:inline-block;vertical-align:middle">' + _c10Str + '</span></div>';
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
