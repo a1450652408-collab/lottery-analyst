@@ -17377,6 +17377,7 @@ function renderRecommend(type, data) {
     }
   }
 }
+}
 /* ===== 旋转矩阵缩水 ===== */
 function showMatrix() {
   var cfg = C[cur];
@@ -18353,7 +18354,8 @@ setTimeout(function() {
   var sk3 = document.getElementById("loadingSkeleton");
   if (sk3 && sk3.style.display !== "none") {
     sk3.style.display = "none";
-    document.getElementById("mainPage").style.display = "block";
+    var mp = document.getElementById("page0");
+    if (mp) mp.style.display = "block";
   }
 }, 3000);
 
