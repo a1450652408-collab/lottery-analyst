@@ -11272,11 +11272,13 @@ function renderPatternTrack(type, data) {
 
 /* ===== 独胆推荐 ===== */
 function renderDanRecommend(type, data) {
-  var useData = data.slice(0, 30);
+  var useData = data.slice(1, 31); // 排除最新一期，用之前的30期
   var numMin = 0, numMax = 9;
-  var posCount = type === "pl5" ? 5 : 3;
+  var latestPeriod = data[0] ? (data[0].p || data[0].period || '') : '';
+  var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
   
-  var html = '';
+  var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期之前30期数据推导</div>';
+
   for (var pos = 0; pos < posCount; pos++) {
     // EMA 热度
     var emaScores = {};
@@ -11318,10 +11320,13 @@ function renderDanRecommend(type, data) {
 
 /* ===== 杀号建议 ===== */
 function renderKillNumbers(type, data) {
-  var useData = data.slice(0, 50);
+  var useData = data.slice(1, 51); // 排除最新一期，用之前的50期
   var cfg = C[type];
   var numMin = cfg.type==="digit"?0:1, numMax = cfg.rMax;
   if (cfg.type==="digit") numMax = 9;
+  var latestPeriod = data[0] ? (data[0].p || data[0].period || '') : '';
+
+  var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#eceff1;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期之前50期数据统计</div>';
   
   // 找遗漏值最大的5个号 + 近20期0出现的号
   var freq = {}, lastSeen = {};
@@ -11342,7 +11347,7 @@ function renderKillNumbers(type, data) {
   kills.sort(function(a,b){return b.reason.localeCompare(a.reason);});
   kills = kills.slice(0, 5);
   
-  var html = kills.length > 0 ? '' : '<div class="sm-row"><span class="sm-label">暂无</span><span class="sm-val">所有号码频率正常，无需杀号</span></div>';
+  if (kills.length === 0) html += '<div class="sm-row"><span class="sm-label">暂无</span><span class="sm-val">所有号码频率正常，无需杀号</span></div>';
   kills.forEach(function(k){
     html += '<div class="sm-row"><span class="sm-label">号码'+String(k.n).padStart(2,'0')+'</span><span class="sm-val" style="color:#c62828">✕ '+k.reason+'</span></div>';
   });
@@ -11353,7 +11358,7 @@ function renderKillNumbers(type, data) {
 
 /* ===== 快乐8分区胆码 ===== */
 function renderKenoDan(type, data) {
-  var useData = data.slice(0, 30);
+  var useData = data.slice(1, 31); // 排除最新一期，用之前的30期
   var zones = [[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,70],[71,80]];
   
   var html = '';
@@ -11381,12 +11386,13 @@ function renderRecommend(type, data) {
 
   // 更新标题文字
   var hl = document.getElementById("heroLabel");
-  if (hl) hl.textContent = "🔮 基于近" + period + "期走势智能推荐";
+  var latestP = data[0] ? (data[0].p || data[0].period || '') : '';
+  if (hl) hl.textContent = "🔮 基于近" + period + "期走势智能推荐（最新" + latestP + "期）";
   var hd = document.getElementById("heroDesc");
-  if (hd) hd.textContent = "冷热号 · 遗漏值 · 区间均衡 · 奇偶搭配（近" + period + "期）";
+  if (hd) hd.textContent = "冷热号 · 遗漏值 · 区间均衡 · 奇偶搭配（基于" + latestP + "期之前数据，预测下期）";
 
-  // 调用算法（只传已配置期数的数据）
-  var rec = generateRecommend(data.slice(0, period), cfg);
+  // 调用算法：排除最新一期（已开奖），用之前的period期做训练
+  var rec = generateRecommend(data.slice(1, period + 1), cfg);
   if (!rec) {
     document.getElementById("recArea").innerHTML = '<div class="saved-empty">数据不足，无法生成推荐</div>';
     return;

@@ -11275,7 +11275,7 @@ function renderDanRecommend(type, data) {
   var useData = data.slice(1, 31); // 排除最新一期，用之前的30期
   var numMin = 0, numMax = 9;
   var latestPeriod = data[0] ? (data[0].p || data[0].period || '') : '';
-  var posCount = type === "pl5" ? 5 : 3;
+  var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
   
   var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期之前30期数据推导</div>';
 
