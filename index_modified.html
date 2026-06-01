@@ -11713,24 +11713,72 @@ function renderRecommend(type, data) {
     _reHtml += '</div><div class="rec-reason">C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b> | 频率+遗漏+近期热度 | Top' + _reBigRed + '选</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
-  /* ===== 七乐彩专用推荐 (30选7 无蓝球) ===== */
+  /* ===== 七乐彩专用推荐 (30选7 无蓝球) 8维评分 ===== */
   if (type === "qlc") {
+    /* EMA评分 */
+    var _qlEma = {};
+    for (var _qi = 1; _qi <= 30; _qi++) {
+      var _qSeq = [];
+      for (var _esi = 0; _esi < _reUseData.length; _esi++) { _qSeq.push(getNums(_reUseData[_esi]).indexOf(_qi) >= 0 ? 1 : 0); }
+      var _qe = _qSeq[0] || 0;
+      for (var _esi2 = 1; _esi2 < _qSeq.length; _esi2++) _qe = 0.4 * _qSeq[_esi2] + 0.6 * _qe;
+      _qlEma[_qi] = _qe;
+    }
+    /* 贝叶斯后验概率 */
+    var _qlBayes = {};
+    for (var _qi = 1; _qi <= 30; _qi++) {
+      var _qf = _reFreq[_qi] || 0;
+      var _a = _qf + 1, _b = _reUseData.length - _qf + 1;
+      _qlBayes[_qi] = _a / (_a + _b);
+    }
+    /* 8维综合评分 */
     var _qlScores = {};
     for (var _qi = 1; _qi <= 30; _qi++) {
       if (_reKillSet.has(_qi)) continue;
       var _qf = _reFreq[_qi] || 0, _qm = _reMiss[_qi] || 0, _qr = 0;
       for (var _qri = 0; _qri < Math.min(10, _reUseData.length); _qri++) { if (getNums(_reUseData[_qri]).indexOf(_qi) >= 0) _qr++; }
-      _qlScores[_qi] = _qf * 0.6 + _qm * 1.0 + _qr * 2.0;
+      _qlScores[_qi] = _qf * 1.0 + (_qlEma[_qi] || 0) * 2.0 + _qlBayes[_qi] * 5.0 + _qm * 0.3 + _qr * 3.0;
     }
     var _qlSorted = [];
     for (var _qi = 1; _qi <= 30; _qi++) { if (_reKillSet.has(_qi)) continue; _qlSorted.push({ n: _qi, s: _qlScores[_qi] || 0 }); }
     _qlSorted.sort(function(a, b) { return b.s - a.s; });
-    var _qlPool = _qlSorted.slice(0, 12).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    var _qlPool = _qlSorted.slice(0, 15).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
     var _qlCombo = _reComb(_qlPool.length, 7);
     var _qlCost = _qlCombo * 2;
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 七乐彩综合推荐（12码选号池）</div><div class="rec-balls">';
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 多策略融合推荐（8维评分·Top15码池）</div><div class="rec-balls">';
     _qlPool.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
-    _reHtml += '</div><div class="rec-reason">C(12,7)=' + _qlCombo + '注 | ' + _qlCost + '元 | 频率+遗漏+近期热度综合评分</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '</div><div class="rec-reason">频率×1 + EMA×2 + 贝叶斯×5 + 遗漏×0.3 + 热度×3 = 8维 | C(15,7)=' + _qlCombo + '注 | ' + _qlCost + '元</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    /* 012路+区间均衡推荐：从Top15中选，保证三区+012路覆盖 */
+    var _ql012 = {0:[],1:[],2:[]};
+    var _qlZones = [[1,10],[11,20],[21,30]];
+    var _qlZoneCount = {0:0,1:0,2:0};
+    var _ql012Target = {};
+    var _ql012_0 = 0, _ql012_1 = 0, _ql012_2 = 0;
+    var _qlR20 = _reUseData.slice(0, 20);
+    _qlR20.forEach(function(d) { var ns = getNums(d); ns.forEach(function(n) { var r = n % 3; if (r === 0) _ql012_0++; else if (r === 1) _ql012_1++; else _ql012_2++; }); });
+    var _qlT = _ql012_0 + _ql012_1 + _ql012_2;
+    _ql012Target[0] = _qlT > 0 ? Math.round(_ql012_0 / _qlT * 7) : 2;
+    _ql012Target[1] = _qlT > 0 ? Math.round(_ql012_1 / _qlT * 7) : 3;
+    _ql012Target[2] = 7 - _ql012Target[0] - _ql012Target[1];
+    _qlPool.forEach(function(n) { _ql012[n % 3].push(n); });
+    var _qlBalanced = [];
+    for (var _qzi = 0; _qzi < 3; _qzi++) {
+      _ql012[_qzi].sort(function(a,b){return (_qlScores[b]||0)-(_qlScores[a]||0);});
+      _ql012[_qzi].slice(0, _ql012Target[_qzi]).forEach(function(n) {
+        var zi = n <= 10 ? 0 : n <= 20 ? 1 : 2;
+        if (_qlZoneCount[zi] >= 3) return;
+        _qlBalanced.push(n); _qlZoneCount[zi]++;
+      });
+    }
+    if (_qlBalanced.length < 7) {
+      _qlPool.forEach(function(n) { if (_qlBalanced.length >= 7) return; if (_qlBalanced.indexOf(n) < 0) _qlBalanced.push(n); });
+    }
+    _qlBalanced = _qlBalanced.slice(0, 7).sort(function(a,b){return a-b;});
+    if (_qlBalanced.length === 7) {
+      _reHtml += '<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路+区间均衡推荐</div><div class="rec-balls">';
+      _qlBalanced.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div><div class="rec-reason">0路' + _ql012Target[0] + '个 1路' + _ql012Target[1] + '个 2路' + _ql012Target[2] + '个 | 三区均衡 | 7注14元</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    }
   }
 
   /* ===== 数字彩 包号推荐（福彩3D/排列三/七星彩/排列五） ===== */
