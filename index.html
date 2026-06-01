@@ -16863,6 +16863,41 @@ function renderRecommend(type, data) {
       _reHtml += '</div>';
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | 点击每行📋复制可单独复制</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋一键全复制</div></div>';
+    
+    /* ++++++ 守号推荐（固定守号方案）++++++ */
+    _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;margin-top:6px"><div class="rec-header">🎯 守号推荐（固定号码·区间均衡）</div>';
+    // 4胆守号
+    var _keep4 = [5,25,45,65];
+    _reHtml += '<div class="dt-row" style="display:flex;align-items:center;padding:4px 6px;margin:3px 0;border-radius:6px;background:#e3f2fd">';
+    _reHtml += '<span class="dt-label" style="font-size:11px;font-weight:600;width:50px;flex-shrink:0;color:#1565c0">4胆守号</span>';
+    _reHtml += '<div class="dt-balls" style="flex:1;display:flex;flex-wrap:wrap;gap:2px">';
+    _keep4.forEach(function(n) { _reHtml += '<span class="dt-ball dan" style="width:20px;height:20px;line-height:20px;font-size:10px;border-radius:50%;text-align:center;display:inline-block;background:#e3f2fd;color:#1565c0;font-weight:600;border:1px solid #90caf9">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div>';
+    _reHtml += '<span class="dt-cost" style="font-size:9px;color:#888;white-space:nowrap;margin:0 4px;flex-shrink:0">选四1注2元</span>';
+    _reHtml += '<span class="dt-copy" onclick="window._copyKenoRow(this)" style="font-size:9px;color:#1565c0;cursor:pointer;white-space:nowrap;flex-shrink:0;padding:2px 6px;border:1px solid #90caf9;border-radius:4px;user-select:none">📋复制</span>';
+    _reHtml += '</div>';
+    // 5胆守号
+    var _keep5 = [35,57,65,76,3];
+    _reHtml += '<div class="dt-row" style="display:flex;align-items:center;padding:4px 6px;margin:3px 0;border-radius:6px;background:#fff3e0">';
+    _reHtml += '<span class="dt-label" style="font-size:11px;font-weight:600;width:50px;flex-shrink:0;color:#e65100">5胆守号</span>';
+    _reHtml += '<div class="dt-balls" style="flex:1;display:flex;flex-wrap:wrap;gap:2px">';
+    _keep5.forEach(function(n) { _reHtml += '<span class="dt-ball dan" style="width:20px;height:20px;line-height:20px;font-size:10px;border-radius:50%;text-align:center;display:inline-block;background:#fff3e0;color:#e65100;font-weight:600;border:1px solid #ffcc80">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div>';
+    _reHtml += '<span class="dt-cost" style="font-size:9px;color:#888;white-space:nowrap;margin:0 4px;flex-shrink:0">选五1注2元</span>';
+    _reHtml += '<span class="dt-copy" onclick="window._copyKenoRow(this)" style="font-size:9px;color:#e65100;cursor:pointer;white-space:nowrap;flex-shrink:0;padding:2px 6px;border:1px solid #ffcc80;border-radius:4px;user-select:none">📋复制</span>';
+    _reHtml += '</div>';
+    // 11胆守号
+    var _keep11 = [5,10,15,20,25,30,35,40,45,50,55];
+    _reHtml += '<div class="dt-row" style="display:flex;align-items:center;padding:4px 6px;margin:3px 0;border-radius:6px;background:#f3e5f5">';
+    _reHtml += '<span class="dt-label" style="font-size:11px;font-weight:600;width:50px;flex-shrink:0;color:#6a1b9a">11胆守号</span>';
+    _reHtml += '<div class="dt-balls" style="flex:1;display:flex;flex-wrap:wrap;gap:2px">';
+    _keep11.forEach(function(n) { _reHtml += '<span class="dt-ball dan" style="width:18px;height:18px;line-height:18px;font-size:9px;border-radius:50%;text-align:center;display:inline-block;background:#f3e5f5;color:#6a1b9a;font-weight:600;border:1px solid #ce93d8">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div>';
+    _reHtml += '<span class="dt-cost" style="font-size:9px;color:#888;white-space:nowrap;margin:0 4px;flex-shrink:0">选十11注22元</span>';
+    _reHtml += '<span class="dt-copy" onclick="window._copyKenoRow(this)" style="font-size:9px;color:#6a1b9a;cursor:pointer;white-space:nowrap;flex-shrink:0;padding:2px 6px;border:1px solid #ce93d8;border-radius:4px;user-select:none">📋复制</span>';
+    _reHtml += '</div>';
+    // 说明
+    _reHtml += '<div class="rec-reason" style="font-size:9px">470期回测: 4胆中4=4次(87.6%) | 5胆中5=3次(352%) | 11胆中9=3次(293%) | 固定号码不换，长期持有</div></div>';
   }
 
   /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
