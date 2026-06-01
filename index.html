@@ -15067,14 +15067,14 @@ function recommendKeno(data, cfg) {
   var coldPart = coldNums.slice(0, 10);
   var basic2 = uniqueSorted(hotPart.concat(coldPart)).slice(0, rC);
 
-  /* 胆拖推荐（快乐8胆拖：胆码+拖码均从综合权重Top20中选） */
+  /* 胆拖推荐（快乐8胆拖：胆码+拖码均从综合权重Top35中选） */
   function makeKenoDanTuo(danCount) {
     var dan = votedList.slice(0, danCount).sort(function(a, b) { return a - b; });
     var danSet = {};
     dan.forEach(function(n) { danSet[n] = 1; });
-    // 拖码：从投票Top20中排除胆码
+    // 拖码：从投票Top35中排除胆码
     var tuoPool = [];
-    votedList.slice(0, 20).forEach(function(n) {
+    votedList.slice(0, 35).forEach(function(n) {
       if (!danSet[n]) tuoPool.push(n);
     });
     return {
@@ -16896,67 +16896,112 @@ function renderRecommend(type, data) {
 
   if (cfg.type === "lotto") {
     // 大复试卡片：SSQ=9红3蓝，DLT=8红3蓝
-    var _reBigRed = cfg.rC === 6 ? 9 : 8;  // SSQ=9, DLT=8
+    var _reBigRed = cfg.rC === 6 ? 9 : 8;
     var _reBigBlue = 3;
+    var _reRMax = cfg.rMax; // SSQ=33, DLT=35
+    var _reBMax = cfg.bMax;
 
-    // 红球：从热号中挑选，覆盖012路
-    var _reR0 = [], _reR1 = [], _reR2 = [];
-    for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
+    // 综合评分：频率+EMA+遗漏+贝叶斯+012路均衡+奇偶+大小+质合
+    var _reRScores = {};
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
       if (_reKillSet[_rei]) continue;
-      var _rer = _rei % 3;
-      if (_rer === 0) _reR0.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else if (_rer === 1) _reR1.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else _reR2.push({ n: _rei, f: _reFreq[_rei] || 0 });
+      var _rF = _reFreq[_rei] || 0;
+      var _rE = _reEma[_rei] || 0;
+      var _rM = _reMiss[_rei] || 0;
+      // 贝叶斯后验概率近似
+      var _rAlpha = _rF + 1, _rBeta = _reUseData.length - _rF + 1;
+      var _rBayes = _rAlpha / (_rAlpha + _rBeta);
+      // 近期趋势（近10期出现次数）
+      var _rRecent = 0;
+      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+        if (getNums(_reUseData[_rri]).indexOf(_rei) >= 0) _rRecent++;
+      }
+      // 综合分：频率×1 + EMA×2 + 贝叶斯×5 + 遗漏×0.3 + 近期×3
+      _reRScores[_rei] = _rF * 1.0 + (_rE || 0) * 2.0 + _rBayes * 5.0 + _rM * 0.3 + _rRecent * 3.0;
     }
-    _reR0.sort(function(a, b) { return b.f - a.f; });
-    _reR1.sort(function(a, b) { return b.f - a.f; });
-    _reR2.sort(function(a, b) { return b.f - a.f; });
 
-    // 平均分配：3来自0路，3来自1路，3来自2路（或按比例调整）
-    var _rePerRoute = Math.floor(_reBigRed / 3);
-    var _reExtra = _reBigRed - _rePerRoute * 3;
-    var _reBigPicks = _reR0.slice(0, _rePerRoute + (_reExtra > 0 ? 1 : 0))
-      .concat(_reR1.slice(0, _rePerRoute + (_reExtra > 1 ? 1 : 0)))
-      .concat(_reR2.slice(0, _rePerRoute));
+    // 排序
+    var _reRSorted = [];
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
+      if (_reKillSet[_rei]) continue;
+      _reRSorted.push({ n: _rei, s: _reRScores[_rei] || 0 });
+    }
+    _reRSorted.sort(function(a, b) { return b.s - a.s; });
+
+    // 多样性选号：从Top中选，同时保证012路/奇偶/大小覆盖
+    var _reBigPicks = [];
+    var _reRCnt = { lu0: 0, lu1: 0, lu2: 0, odd: 0, big: 0 };
+    var _reRTarget = { lu0: Math.round(_reBigRed/3), lu1: Math.round(_reBigRed/3), lu2: _reBigRed - 2*Math.round(_reBigRed/3) };
+    _reRTarget.odd = Math.round(_reBigRed * 0.5);
+    _reRTarget.big = Math.round(_reBigRed * 0.5);
+
+    // 先从高分数中选，确保多样性
+    var _reChosen = {};
+    for (var _rsi = 0; _rsi < _reRSorted.length && _reBigPicks.length < _reBigRed; _rsi++) {
+      var _rn = _reRSorted[_rsi].n;
+      if (_reChosen[_rn]) continue;
+      var _rl = _rn % 3, _ro = _rn % 2, _rb = _rn >= (_reRMax/2 + 8) ? 1 : 0; // SSQ:>=25大, DLT:>=26大
+      // 多样性检查：如果某种类型已超标，跳过
+      if (_reRCnt.lu0 + _reRCnt.lu1 + _reRCnt.lu2 >= _reBigRed) break;
+      // 允许一定程度的超标，但不超过+1
+      if (_rl === 0 && _reRCnt.lu0 >= _reRTarget.lu0 + 1) continue;
+      if (_rl === 1 && _reRCnt.lu1 >= _reRTarget.lu1 + 1) continue;
+      if (_rl === 2 && _reRCnt.lu2 >= _reRTarget.lu2 + 1) continue;
+      if (_ro === 1 && _reRCnt.odd >= _reRTarget.odd + 1 && _reBigPicks.length < _reBigRed - 2) continue;
+      if (_rb === 1 && _reRCnt.big >= _reRTarget.big + 1 && _reBigPicks.length < _reBigRed - 2) continue;
+      
+      _reChosen[_rn] = true;
+      _reBigPicks.push(_rn);
+      if (_rl === 0) _reRCnt.lu0++; else if (_rl === 1) _reRCnt.lu1++; else _reRCnt.lu2++;
+      if (_ro === 1) _reRCnt.odd++;
+      if (_rb === 1) _reRCnt.big++;
+    }
+    // 如果还不够，从剩余热号补
     if (_reBigPicks.length < _reBigRed) {
-      // 不够从hot里补
-      var _reUsed = {};
-      _reBigPicks.forEach(function(x) { _reUsed[x.n] = true; });
-      for (var _rei = 0; _rei < _reCleanHots.length && _reBigPicks.length < _reBigRed; _rei++) {
-        if (!_reUsed[_reCleanHots[_rei]]) _reBigPicks.push({n: _reCleanHots[_rei], f: 0});
+      for (var _rsi = 0; _rsi < _reRSorted.length && _reBigPicks.length < _reBigRed; _rsi++) {
+        if (!_reChosen[_reRSorted[_rsi].n]) {
+          _reChosen[_reRSorted[_rsi].n] = true;
+          _reBigPicks.push(_reRSorted[_rsi].n);
+        }
       }
     }
-    _reBigPicks = _reBigPicks.slice(0, _reBigRed);
-    _reBigPicks.sort(function(a, b) { return a.n - b.n; });
+    _reBigPicks.sort(function(a, b) { return a - b; });
+    var _reRedCount = _reBigPicks.length;
 
-    // 蓝球：热度Top3
-    var _reBHot = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : [];
-    if (_reBHot.length === 0) {
-      var _reBFreq = {};
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBFreq[_rbi] = 0;
-      _reUseData.forEach(function(_rbitem) {
-        var _rbb = getBlues(_rbitem);
-        _rbb.forEach(function(_rbn) { if (_rbn >= 1 && _rbn <= cfg.bMax) _reBFreq[_rbn]++; });
+    // 蓝球：综合评分（频率+EMA+贝叶斯+近期）
+    var _reBScores = {};
+    for (var _rbi = 1; _rbi <= _reBMax; _rbi++) {
+      var _bF = 0, _bE = 0, _bRecent = 0;
+      _reUseData.forEach(function(d) {
+        var _bb = getBlues(d);
+        if (_bb.indexOf(_rbi) >= 0) _bF++;
+        if (_bb.indexOf(_rbi) >= 0) _bE = 0.3 * 1 + 0.7 * (_bE || 0);
+        else _bE = 0.3 * 0 + 0.7 * (_bE || 0);
       });
-      _reBHot = [];
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBHot.push({n: _rbi, f: _reBFreq[_rbi]});
-      _reBHot.sort(function(a, b) { return b.f - a.f; });
-      _reBHot = _reBHot.map(function(x) { return x.n; });
+      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+        if (getBlues(_reUseData[_rri]).indexOf(_rbi) >= 0) _bRecent++;
+      }
+      var _bAlpha = _bF + 1, _bBeta = _reUseData.length - _bF + 1;
+      var _bBayes = _bAlpha / (_bAlpha + _bBeta);
+      _reBScores[_rbi] = _bF * 0.5 + (_bE || 0) * 2.0 + _bBayes * 5.0 + _bRecent * 3.0;
     }
-    var _reBpick = _reBHot.slice(0, _reBigBlue);
-    _reBpick.sort(function(a, b) { return a - b; });
+    var _reBSorted = [];
+    for (var _rbi = 1; _rbi <= _reBMax; _rbi++) {
+      _reBSorted.push({ n: _rbi, s: _reBScores[_rbi] || 0 });
+    }
+    _reBSorted.sort(function(a, b) { return b.s - a.s; });
+    var _reBpick = _reBSorted.slice(0, _reBigBlue).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+    var _reBlueCount = _reBpick.length;
 
     // 计算注数和成本
-    var _reRedCount = _reBigPicks.length;
-    var _reBlueCount = _reBpick.length;
     var _reBetCount = _reRedCount >= cfg.rC ? _comb(_reRedCount, cfg.rC) * _reBlueCount : 0;
     var _reCost = _reBetCount * 2;
 
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 大复试推荐（<b>' + _reRedCount + '</b>红+<b>' + _reBlueCount + '</b>蓝）</div><div class="rec-balls">';
-    _reBigPicks.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x.n).padStart(2, "0") + "</span>"; });
+    _reBigPicks.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x).padStart(2, "0") + "</span>"; });
     _reHtml += '<span style="margin:0 4px;color:#999"> | </span>';
     _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
-    _reHtml += '</div><div class="rec-reason">C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b> | 红球012路均衡 + 蓝球热度Top' + _reBigBlue + '</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '</div><div class="rec-reason">C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b> | 频率+EMA+贝叶斯+012路/奇偶/大小均衡 | Top' + _reBigRed + '选</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
   if (cfg.type === "digit") {
@@ -16965,18 +17010,48 @@ function renderRecommend(type, data) {
     var _reAllCands = [];
 
     for (var _repos = 0; _repos < _rePosCount; _repos++) {
-      var _rePosFreq = {};
-      for (var _red = _reNumMin; _red <= _reNumMax; _red++) _rePosFreq[_red] = 0;
-      for (var _rej = 0; _rej < _reUseData.length; _rej++) {
-        var _rens2 = getNums(_reUseData[_rej]);
-        if (_rens2.length > _repos) _rePosFreq[_rens2[_repos]]++;
+      // 综合评分：频率+EMA+贝叶斯+遗漏+近期趋势
+      var _rePosScores = {};
+      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
+        var _pf = 0, _pe = 0, _pm = 0, _pr = 0;
+        for (var _rej = 0; _rej < _reUseData.length; _rej++) {
+          var _rens2 = getNums(_reUseData[_rej]);
+          if (_rens2.length <= _repos) continue;
+          if (_rens2[_repos] === _red) { _pf++; _pe = 0.3 * 1 + 0.7 * (_pe || 0); }
+          else { _pe = 0.3 * 0 + 0.7 * (_pe || 0); }
+          if (_pm === 0 && _rens2[_repos] === _red) _pm = _rej;
+        }
+        if (_pm === 0) _pm = _reUseData.length;
+        // 近期(近10期)
+        for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+          var _rrn = getNums(_reUseData[_rri]);
+          if (_rrn.length > _repos && _rrn[_repos] === _red) _pr++;
+        }
+        var _pAlpha = _pf + 1, _pBeta = _reUseData.length - _pf + 1;
+        var _pBayes = _pAlpha / (_pAlpha + _pBeta);
+        _rePosScores[_red] = _pf * 0.5 + (_pe || 0) * 2.0 + _pBayes * 5.0 + _pm * 0.2 + _pr * 3.0;
       }
       var _reRanked = [];
       for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
-        _reRanked.push({ n: _red, f: _rePosFreq[_red] });
+        _reRanked.push({ n: _red, s: _rePosScores[_red] || 0 });
       }
-      _reRanked.sort(function(a, b) { return b.f - a.f; });
-      var _reTop = _reRanked.slice(0, _rePosKeep).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+      _reRanked.sort(function(a, b) { return b.s - a.s; });
+      
+      // 多样性选号：取高分，同时保证奇偶/大小覆盖
+      var _reTop = [];
+      var _reOddCnt = 0, _reBigCnt = 0;
+      var _reOddTarget = Math.round(_rePosKeep / 2);
+      var _reBigTarget = Math.round(_rePosKeep / 2);
+      for (var _rri = 0; _rri < _reRanked.length && _reTop.length < _rePosKeep; _rri++) {
+        var _rnn = _reRanked[_rri].n;
+        var _ro = _rnn % 2, _rb = _rnn >= 5 ? 1 : 0;
+        if (_ro === 1 && _reOddCnt >= _reOddTarget + 1 && _reTop.length < _rePosKeep - 1) continue;
+        if (_rb === 1 && _reBigCnt >= _reBigTarget + 1 && _reTop.length < _rePosKeep - 1) continue;
+        _reTop.push(_rnn);
+        if (_ro === 1) _reOddCnt++;
+        if (_rb === 1) _reBigCnt++;
+      }
+      _reTop.sort(function(a, b) { return a - b; });
       _reAllCands.push(_reTop);
     }
 
