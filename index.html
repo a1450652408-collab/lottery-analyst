@@ -16555,8 +16555,9 @@ function renderKillNumbers(type, data) {
 function renderKenoDan(type, data) {
   var useData = data.slice(0, 30);
   var zones = [[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,70],[71,80]];
+  var latestPeriod = data[0] ? data[0].p || data[0].period || '' : '';
   
-  var html = '';
+  var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e3f2fd;border-radius:4px;margin-bottom:6px">基于近30期数据（最新' + latestPeriod + '期）→ 预测下一期胆码</div>';
   zones.forEach(function(zr, zi) {
     var freq = {};
     for (var i = zr[0]; i <= zr[1]; i++) freq[i] = 0;
@@ -16581,9 +16582,10 @@ function renderRecommend(type, data) {
 
   // 更新标题文字
   var hl = document.getElementById("heroLabel");
-  if (hl) hl.textContent = "🔮 基于近" + period + "期走势智能推荐";
+  var latestP = data[0] ? (data[0].p || data[0].period || '') : '';
+  if (hl) hl.textContent = "🔮 基于近" + period + "期走势智能推荐（最新" + latestP + "期）";
   var hd = document.getElementById("heroDesc");
-  if (hd) hd.textContent = "冷热号 · 遗漏值 · 区间均衡 · 奇偶搭配（近" + period + "期）";
+  if (hd) hd.textContent = "冷热号 · 遗漏值 · 区间均衡 · 奇偶搭配（基于" + latestP + "期数据，预测下期）";
 
   // 调用算法（只传已配置期数的数据）
   var rec = generateRecommend(data.slice(0, period), cfg);
