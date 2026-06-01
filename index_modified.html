@@ -10761,6 +10761,16 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 (function(){
 "use strict";
 
+/* ===== 全局变量/函数 ===== */
+var _ksDetailOpen = false;
+window.toggleKenoDetail = function() {
+  _ksDetailOpen = !_ksDetailOpen;
+  var box = document.getElementById("ksDetailBox");
+  var btn = document.getElementById("ksToggle");
+  if (box) box.style.display = _ksDetailOpen ? "block" : "none";
+  if (btn) btn.textContent = _ksDetailOpen ? "📋 收起明细 ▲" : "📋 查看每期中奖明细 ▼";
+};
+
 /* ===== 彩种配置（recPeriod: 乐透30期 / 每日100期） ===== */
 window._C = {
   ssq:{name:"双色球",type:"lotto",rMax:33,bMax:16,rC:6,bC:1,recPeriod:30},
@@ -12364,15 +12374,6 @@ function initKenoStrategy() {
     }
     tbody.innerHTML = rows;
   }
-}
-
-var _ksDetailOpen = false;
-function toggleKenoDetail() {
-  _ksDetailOpen = !_ksDetailOpen;
-  var box = document.getElementById("ksDetailBox");
-  var btn = document.getElementById("ksToggle");
-  if (box) box.style.display = _ksDetailOpen ? "block" : "none";
-  if (btn) btn.textContent = _ksDetailOpen ? "📋 收起明细 ▲" : "📋 查看每期中奖明细 ▼";
 }
 
 /* ===== 加载所有数据 ===== */
