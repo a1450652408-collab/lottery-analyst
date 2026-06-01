@@ -11569,109 +11569,85 @@ function renderRecommend(type, data) {
     _reHtml += '</div><div class="rec-reason">排除' + _reKills.length + '个极冷号后精选热号</div></div>';
   }
 
-  /* ===== 快乐8 多策略融合推荐 ===== */
+  /* ===== 快乐8 EMA评分推荐 ===== */
   if (cfg.type === "keno") {
     var _knTotal = cfg.rMax;
     var _knPeriod = _reUseData.length;
-    var _knMissList = [];
-    for (var _kni = 1; _kni <= _knTotal; _kni++) { if (!_reKillSet.has(_kni)) _knMissList.push({ n: _kni, m: _reMiss[_kni] }); }
-    _knMissList.sort(function(a, b) { return b.m - a.m; });
-    var _knMissPick = _knMissList.slice(0, 20).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
-    var _knFreqValues = [];
-    for (var _kni = 1; _kni <= _knTotal; _kni++) _knFreqValues.push(_reFreq[_kni] || 0);
-    var _knFreqAvg = _knFreqValues.reduce(function(s, v) { return s + v; }, 0) / _knTotal;
-    var _knHot = [], _knWarm = [], _knCold = [];
+    
+    /* EMA评分 */
+    var _knEma = {};
     for (var _kni = 1; _kni <= _knTotal; _kni++) {
-      var _knf = _reFreq[_kni] || 0;
-      if (_knf >= _knFreqAvg * 1.5) _knHot.push(_kni);
-      else if (_knf >= _knFreqAvg) _knWarm.push(_kni);
-      else _knCold.push(_kni);
+      var _seq = [];
+      for (var _j2 = 0; _j2 < _knPeriod; _j2++) _seq.push(getNums(_reUseData[_j2]).indexOf(_kni) >= 0 ? 1 : 0);
+      if (_seq.length === 0) { _knEma[_kni] = 0; continue; }
+      var _e = _seq[0];
+      for (var _j3 = 1; _j3 < _seq.length; _j3++) _e = 0.3 * _seq[_j3] + 0.7 * _e;
+      _knEma[_kni] = _e;
     }
-    var _knZones = [[1,20],[21,40],[41,60],[61,80]];
-    var _knZonePick = [];
-    for (var _knzi = 0; _knzi < 4; _knzi++) {
-      var _knzMin = _knZones[_knzi][0], _knzMax = _knZones[_knzi][1];
-      var _knzNums = _reCleanHots.filter(function(n) { return n >= _knzMin && n <= _knzMax && !_reKillSet.has(n); });
-      _knZonePick = _knZonePick.concat(_knzNums.slice(0, 5));
+    
+    /* 动量: 近5期 vs 前5期 */
+    var _knR5 = {}, _knP5 = {};
+    for (var _kni = 1; _kni <= _knTotal; _kni++) { _knR5[_kni] = 0; _knP5[_kni] = 0; }
+    for (var _j = 0; _j < Math.min(10, _knPeriod); _j++) {
+      var _nd = getNums(_reUseData[_j]);
+      _nd.forEach(function(n) {
+        if (_j < 5) _knR5[n]++; else _knP5[n]++;
+      });
     }
-    _knZonePick.sort(function(a,b){return a-b;});
-    var _knOddCounts = [];
-    for (var _kni = 0; _kni < Math.min(_knPeriod, 50); _kni++) {
-      var _knNums = getNums(_reUseData[_kni]);
-      _knOddCounts.push(_knNums.filter(function(x) { return x % 2 === 1; }).length);
+    var _knMom = {};
+    for (var _kni = 1; _kni <= _knTotal; _kni++) {
+      var _m = (_knR5[_kni] - _knP5[_kni]) / Math.max(_knP5[_kni], 1);
+      _knMom[_kni] = Math.max(-2, Math.min(2, _m));
     }
-    var _knAvgOdd = Math.round(_knOddCounts.reduce(function(s,v){return s+v;},0) / _knOddCounts.length * 10) / 10;
-    var _knOdds = _reCleanHots.filter(function(n) { return n % 2 === 1; });
-    var _knEvens = _reCleanHots.filter(function(n) { return n % 2 === 0 && !_reKillSet.has(n); });
-    var _knOddPick = _knOdds.slice(0, Math.round(20 * _knAvgOdd / 20));
-    var _knEvenPick = _knEvens.slice(0, 20 - _knOddPick.length);
-    var _knOePick = _knOddPick.concat(_knEvenPick).sort(function(a,b){return a-b;});
-    var _knTailFreq = {}; for (var _knt = 0; _knt < 10; _knt++) _knTailFreq[_knt] = 0;
-    for (var _kni = 0; _kni < _knPeriod; _kni++) {
-      var _knNs = getNums(_reUseData[_kni]);
-      _knNs.forEach(function(x) { _knTailFreq[x % 10]++; });
+    
+    /* 重号: 上期开奖号 */
+    var _knPrevSet = new Set();
+    if (data.length > 1) getNums(data[1]).forEach(function(n) { _knPrevSet.add(n); });
+    
+    /* 近30期频率 */
+    var _knFreq30 = {};
+    for (var _kni = 1; _kni <= _knTotal; _kni++) _knFreq30[_kni] = 0;
+    for (var _j = 0; _j < Math.min(30, _knPeriod); _j++) {
+      getNums(_reUseData[_j]).forEach(function(n) { _knFreq30[n]++; });
     }
-    var _knTails = []; for (var _knt = 0; _knt < 10; _knt++) _knTails.push({ t: _knt, f: _knTailFreq[_knt] });
-    _knTails.sort(function(a, b) { return b.f - a.f; });
-    var _knHotTails = _knTails.slice(0, 5).map(function(x) { return x.t; });
-    var _knHotTailSet = {}; _knHotTails.forEach(function(t) { _knHotTailSet[t] = true; });
-    var _knTailPick = _reCleanHots.filter(function(n) { return _knHotTailSet[n % 10] && !_reKillSet.has(n); }).slice(0, 20);
-    _knTailPick.sort(function(a,b){return a-b;});
-    var _knFusion = {}; for (var _kni = 1; _kni <= _knTotal; _kni++) _knFusion[_kni] = 0;
-    _reCleanHots.slice(0, cfg.rC).forEach(function(n) { _knFusion[n] += 10; });
-    _knMissPick.forEach(function(n) { _knFusion[n] += 8; });
-    _knHot.forEach(function(n) { _knFusion[n] += 12; }); _knWarm.forEach(function(n) { _knFusion[n] += 8; }); _knCold.forEach(function(n) { _knFusion[n] += 4; });
-    _knZonePick.forEach(function(n) { _knFusion[n] += 6; });
-    _knOePick.forEach(function(n) { _knFusion[n] += 5; });
-    _knTailPick.forEach(function(n) { _knFusion[n] += 5; });
-    for (var _kni = 1; _kni <= _knTotal; _kni++) { _knFusion[_kni] += Math.round((_reFreq[_kni] || 0) / Math.max(1, _knFreqAvg) * 5); }
-    for (var _kni = 1; _kni <= _knTotal; _kni++) { if (_reKillSet.has(_kni)) _knFusion[_kni] = -999; }
-    var _knFusionList = [];
-    for (var _kni = 1; _kni <= _knTotal; _kni++) _knFusionList.push({ n: _kni, s: _knFusion[_kni] });
-    _knFusionList.sort(function(a, b) { return b.s - a.s; });
-    var _knFusionTop35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 多策略融合推荐（6种算法加权评分·Top35码池）</div><div class="rec-balls">';
-    _knFusionTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
-    _reHtml += '</div><div class="rec-reason">杀号+10 | 遗漏+8 | 热+12/温+8/冷+4 | 分区+6 | 奇偶+5 | 尾数+5 | 频率×5</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-    /* 综合胆拖 2胆~9胆 */
-    var _krPool35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; });
-    var _krMom = {};
-    _krPool35.forEach(function(n) {
-      var _rm5 = 0;
-      for (var _rmi = 0; _rmi < Math.min(5, _reUseData.length); _rmi++) { if (getNums(_reUseData[_rmi]).indexOf(n) >= 0) _rm5++; }
-      var _rme = 0, _rms = [];
-      for (var _rsi = 0; _rsi < Math.min(30, _reUseData.length); _rsi++) { _rms.push(getNums(_reUseData[_rsi]).indexOf(n) >= 0 ? 1 : 0); }
-      if (_rms.length > 0) { _rme = _rms[0]; for (var _rvi = 1; _rvi < _rms.length; _rvi++) _rme = 0.5 * _rms[_rvi] + 0.5 * _rme; }
-      _krMom[n] = _rm5 * 3 + _rme * 12 + (_reFreq[n] || 0) * 0.5;
-    });
-    var _krPrevSet = data.length > 1 ? new Set(getNums(data[1])) : new Set();
-    var _krCands = _krPool35.slice();
-    _krCands.forEach(function(n) { if (_krPrevSet.has(n)) _krMom[n] += 15; });
-    _krCands.sort(function(a,b){return _krMom[b]-_krMom[a];});
-    var _krFinal9 = [], _krZCnt = [0,0,0,0], _krTails2 = {}, _krOdds2 = 0;
-    var _krZoneOf = function(n) { return Math.floor((n-1)/20); };
-    _krCands.forEach(function(n) {
-      if (_krFinal9.length >= 9) return;
-      var z = _krZoneOf(n), t = n % 10;
-      if (_krZCnt[z] >= 3) return;
-      _krFinal9.push(n); _krZCnt[z]++; _krTails2[t] = true; if (n%2) _krOdds2++;
-    });
-    if (_krFinal9.length < 9) { _krCands.forEach(function(n) { if (_krFinal9.length >= 9) return; if (_krFinal9.indexOf(n)<0) _krFinal9.push(n); }); }
-    _krFinal9.sort(function(a,b){return a-b;});
-    for (var _kndc = 2; _kndc <= 9; _kndc++) {
-      var _kndan = _krFinal9.slice(0, _kndc);
+    var _win30 = Math.min(30, _knPeriod);
+    
+    /* EMA综合评分 */
+    var _knScores = {};
+    for (var _kni = 1; _kni <= _knTotal; _kni++) {
+      var _s = (_knEma[_kni] || 0) * 5.0 + (_knFreq30[_kni] / _win30) * 3.0 + (_knMom[_kni] || 0) * 2.0;
+      if (_knPrevSet.has(_kni)) _s += 3.0;
+      if (_reKillSet.has(_kni)) _s = -999;
+      _knScores[_kni] = _s;
+    }
+    
+    /* Top35码池 */
+    var _knRanked = [];
+    for (var _kni = 1; _kni <= _knTotal; _kni++) _knRanked.push({ n: _kni, s: _knScores[_kni] || -999 });
+    _knRanked.sort(function(a, b) { return b.s - a.s; });
+    var _knTop35 = _knRanked.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    var _knTop35Ordered = _knRanked.slice(0, 35).map(function(x) { return x.n; });
+    
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
+    _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    
+    /* EMA胆拖 2胆~13胆 */
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 EMA胆拖方案（Top35池·无区限制）</div>';
+    for (var _kndc = 2; _kndc <= 13; _kndc++) {
+      var _kndan = _knTop35Ordered.slice(0, _kndc);
       var _kndanS = {}; _kndan.forEach(function(x) { _kndanS[x] = true; });
-      var _kntuo = _krPool35.filter(function(x) { return !_kndanS[x]; }).sort(function(a,b){return a-b;});
-      _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">' + _kndc + '胆拖（综合方案）</div><div class="dt-row"><span class="dt-label">胆码</span><div class="dt-balls">';
-      _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div></div>';
-      if (_kntuo.length > 0) {
-        _reHtml += '<div class="dt-row"><span class="dt-label">拖码</span><div class="dt-balls">';
-        _kntuo.forEach(function(n) { _reHtml += '<span class="dt-ball tuo">' + String(n).padStart(2,"0") + '</span>'; });
-        _reHtml += '</div></div>';
+      var _kntuo = _knTop35Ordered.filter(function(x) { return !_kndanS[x]; });
+      var _c10 = 1;
+      for (var _ci = 0; _ci < 10; _ci++) _c10 = _c10 * (_kndan.length - _ci) / (_ci + 1);
+      _c10 = _c10 < 1 ? (_kndan.length >= 10 ? 1 : 0) : Math.round(_c10);
+      if (_kndan.length >= 10) {
+        _reHtml += '<div class="rec-row"><span class="dt-label" style="font-size:10px;width:30px">' + _kndc + '胆</span><div class="dt-balls" style="display:inline">';
+        _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan" style="width:18px;height:18px;font-size:9px;margin:1px">' + String(n).padStart(2,"0") + '</span>'; });
+        _reHtml += '</div><span style="font-size:8px;color:#999;display:inline-block;vertical-align:middle">' + _c10 + '注' + (_c10*2) + '元</span></div>';
       }
-      _reHtml += '<div class="rec-reason">' + _kndc + '胆 | 35码池 | 余' + _kntuo.length + '拖</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     }
+    _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
   /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
