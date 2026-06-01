@@ -16996,234 +16996,172 @@ function renderRecommend(type, data) {
     _reAllCands.forEach(function(c, i) { _reHtml += '位'+(i+1)+':['+c.join('')+'] '; });
     _reHtml += '| <b>' + _reTotalCombos + '注</b> | <b>' + _reBagCost + '元</b></div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
 
-    // ===== 排列五 五不同+二同 全约束推荐 =====
+        // ===== 排列五 五不同+二同 全约束综合法（杀号+定胆+奇偶+大小+012路+质合+恒值号+和值+跨度+跟随） =====
     if (type === "pl5") {
-      // 构建全约束引擎
-      function _plBuild(morph) {
-        var md = [], n = 0;
-        var mfreq = {}; for (var i=0;i<=9;i++) mfreq[i]=0;
-        var pairF = {}; var ssF = {}; var rptF = {};
-        
+      function _plDynRange(morph, attr) {
+        var vals = [];
         for (var j=0;j<_reUseData.length;j++) {
-          var ns = getNums(_reUseData[j]);
-          var ct = {}; for (var k=0;k<ns.length;k++) ct[ns[k]]=(ct[ns[k]]||0)+1;
-          var isMorph = true;
-          if (morph==="wb") { // 五不同
-            for (var k in ct) { if (ct[k]!==1) { isMorph=false; break; } }
-          } else { // 二同
-            var hasP=false; for (var k in ct) { if (ct[k]===2) { hasP=true; break; } }
-            isMorph = hasP;
-          }
-          if (!isMorph) continue;
-          n++;
-          var s = {}; for (var k=0;k<ns.length;k++) s[ns[k]]=true;
-          for (var k in s) mfreq[k|0] = (mfreq[k|0]||0)+1;
-          var keys = Object.keys(s).map(function(x){return x|0;});
-          for (var a=0;a<keys.length;a++) for (var b=a+1;b<keys.length;b++) {
-            var pk = keys[a]<keys[b]?keys[a]+','+keys[b]:keys[b]+','+keys[a];
-            pairF[pk] = (pairF[pk]||0)+1;
-          }
-          var sp = Math.max.apply(null,ns)-Math.min.apply(null,ns);
-          var su = ns.reduce(function(a,b){return a+b;},0);
-          ssF[sp+','+su] = (ssF[sp+','+su]||0)+1;
-          if (morph==="et") {
-            for (var k in ct) { if (ct[k]===2) rptF[k] = (rptF[k]||0)+1; }
-          }
+          var nd = getNums(_reUseData[j]);
+          var ct = {}; for (var k=0;k<nd.length;k++) ct[nd[k]]=(ct[nd[k]]||0)+1;
+          var ok = false;
+          if (morph==="wb") { ok = true; for (var k in ct) { if (ct[k]!==1) { ok=false; break; } } }
+          else { for (var k in ct) { if (ct[k]===2) { ok=true; break; } } }
+          if (!ok) continue;
+          var v = 0;
+          if (attr==='odd') v = nd.filter(function(x){return x%2===1;}).length;
+          else if (attr==='big') v = nd.filter(function(x){return x>=5;}).length;
+          else if (attr==='lu0') v = nd.filter(function(x){return x%3===0;}).length;
+          else if (attr==='prime') v = nd.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+          else if (attr==='sum') v = nd.reduce(function(a,b){return a+b;},0);
+          else if (attr==='span') v = Math.max.apply(null,nd)-Math.min.apply(null,nd);
+          vals.push(v);
         }
-        return {n:n, mf:mfreq, pf:pairF, sf:ssF, rf:rptF};
+        if (vals.length<5) return null;
+        var freq = {};
+        for (var i=0;i<vals.length;i++) freq[vals[i]] = (freq[vals[i]]||0)+1;
+        var items = []; for (var k in freq) items.push({v:k|0,c:freq[k]});
+        items.sort(function(a,b){return b.c-a.c;});
+        var acc=0, r=[]; var cov = (attr==='sum'||attr==='span')?0.8:0.85;
+        for (var i=0;i<items.length;i++) { r.push(items[i].v); acc+=items[i].c; if (acc/vals.length>=cov) break; }
+        return r;
       }
-      
       function _plKill() {
         var ks = {};
         var last5 = getNums(_reUseData[0]);
         ks[(last5[4]*2+3)%10] = true;
         ks[(last5[0]+last5[1])%10] = true;
-        // 综合最冷
-        var miss = {}; for (var i=0;i<=9;i++) miss[i]=_reUseData.length;
-        for (var j=0;j<_reUseData.length;j++) {
-          var ns2 = getNums(_reUseData[j]);
-          for (var k=0;k<ns2.length;k++) { if (miss[ns2[k]]>j) miss[ns2[k]]=j; }
-        }
+        var n = _reUseData.length;
         var r5 = {}; for (var i=0;i<=9;i++) r5[i]=0;
-        for (var j=0;j<Math.min(5,_reUseData.length);j++) {
-          var nr = getNums(_reUseData[j]);
-          for (var k=0;k<nr.length;k++) r5[nr[k]] = (r5[nr[k]]||0)+1;
-        }
-        var cold = 0, coldS = 999;
-        for (var i=0;i<=9;i++) { if (!ks[i] && r5[i]*2-miss[i] < coldS) { coldS=r5[i]*2-miss[i]; cold=i; } }
-        ks[cold] = true;
+        for (var j=0;j<Math.min(5,n);j++) { var nd=getNums(_reUseData[j]); for (var k=0;k<nd.length;k++) r5[nd[k]]=(r5[nd[k]]||0)+1; }
+        var miss = {}; for (var i=0;i<=9;i++) miss[i]=n;
+        for (var j=0;j<n;j++) { var nd=getNums(_reUseData[j]); for (var k=0;k<nd.length;k++) { if (miss[nd[k]]>j) miss[nd[k]]=j; } }
+        var coldest=-1, coldestS=999;
+        for (var i=0;i<=9;i++) { if (ks[i]) continue; var s = r5[i]*2 + miss[i]*0.5; if (s<coldestS) { coldestS=s; coldest=i; } }
+        if (coldest>=0) ks[coldest]=true;
         return ks;
       }
-      
-      function _plDanma(eng, morph) {
-        var sc = {};
-        var freq = {}; for (var i=0;i<=9;i++) freq[i]=0;
-        for (var j=0;j<_reUseData.length;j++) {
-          var w = 1+(_reUseData.length-j)/_reUseData.length*0.5;
-          var nd = getNums(_reUseData[j]);
-          for (var k=0;k<nd.length;k++) freq[nd[k]] += w;
-        }
-        for (var i=0;i<=9;i++) sc[i] = (freq[i]||0)*0.3 + (eng.mf[i]||0)*2.0;
-        var arr = []; for (var i=0;i<=9;i++) arr.push({n:i,s:sc[i]});
-        arr.sort(function(a,b){return b.s-a.s;});
-        return [arr[0].n, arr[1].n];
+      function _plDanma(mfreq) {
+        var fq={}; for (var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq[nd[k]]=(fq[nd[k]]||0)+1+(j<15?5:0);}
+        var sc=[]; for (var i=0;i<=9;i++) sc.push({n:i,s:(fq[i]||0)*0.3+(mfreq[i]||0)*2.0});
+        sc.sort(function(a,b){return b.s-a.s;}); return [sc[0].n, sc[1].n];
       }
-      
-      function _plRange(eng, attr, cov) {
-        if (eng.n < 5) return null;
-        var vals = [];
+      function _plPairScore(com) {
+        var pairs=[[0,5],[1,6],[2,7],[3,8],[4,9]]; var s=0;
+        for (var a=0;a<com.length;a++) for (var b=a+1;b<com.length;b++)
+          for (var p=0;p<pairs.length;p++) if ((com[a]===pairs[p][0]&&com[b]===pairs[p][1])||(com[a]===pairs[p][1]&&com[b]===pairs[p][0])) s++;
+        return s;
+      }
+      function _combN(arr, n) {
+        if (n===0) return [[]]; if (arr.length<n) return [];
+        var r=[], f=arr[0], rest=arr.slice(1);
+        var wF = _combN(rest, n-1); for (var i=0;i<wF.length;i++) r.push([f].concat(wF[i]));
+        var woF = _combN(rest, n); for (var i=0;i<woF.length;i++) r.push(woF[i]);
+        return r;
+      }
+      function _plBuild(morph) {
+        var mf={}; for (var i=0;i<=9;i++) mf[i]=0; var pf={}; var rf={}; var n=0;
         for (var j=0;j<_reUseData.length;j++) {
-          var nd = getNums(_reUseData[j]);
-          var ct2 = {}; for (var k=0;k<nd.length;k++) ct2[nd[k]]=(ct2[nd[k]]||0)+1;
-          var ok = true;
-          if (attr==='odd'||attr==='big'||attr==='lu0'||attr==='sum'||attr==='span') {
-            // just use the raw data to find morph samples
+          var nd=getNums(_reUseData[j]); var ct={}; for (var k=0;k<nd.length;k++) ct[nd[k]]=(ct[nd[k]]||0)+1;
+          var ok = morph==="wb"?true:false;
+          if (morph==="wb") { ok=true; for (var k in ct) { if (ct[k]!==1) { ok=false; break; } } }
+          else { for (var k in ct) { if (ct[k]===2) { ok=true; break; } } }
+          if (!ok) continue; n++;
+          var s={}; for (var k=0;k<nd.length;k++) s[nd[k]]=true;
+          for (var k in s) mf[k|0]=(mf[k|0]||0)+1;
+          var keys=Object.keys(s).map(function(x){return x|0;});
+          for (var a=0;a<keys.length;a++) for (var b=a+1;b<keys.length;b++){
+            var pk=keys[a]<keys[b]?keys[a]+','+keys[b]:keys[b]+','+keys[a];
+            pf[pk]=(pf[pk]||0)+1;
           }
-          // skip - will use the already filtered eng data
+          if (morph!=="wb") { for (var k in ct) { if (ct[k]===2) rf[k]=(rf[k]||0)+1; } }
         }
-        // Use the eng samples (stored in _reUseData for now as workaround)
-        return null; // will be set with static ranges based on morph
+        return {mf:mf, pf:pf, rf:rf, n:n};
       }
-      
-      // 静态约束范围（基于1500期数据）
-      var PL_RANGES = {
-        wb: {odd:[2,3], big:[2,3], lu0:[1,2], sum:[17,28], span:[6,9]},
-        et: {odd:[2,3], big:[2,3], lu0:[1,2], sum:[14,26], span:[5,8]}
-      };
-      
-      function _getAttr(n5, attr) {
-        if (attr==='odd') return n5.filter(function(x){return x%2===1;}).length;
-        if (attr==='big') return n5.filter(function(x){return x>=5;}).length;
-        if (attr==='lu0') return n5.filter(function(x){return x%3===0;}).length;
-        return 0;
-      }
-      
       // 五不同推荐
       var wbEng = _plBuild("wb");
       if (wbEng.n >= 10) {
-        var kk = _plKill();
-        var dm = _plDanma(wbEng, "wb");
-        var cand = []; for (var i=0;i<=9;i++) { if (!kk[i]) cand.push(i); }
-        if (cand.indexOf(dm[0])<0) cand.push(dm[0]);
-        if (cand.indexOf(dm[1])<0) cand.push(dm[1]);
-        
-        var scored = [];
-        function _comb5(arr) {
-          if (arr.length<5) return [];
-          var r = [];
-          for (var a=0;a<arr.length;a++) for (var b=a+1;b<arr.length;b++) for (var c=b+1;c<arr.length;c++)
-            for (var d=c+1;d<arr.length;d++) for (var e=d+1;e<arr.length;e++)
-              r.push([arr[a],arr[b],arr[c],arr[d],arr[e]]);
-          return r;
-        }
-        var all5 = _comb5(cand);
-        for (var m=0;m<all5.length;m++) {
-          var cc = all5[m];
-          if (cc.indexOf(dm[0])<0) continue;
-          var n5 = cc;
-          var o = _getAttr(n5,'odd'), b = _getAttr(n5,'big'), l = _getAttr(n5,'lu0');
-          var su = n5.reduce(function(a,b){return a+b;},0);
-          var sp = Math.max.apply(null,n5)-Math.min.apply(null,n5);
-          var rg = PL_RANGES.wb;
-          if (rg.odd.indexOf(o)<0) continue;
-          if (rg.big.indexOf(b)<0) continue;
-          if (rg.lu0.indexOf(l)<0) continue;
-          if (su<rg.sum[0]||su>rg.sum[1]) continue;
-          if (sp<rg.span[0]||sp>rg.span[1]) continue;
-          // 评分
-          var heat = 0; var fq={}; for (var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq[nd[k]]=(fq[nd[k]]||0)+1;}
-          for (var k=0;k<cc.length;k++) heat += (fq[cc[k]]||0);
-          var spec = 0; for (var k=0;k<cc.length;k++) spec += (wbEng.mf[cc[k]]||0)*1.5;
-          scored.push({combo:cc, score: heat+spec});
+        var oddR=_plDynRange("wb","odd"), bigR=_plDynRange("wb","big"), luR=_plDynRange("wb","lu0");
+        var primeR=_plDynRange("wb","prime"), sumR=_plDynRange("wb","sum"), spanR=_plDynRange("wb","span");
+        var kk=_plKill(), dm=_plDanma(wbEng.mf);
+        var cand=[]; for(var i=0;i<=9;i++){if(!kk[i])cand.push(i);}
+        if(cand.indexOf(dm[0])<0)cand.push(dm[0]); if(cand.indexOf(dm[1])<0)cand.push(dm[1]);
+        var scored=[], all5=_combN(cand,5);
+        var fq={}; for(var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq[nd[k]]=(fq[nd[k]]||0)+1;}
+        for(var m=0;m<all5.length;m++){
+          var c=all5[m]; if(c.indexOf(dm[0])<0) continue;
+          var o=c.filter(function(x){return x%2===1;}).length;
+          var b=c.filter(function(x){return x>=5;}).length;
+          var l=c.filter(function(x){return x%3===0;}).length;
+          var p=c.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+          var su=c.reduce(function(a,b){return a+b;},0);
+          var sp=Math.max.apply(null,c)-Math.min.apply(null,c);
+          if(oddR&&oddR.indexOf(o)<0)continue; if(bigR&&bigR.indexOf(b)<0)continue;
+          if(luR&&luR.indexOf(l)<0)continue; if(primeR&&primeR.indexOf(p)<0)continue;
+          if(sumR&&sumR.indexOf(su)<0)continue; if(spanR&&spanR.indexOf(sp)<0)continue;
+          var heat=0;for(var k=0;k<c.length;k++)heat+=(fq[c[k]]||0);
+          var spec=0;for(var k=0;k<c.length;k++)spec+=(wbEng.mf[c[k]]||0)*1.5;
+          scored.push({combo:c,score:heat+spec+_plPairScore(c)*5});
         }
         scored.sort(function(a,b){return b.score-a.score;});
-        var seen={}; var top5wb=[];
-        for (var m=0;m<scored.length;m++) {
-          var kk = scored[m].combo.slice().sort().join(',');
-          if (!seen[kk]) { seen[kk]=true; top5wb.push(scored[m].combo); if (top5wb.length>=5) break; }
-        }
-        
-        if (top5wb.length>0) {
-          _reHtml += '<div class="rec-card" style="border-left-color:#e91e63;background:linear-gradient(135deg,#fce4ec,#f8bbd0)"><div class="rec-header">🎯 五不同推荐（5组×120注=600注）</div>';
-          for (var g=0;g<top5wb.length;g++) {
-            var gcombo = top5wb[g].slice().sort(function(a,b){return a-b;});
-            _reHtml += '<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
-            gcombo.forEach(function(n){_reHtml+='<span class="dt-ball dan" style="width:22px;height:22px;font-size:10px">'+String(n).padStart(2,'0')+'</span>';});
-            _reHtml += '</div></div>';
+        var seen={}, top5wb=[];
+        for(var m=0;m<scored.length;m++){var k=scored[m].combo.slice().sort().join(',');if(!seen[k]){seen[k]=true;top5wb.push(scored[m].combo);if(top5wb.length>=5)break;}}
+        if(top5wb.length>0){
+          _reHtml+='<div class="rec-card" style="border-left-color:#e91e63;background:linear-gradient(135deg,#fce4ec,#f8bbd0)"><div class="rec-header">🎯 五不同推荐（5组×120注=600注/1,200元）</div>';
+          for(var g=0;g<top5wb.length;g++){
+            var gc=top5wb[g].slice().sort(function(a,b){return a-b;});
+            _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
+            gc.forEach(function(n){_reHtml+='<span class="dt-ball dan" style="width:22px;height:22px;font-size:10px">'+String(n).padStart(2,'0')+'</span>';});
+            _reHtml+='</div></div>';
           }
-          _reHtml += '<div class="rec-reason">五不同5组 | 共600注 | <b>1,200元</b> | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+          _reHtml+='<div class="rec-reason">杀号+定胆+奇偶/大小/012路/质合/恒值号/和值/跨度 | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
         }
       }
-      
-      // 二同推荐（5组）
+      // 二同推荐
       var etEng = _plBuild("et");
       if (etEng.n >= 10) {
-        var kk2 = _plKill();
-        var dm2 = _plDanma(etEng, "et");
-        var cand2 = []; for (var i=0;i<=9;i++) { if (!kk2[i]) cand2.push(i); }
-        if (cand2.indexOf(dm2[0])<0) cand2.push(dm2[0]);
-        if (cand2.indexOf(dm2[1])<0) cand2.push(dm2[1]);
-        
-        var scored2 = [];
-        function _comb4(arr) {
-          if (arr.length<4) return [];
-          var r = [];
-          for (var a=0;a<arr.length;a++) for (var b=a+1;b<arr.length;b++) for (var c=b+1;c<arr.length;c++) for (var d=c+1;d<arr.length;d++)
-            r.push([arr[a],arr[b],arr[c],arr[d]]);
-          return r;
-        }
-        var all4 = _comb4(cand2);
-        var fq2={}; for (var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq2[nd[k]]=(fq2[nd[k]]||0)+1;}
-        
-        for (var m=0;m<all4.length;m++) {
-          var cc = all4[m];
-          if (cc.indexOf(dm2[0])<0) continue;
-          for (var pr=0;pr<4;pr++) {
-            var rp = cc[pr];
-            var n5 = cc.concat([rp]);
-            var o = _getAttr(n5,'odd'), b = _getAttr(n5,'big'), l = _getAttr(n5,'lu0');
-            var su = n5.reduce(function(a,b){return a+b;},0);
-            var sp = Math.max.apply(null,n5)-Math.min.apply(null,n5);
-            var rg = PL_RANGES.et;
-            if (rg.odd.indexOf(o)<0) continue;
-            if (rg.big.indexOf(b)<0) continue;
-            if (rg.lu0.indexOf(l)<0) continue;
-            if (su<rg.sum[0]||su>rg.sum[1]) continue;
-            if (sp<rg.span[0]||sp>rg.span[1]) continue;
-            
-            var heat = (fq2[cc[0]]||0)+(fq2[cc[1]]||0)+(fq2[cc[2]]||0)+(fq2[cc[3]]||0);
-            var spec = ((etEng.mf[cc[0]]||0)+(etEng.mf[cc[1]]||0)+(etEng.mf[cc[2]]||0)+(etEng.mf[cc[3]]||0))*1.5;
-            var follow = 0;
-            for (var pa=0;pa<4;pa++) for (var pb=pa+1;pb<4;pb++) {
-              var pkv = cc[pa]<cc[pb]?cc[pa]+','+cc[pb]:cc[pb]+','+cc[pa];
-              follow += (etEng.pf[pkv]||0)/Math.max(etEng.n,1);
-            }
-            var rpBonus = (etEng.rf[rp]||0)*2;
-            scored2.push({combo:cc, repeat:rp, score: heat+spec+follow*20+rpBonus});
+        var oddR2=_plDynRange("et","odd"), bigR2=_plDynRange("et","big"), luR2=_plDynRange("et","lu0");
+        var primeR2=_plDynRange("et","prime"), sumR2=_plDynRange("et","sum"), spanR2=_plDynRange("et","span");
+        var kk2=_plKill(), dm2=_plDanma(etEng.mf);
+        var cand2=[]; for(var i=0;i<=9;i++){if(!kk2[i])cand2.push(i);}
+        if(cand2.indexOf(dm2[0])<0)cand2.push(dm2[0]); if(cand2.indexOf(dm2[1])<0)cand2.push(dm2[1]);
+        var scored2=[], all4=_combN(cand2,4);
+        var fq2={}; for(var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq2[nd[k]]=(fq2[nd[k]]||0)+1;}
+        for(var m=0;m<all4.length;m++){
+          var c=all4[m]; if(c.indexOf(dm2[0])<0) continue;
+          for(var pr=0;pr<4;pr++){
+            var rp=c[pr]; var n5=c.concat([rp]);
+            var o=n5.filter(function(x){return x%2===1;}).length;
+            var b=n5.filter(function(x){return x>=5;}).length;
+            var l=n5.filter(function(x){return x%3===0;}).length;
+            var p=n5.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+            var su=n5.reduce(function(a,b){return a+b;},0);
+            var sp=Math.max.apply(null,n5)-Math.min.apply(null,n5);
+            if(oddR2&&oddR2.indexOf(o)<0)continue; if(bigR2&&bigR2.indexOf(b)<0)continue;
+            if(luR2&&luR2.indexOf(l)<0)continue; if(primeR2&&primeR2.indexOf(p)<0)continue;
+            if(sumR2&&sumR2.indexOf(su)<0)continue; if(spanR2&&spanR2.indexOf(sp)<0)continue;
+            var heat=(fq2[c[0]]||0)+(fq2[c[1]]||0)+(fq2[c[2]]||0)+(fq2[c[3]]||0);
+            var spec=((etEng.mf[c[0]]||0)+(etEng.mf[c[1]]||0)+(etEng.mf[c[2]]||0)+(etEng.mf[c[3]]||0))*1.5;
+            var follow=0;
+            for(var pa=0;pa<4;pa++)for(var pb=pa+1;pb<4;pb++){var pv=c[pa]<c[pb]?c[pa]+','+c[pb]:c[pb]+','+c[pa];follow+=(etEng.pf[pv]||0)/Math.max(etEng.n,1);}
+            var rpBonus=(etEng.rf[rp]||0)*2;
+            scored2.push({combo:c,repeat:rp,score:heat+spec+follow*20+rpBonus+_plPairScore(c)*3});
           }
         }
         scored2.sort(function(a,b){return b.score-a.score;});
-        var seen2={}; var top5et=[];
-        for (var m=0;m<scored2.length;m++) {
-          var kk = scored2[m].combo.slice().sort().join(',');
-          if (!seen2[kk]) { seen2[kk]=true; top5et.push(scored2[m]); if (top5et.length>=5) break; }
-        }
-        
-        if (top5et.length>0) {
-          _reHtml += '<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（5组×60注=300注）</div>';
-          for (var g=0;g<top5et.length;g++) {
-            var gc = top5et[g].combo.slice().sort(function(a,b){return a-b;});
-            _reHtml += '<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
+        var seen2={}, top5et=[];
+        for(var m=0;m<scored2.length;m++){var k=scored2[m].combo.slice().sort().join(',');if(!seen2[k]){seen2[k]=true;top5et.push(scored2[m]);if(top5et.length>=5)break;}}
+        if(top5et.length>0){
+          _reHtml+='<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（5组×60注=300注/600元）</div>';
+          for(var g=0;g<top5et.length;g++){
+            var gc=top5et[g].combo.slice().sort(function(a,b){return a-b;});
+            _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
             gc.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
-            _reHtml += '<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ce93d8,#ab47bc);color:#fff">重'+String(top5et[g].repeat).padStart(2,'0')+'</span>';
-            _reHtml += '</div></div>';
+            _reHtml+='<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ce93d8,#ab47bc);color:#fff">重'+String(top5et[g].repeat).padStart(2,'0')+'</span></div></div>';
           }
-          _reHtml += '<div class="rec-reason">二同5组 | 共300注 | <b>600元</b> | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+          _reHtml+='<div class="rec-reason">杀号+定胆+奇偶/大小/012路/质合/恒值号/和值/跨度+跟随 | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
         }
       }
     }
-  }
-
   var _reEs = document.getElementById("enhancedSection");
   var _reEr = document.getElementById("enhancedRecs");
   if (_reEs && _reEr) {
