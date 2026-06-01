@@ -11552,100 +11552,405 @@ function renderRecommend(type, data) {
   });
   var _reTargetPrime = Math.round(_rePrimeCount / _reTotal2 * cfg.rC);
   var _reHtml = "";
+  /* 局部组合数计算 */
+  function _reComb(nn, kk) {
+    if (kk < 0 || kk > nn) return 0;
+    if (kk === 0 || kk === nn) return 1;
+    kk = Math.min(kk, nn - kk);
+    var r = 1;
+    for (var i = 1; i <= kk; i++) r = r * (nn - kk + i) / i;
+    return Math.round(r);
+  }
+  /* 杀号精简（所有类型通用） */
   if (_reKills.length > 0 && _reCleanHots.length >= cfg.rC) {
     var _rePick = _reCleanHots.slice(0, cfg.rC);
-    _reHtml += '<div class="rec-card" style="border-left-color:#607d8b">';
-    _reHtml += '<div class="rec-header">✂ 杀号精简（排除' + _reKills.join(",") + '后）</div>';
-    _reHtml += '<div class="rec-balls">';
+    _reHtml += '<div class="rec-card" style="border-left-color:#607d8b"><div class="rec-header">✂ 杀号精简（排除' + _reKills.join(",") + '后）</div><div class="rec-balls">';
     _rePick.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
     _reHtml += '</div><div class="rec-reason">排除' + _reKills.length + '个极冷号后精选热号</div></div>';
   }
-  if (cfg.type === "lotto") {
-    var _reR0 = [], _reR1 = [], _reR2 = [];
-    for (var _rei = _reNumMin; _rei <= _reNumMax; _rei++) {
-      if (_reKillSet.has(_rei)) continue;
-      var _rer = _rei % 3;
-      if (_rer === 0) _reR0.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else if (_rer === 1) _reR1.push({ n: _rei, f: _reFreq[_rei] || 0 });
-      else _reR2.push({ n: _rei, f: _reFreq[_rei] || 0 });
+
+  /* ===== 快乐8 多策略融合推荐 ===== */
+  if (cfg.type === "keno") {
+    var _knTotal = cfg.rMax;
+    var _knPeriod = _reUseData.length;
+    var _knMissList = [];
+    for (var _kni = 1; _kni <= _knTotal; _kni++) { if (!_reKillSet.has(_kni)) _knMissList.push({ n: _kni, m: _reMiss[_kni] }); }
+    _knMissList.sort(function(a, b) { return b.m - a.m; });
+    var _knMissPick = _knMissList.slice(0, 20).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+    var _knFreqValues = [];
+    for (var _kni = 1; _kni <= _knTotal; _kni++) _knFreqValues.push(_reFreq[_kni] || 0);
+    var _knFreqAvg = _knFreqValues.reduce(function(s, v) { return s + v; }, 0) / _knTotal;
+    var _knHot = [], _knWarm = [], _knCold = [];
+    for (var _kni = 1; _kni <= _knTotal; _kni++) {
+      var _knf = _reFreq[_kni] || 0;
+      if (_knf >= _knFreqAvg * 1.5) _knHot.push(_kni);
+      else if (_knf >= _knFreqAvg) _knWarm.push(_kni);
+      else _knCold.push(_kni);
     }
-    _reR0.sort(function(a, b) { return b.f - a.f; });
-    _reR1.sort(function(a, b) { return b.f - a.f; });
-    _reR2.sort(function(a, b) { return b.f - a.f; });
-    var _reRoutePick = _reR0.slice(0, _reTarget0).concat(_reR1.slice(0, _reTarget1)).concat(_reR2.slice(0, _reTarget2));
-    if (_reRoutePick.length >= cfg.rC) {
-      _reRoutePick = _reRoutePick.slice(0, cfg.rC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#ef5350"><div class="rec-header">📐 012路约束（0路' + _reTarget0 + '个 1路' + _reTarget1 + '个 2路' + _reTarget2 + '个）</div><div class="rec-balls">';
-      _reRoutePick.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x.n).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">按近20期012路比例约束筛选</div></div>';
+    var _knZones = [[1,20],[21,40],[41,60],[61,80]];
+    var _knZonePick = [];
+    for (var _knzi = 0; _knzi < 4; _knzi++) {
+      var _knzMin = _knZones[_knzi][0], _knzMax = _knZones[_knzi][1];
+      var _knzNums = _reCleanHots.filter(function(n) { return n >= _knzMin && n <= _knzMax && !_reKillSet.has(n); });
+      _knZonePick = _knZonePick.concat(_knzNums.slice(0, 5));
     }
-  }
-  if (cfg.type === "digit" && _reCleanHots.length > 0) {
-    var _rePosCount = type === "pl5" ? 5 : 3;
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">🎯 独胆锁定（每位置EMA最强数字）</div>';
-    for (var _repos = 0; _repos < _rePosCount; _repos++) {
-      var _reEmaBest = { n: -1, v: -1 };
-      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
-        var _reseq = [];
-        for (var _rej = Math.min(30, _reUseData.length) - 1; _rej >= 0; _rej--) {
-          var _rens2 = getNums(_reUseData[_rej]);
-          _reseq.push(_rens2.length > _repos && _rens2[_repos] === _red ? 1 : 0);
-        }
-        var _ree = _reseq[0];
-        for (var _rek = 1; _rek < _reseq.length; _rek++) _ree = 0.4 * _reseq[_rek] + 0.6 * _ree;
-        if (_ree > _reEmaBest.v) _reEmaBest = { n: _red, v: _ree };
-      }
-      _reHtml += '<span class="ball r" style="margin:2px">' + String(_reEmaBest.n).padStart(2, "0") + '</span><span style="font-size:10px;color:#999;margin-right:6px">位' + (_repos + 1) + ' EMA' + _reEmaBest.v.toFixed(2) + '</span>';
+    _knZonePick.sort(function(a,b){return a-b;});
+    var _knOddCounts = [];
+    for (var _kni = 0; _kni < Math.min(_knPeriod, 50); _kni++) {
+      var _knNums = getNums(_reUseData[_kni]);
+      _knOddCounts.push(_knNums.filter(function(x) { return x % 2 === 1; }).length);
     }
-    _reHtml += '<div class="rec-reason">每位置EMA热度最高的数字</div></div>';
-  }
-  if (cfg.type === "lotto" && _reCleanHots.length >= cfg.rC) {
-    var _repn = _reCleanHots.filter(function(n) { return _rePrimes.has(n); });
-    var _recn = _reCleanHots.filter(function(n) { return !_rePrimes.has(n); });
-    var _repp = _repn.slice(0, _reTargetPrime), _recp = _recn.slice(0, cfg.rC - _reTargetPrime);
-    if (_repp.length + _recp.length >= cfg.rC) {
-      var _repq = _repp.concat(_recp).slice(0, cfg.rC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#8d6e63"><div class="rec-header">🔢 质合约束（质数' + _reTargetPrime + '个 合数' + (cfg.rC - _reTargetPrime) + '个）</div><div class="rec-balls">';
-      _repq.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">按质合比历史趋势约束筛选</div></div>';
+    var _knAvgOdd = Math.round(_knOddCounts.reduce(function(s,v){return s+v;},0) / _knOddCounts.length * 10) / 10;
+    var _knOdds = _reCleanHots.filter(function(n) { return n % 2 === 1; });
+    var _knEvens = _reCleanHots.filter(function(n) { return n % 2 === 0 && !_reKillSet.has(n); });
+    var _knOddPick = _knOdds.slice(0, Math.round(20 * _knAvgOdd / 20));
+    var _knEvenPick = _knEvens.slice(0, 20 - _knOddPick.length);
+    var _knOePick = _knOddPick.concat(_knEvenPick).sort(function(a,b){return a-b;});
+    var _knTailFreq = {}; for (var _knt = 0; _knt < 10; _knt++) _knTailFreq[_knt] = 0;
+    for (var _kni = 0; _kni < _knPeriod; _kni++) {
+      var _knNs = getNums(_reUseData[_kni]);
+      _knNs.forEach(function(x) { _knTailFreq[x % 10]++; });
     }
-  }
-  /* 蓝球推荐（双色球1蓝/大乐透2蓝） */
-  if (cfg.type === "lotto" && cfg.bC > 0 && cfg.bMax > 0) {
-    var _reBHot = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : [];
-    if (_reBHot.length === 0) {
-      var _reBFreq = {};
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBFreq[_rbi] = 0;
-      _reUseData.forEach(function(_rbitem) {
-        var _rbb = getBlues(_rbitem);
-        _rbb.forEach(function(_rbn) { if (_rbn >= 1 && _rbn <= cfg.bMax) _reBFreq[_rbn]++; });
-      });
-      for (var _rbi = 1; _rbi <= cfg.bMax; _rbi++) _reBHot.push({n: _rbi, f: _reBFreq[_rbi]});
-      _reBHot.sort(function(a, b) { return b.f - a.f; });
-      _reBHot = _reBHot.map(function(x) { return x.n; });
-    }
-    if (_reBHot.length > 0) {
-      var _reBpick = _reBHot.slice(0, cfg.bC);
-      _reHtml += '<div class="rec-card" style="border-left-color:#1565c0"><div class="rec-header">🔵 蓝球推荐（热度Top' + cfg.bC + '）</div><div class="rec-balls">';
-      _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
-      _reHtml += '</div><div class="rec-reason">近50期蓝球出现频率最高的' + cfg.bC + '个</div></div>';
-      /* 蓝球冷热提醒 */
-      var _reBHotAll = rec.analysis && rec.analysis.hotBlues ? rec.analysis.hotBlues : _reBHot;
-      var _reBColdAll = rec.analysis && rec.analysis.coldBlues ? rec.analysis.coldBlues : [];
-      var _reBmaxMiss = cfg.bMax > 0 ? _reUseData.length : 0;
-      if (_reBColdAll.length > 0) {
-        _reHtml += '<div class="rec-card" style="border-left-color:#78909c"><div class="rec-header" style="font-size:13px">🌡 蓝球冷热对比</div><div class="rec-reason" style="font-size:11px;line-height:1.6">';
-        _reHtml += '🔥 最热蓝球：<span style="color:#e53935;font-weight:bold">' + _reBHotAll.slice(0,3).join(",") + '</span><br>';
-        _reHtml += '❄ 最冷蓝球：<span style="color:#2196f3;font-weight:bold">' + _reBColdAll.slice(0,3).join(",") + '</span>';
+    var _knTails = []; for (var _knt = 0; _knt < 10; _knt++) _knTails.push({ t: _knt, f: _knTailFreq[_knt] });
+    _knTails.sort(function(a, b) { return b.f - a.f; });
+    var _knHotTails = _knTails.slice(0, 5).map(function(x) { return x.t; });
+    var _knHotTailSet = {}; _knHotTails.forEach(function(t) { _knHotTailSet[t] = true; });
+    var _knTailPick = _reCleanHots.filter(function(n) { return _knHotTailSet[n % 10] && !_reKillSet.has(n); }).slice(0, 20);
+    _knTailPick.sort(function(a,b){return a-b;});
+    var _knFusion = {}; for (var _kni = 1; _kni <= _knTotal; _kni++) _knFusion[_kni] = 0;
+    _reCleanHots.slice(0, cfg.rC).forEach(function(n) { _knFusion[n] += 10; });
+    _knMissPick.forEach(function(n) { _knFusion[n] += 8; });
+    _knHot.forEach(function(n) { _knFusion[n] += 12; }); _knWarm.forEach(function(n) { _knFusion[n] += 8; }); _knCold.forEach(function(n) { _knFusion[n] += 4; });
+    _knZonePick.forEach(function(n) { _knFusion[n] += 6; });
+    _knOePick.forEach(function(n) { _knFusion[n] += 5; });
+    _knTailPick.forEach(function(n) { _knFusion[n] += 5; });
+    for (var _kni = 1; _kni <= _knTotal; _kni++) { _knFusion[_kni] += Math.round((_reFreq[_kni] || 0) / Math.max(1, _knFreqAvg) * 5); }
+    for (var _kni = 1; _kni <= _knTotal; _kni++) { if (_reKillSet.has(_kni)) _knFusion[_kni] = -999; }
+    var _knFusionList = [];
+    for (var _kni = 1; _kni <= _knTotal; _kni++) _knFusionList.push({ n: _kni, s: _knFusion[_kni] });
+    _knFusionList.sort(function(a, b) { return b.s - a.s; });
+    var _knFusionTop35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 多策略融合推荐（6种算法加权评分·Top35码池）</div><div class="rec-balls">';
+    _knFusionTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div><div class="rec-reason">杀号+10 | 遗漏+8 | 热+12/温+8/冷+4 | 分区+6 | 奇偶+5 | 尾数+5 | 频率×5</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    /* 综合胆拖 2胆~9胆 */
+    var _krPool35 = _knFusionList.slice(0, 35).map(function(x) { return x.n; });
+    var _krMom = {};
+    _krPool35.forEach(function(n) {
+      var _rm5 = 0;
+      for (var _rmi = 0; _rmi < Math.min(5, _reUseData.length); _rmi++) { if (getNums(_reUseData[_rmi]).indexOf(n) >= 0) _rm5++; }
+      var _rme = 0, _rms = [];
+      for (var _rsi = 0; _rsi < Math.min(30, _reUseData.length); _rsi++) { _rms.push(getNums(_reUseData[_rsi]).indexOf(n) >= 0 ? 1 : 0); }
+      if (_rms.length > 0) { _rme = _rms[0]; for (var _rvi = 1; _rvi < _rms.length; _rvi++) _rme = 0.5 * _rms[_rvi] + 0.5 * _rme; }
+      _krMom[n] = _rm5 * 3 + _rme * 12 + (_reFreq[n] || 0) * 0.5;
+    });
+    var _krPrevSet = data.length > 1 ? new Set(getNums(data[1])) : new Set();
+    var _krCands = _krPool35.slice();
+    _krCands.forEach(function(n) { if (_krPrevSet.has(n)) _krMom[n] += 15; });
+    _krCands.sort(function(a,b){return _krMom[b]-_krMom[a];});
+    var _krFinal9 = [], _krZCnt = [0,0,0,0], _krTails2 = {}, _krOdds2 = 0;
+    var _krZoneOf = function(n) { return Math.floor((n-1)/20); };
+    _krCands.forEach(function(n) {
+      if (_krFinal9.length >= 9) return;
+      var z = _krZoneOf(n), t = n % 10;
+      if (_krZCnt[z] >= 3) return;
+      _krFinal9.push(n); _krZCnt[z]++; _krTails2[t] = true; if (n%2) _krOdds2++;
+    });
+    if (_krFinal9.length < 9) { _krCands.forEach(function(n) { if (_krFinal9.length >= 9) return; if (_krFinal9.indexOf(n)<0) _krFinal9.push(n); }); }
+    _krFinal9.sort(function(a,b){return a-b;});
+    for (var _kndc = 2; _kndc <= 9; _kndc++) {
+      var _kndan = _krFinal9.slice(0, _kndc);
+      var _kndanS = {}; _kndan.forEach(function(x) { _kndanS[x] = true; });
+      var _kntuo = _krPool35.filter(function(x) { return !_kndanS[x]; }).sort(function(a,b){return a-b;});
+      _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">' + _kndc + '胆拖（综合方案）</div><div class="dt-row"><span class="dt-label">胆码</span><div class="dt-balls">';
+      _kndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div></div>';
+      if (_kntuo.length > 0) {
+        _reHtml += '<div class="dt-row"><span class="dt-label">拖码</span><div class="dt-balls">';
+        _kntuo.forEach(function(n) { _reHtml += '<span class="dt-ball tuo">' + String(n).padStart(2,"0") + '</span>'; });
         _reHtml += '</div></div>';
       }
+      _reHtml += '<div class="rec-reason">' + _kndc + '胆 | 35码池 | 余' + _kntuo.length + '拖</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     }
   }
+
+  /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
+  if (cfg.type === "lotto" && cfg.bMax > 0) {
+    var _reBigRed = cfg.rC === 6 ? 9 : 8;
+    var _reBigBlue = 3;
+    var _reRMax = cfg.rMax;
+    var _reBMax = cfg.bMax;
+    var _reRScores = {};
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
+      if (_reKillSet.has(_rei)) continue;
+      var _rF = _reFreq[_rei] || 0, _rM = _reMiss[_rei] || 0, _rRecent = 0;
+      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getNums(_reUseData[_rri]).indexOf(_rei) >= 0) _rRecent++; }
+      _reRScores[_rei] = _rF * 1.0 + _rM * 0.3 + _rRecent * 3.0;
+    }
+    var _reRSorted = [];
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) { if (_reKillSet.has(_rei)) continue; _reRSorted.push({ n: _rei, s: _reRScores[_rei] || 0 }); }
+    _reRSorted.sort(function(a, b) { return b.s - a.s; });
+    var _reBigPicks = _reRSorted.slice(0, _reBigRed).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    var _reRedCount = _reBigPicks.length;
+    var _reBScores = {};
+    for (var _rbi = 1; _rbi <= _reBMax; _rbi++) {
+      var _bF = 0, _bRecent = 0;
+      _reUseData.forEach(function(d) { var _bb = getBlues(d); if (_bb.indexOf(_rbi) >= 0) _bF++; });
+      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getBlues(_reUseData[_rri]).indexOf(_rbi) >= 0) _bRecent++; }
+      _reBScores[_rbi] = _bF * 0.5 + _bRecent * 3.0;
+    }
+    var _reBSorted = [];
+    for (var _rbi = 1; _rbi <= _reBMax; _rbi++) _reBSorted.push({ n: _rbi, s: _reBScores[_rbi] || 0 });
+    _reBSorted.sort(function(a, b) { return b.s - a.s; });
+    var _reBpick = _reBSorted.slice(0, _reBigBlue).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+    var _reBlueCount = _reBpick.length;
+    var _reBetCount = _reRedCount >= cfg.rC ? _reComb(_reRedCount, cfg.rC) * _reBlueCount : 0;
+    var _reCost = _reBetCount * 2;
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 大复试推荐（<b>' + _reRedCount + '</b>红+<b>' + _reBlueCount + '</b>蓝）</div><div class="rec-balls">';
+    _reBigPicks.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x).padStart(2, "0") + "</span>"; });
+    _reHtml += '<span style="margin:0 4px;color:#999"> | </span>';
+    _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
+    _reHtml += '</div><div class="rec-reason">C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b> | 频率+遗漏+近期热度 | Top' + _reBigRed + '选</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+  }
+
+  /* ===== 七乐彩专用推荐 (30选7 无蓝球) ===== */
+  if (type === "qlc") {
+    var _qlScores = {};
+    for (var _qi = 1; _qi <= 30; _qi++) {
+      if (_reKillSet.has(_qi)) continue;
+      var _qf = _reFreq[_qi] || 0, _qm = _reMiss[_qi] || 0, _qr = 0;
+      for (var _qri = 0; _qri < Math.min(10, _reUseData.length); _qri++) { if (getNums(_reUseData[_qri]).indexOf(_qi) >= 0) _qr++; }
+      _qlScores[_qi] = _qf * 0.6 + _qm * 1.0 + _qr * 2.0;
+    }
+    var _qlSorted = [];
+    for (var _qi = 1; _qi <= 30; _qi++) { if (_reKillSet.has(_qi)) continue; _qlSorted.push({ n: _qi, s: _qlScores[_qi] || 0 }); }
+    _qlSorted.sort(function(a, b) { return b.s - a.s; });
+    var _qlPool = _qlSorted.slice(0, 12).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    var _qlCombo = _reComb(_qlPool.length, 7);
+    var _qlCost = _qlCombo * 2;
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 七乐彩综合推荐（12码选号池）</div><div class="rec-balls">';
+    _qlPool.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+    _reHtml += '</div><div class="rec-reason">C(12,7)=' + _qlCombo + '注 | ' + _qlCost + '元 | 频率+遗漏+近期热度综合评分</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+  }
+
+  /* ===== 数字彩 包号推荐（福彩3D/排列三/七星彩/排列五） ===== */
+  if (cfg.type === "digit") {
+    var _rePosCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
+    var _rePosKeep = type === "pl5" ? 3 : type === "qxc" ? 4 : 5;
+    var _reAllCands = [];
+    for (var _repos = 0; _repos < _rePosCount; _repos++) {
+      var _rePosScores = {};
+      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
+        var _pf = 0, _pm = 0, _pr = 0;
+        for (var _rej = 0; _rej < _reUseData.length; _rej++) {
+          var _rens2 = getNums(_reUseData[_rej]);
+          if (_rens2.length <= _repos) continue;
+          if (_rens2[_repos] === _red) { _pf++; }
+          if (_pm === 0 && _rens2[_repos] === _red) _pm = _rej;
+        }
+        if (_pm === 0) _pm = _reUseData.length;
+        for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+          var _rrn = getNums(_reUseData[_rri]);
+          if (_rrn.length > _repos && _rrn[_repos] === _red) _pr++;
+        }
+        _rePosScores[_red] = _pf * 0.5 + _pm * 0.2 + _pr * 3.0;
+      }
+      var _reRanked = [];
+      for (var _red = _reNumMin; _red <= _reNumMax; _red++) _reRanked.push({ n: _red, s: _rePosScores[_red] || 0 });
+      _reRanked.sort(function(a, b) { return b.s - a.s; });
+      var _reTop = _reRanked.slice(0, _rePosKeep).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+      _reAllCands.push(_reTop);
+    }
+    var _reTotalCombos = 1;
+    _reAllCands.forEach(function(c) { _reTotalCombos *= c.length; });
+    var _reBagCost = _reTotalCombos * 2;
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🎯 包号推荐（每位置Top' + _rePosKeep + '码）</div>';
+    for (var _repos = 0; _repos < _rePosCount; _repos++) {
+      _reHtml += '<div style="margin:3px 0"><span style="font-size:10px;color:#999;margin-right:4px">位' + (_repos+1) + '</span>';
+      _reAllCands[_repos].forEach(function(n) { _reHtml += '<span class="ball r" style="margin:1px">' + n + '</span>'; });
+      _reHtml += '</div>';
+    }
+    _reHtml += '<div class="rec-reason"><b>' + _reTotalCombos + '注</b> | <b>' + _reBagCost + '元</b> | 频率+遗漏+近期热度</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+  }
+
+  /* ===== 排列五 五不同+二同 全约束综合法 ===== */
+  if (type === "pl5") {
+    function _plDynRange(morph, attr) {
+      var vals = [];
+      for (var j=0;j<_reUseData.length;j++) {
+        var nd = getNums(_reUseData[j]);
+        var ct = {}; for (var k=0;k<nd.length;k++) ct[nd[k]]=(ct[nd[k]]||0)+1;
+        var ok = false;
+        if (morph==="wb") { ok = true; for (var k in ct) { if (ct[k]!==1) { ok=false; break; } } }
+        else { for (var k in ct) { if (ct[k]===2) { ok=true; break; } } }
+        if (!ok) continue;
+        var v = 0;
+        if (attr==='odd') v = nd.filter(function(x){return x%2===1;}).length;
+        else if (attr==='big') v = nd.filter(function(x){return x>=5;}).length;
+        else if (attr==='lu0') v = nd.filter(function(x){return x%3===0;}).length;
+        else if (attr==='prime') v = nd.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+        else if (attr==='sum') v = nd.reduce(function(a,b){return a+b;},0);
+        else if (attr==='span') v = Math.max.apply(null,nd)-Math.min.apply(null,nd);
+        vals.push(v);
+      }
+      if (vals.length<5) return null;
+      var freq = {};
+      for (var i=0;i<vals.length;i++) freq[vals[i]] = (freq[vals[i]]||0)+1;
+      var items = []; for (var k in freq) items.push({v:k|0,c:freq[k]});
+      items.sort(function(a,b){return b.c-a.c;});
+      var acc=0, r=[]; var cov = (attr==='sum'||attr==='span')?0.8:0.85;
+      for (var i=0;i<items.length;i++) { r.push(items[i].v); acc+=items[i].c; if (acc/vals.length>=cov) break; }
+      return r;
+    }
+    function _plKill() {
+      var ks = {};
+      var last5 = getNums(_reUseData[0]);
+      ks[(last5[4]*2+3)%10] = true; ks[(last5[0]+last5[1])%10] = true;
+      var n = _reUseData.length;
+      var r5 = {}; for (var i=0;i<=9;i++) r5[i]=0;
+      for (var j=0;j<Math.min(5,n);j++) { var nd=getNums(_reUseData[j]); for (var k=0;k<nd.length;k++) r5[nd[k]]=(r5[nd[k]]||0)+1; }
+      var miss = {}; for (var i=0;i<=9;i++) miss[i]=n;
+      for (var j=0;j<n;j++) { var nd=getNums(_reUseData[j]); for (var k=0;k<nd.length;k++) { if (miss[nd[k]]>j) miss[nd[k]]=j; } }
+      var coldest=-1, coldestS=999;
+      for (var i=0;i<=9;i++) { if (ks[i]) continue; var s = r5[i]*2 + miss[i]*0.5; if (s<coldestS) { coldestS=s; coldest=i; } }
+      if (coldest>=0) ks[coldest]=true;
+      return ks;
+    }
+    function _plDanma(mfreq) {
+      var fq={}; for (var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq[nd[k]]=(fq[nd[k]]||0)+1+(j<15?5:0);}
+      var sc=[]; for (var i=0;i<=9;i++) sc.push({n:i,s:(fq[i]||0)*0.3+(mfreq[i]||0)*2.0});
+      sc.sort(function(a,b){return b.s-a.s;}); return [sc[0].n, sc[1].n];
+    }
+    function _plPairScore(com) {
+      var pairs=[[0,5],[1,6],[2,7],[3,8],[4,9]]; var s=0;
+      for (var a=0;a<com.length;a++) for (var b=a+1;b<com.length;b++)
+        for (var p=0;p<pairs.length;p++) if ((com[a]===pairs[p][0]&&com[b]===pairs[p][1])||(com[a]===pairs[p][1]&&com[b]===pairs[p][0])) s++;
+      return s;
+    }
+    function _combN(arr, n) {
+      if (n===0) return [[]]; if (arr.length<n) return [];
+      var r=[], f=arr[0], rest=arr.slice(1);
+      var wF = _combN(rest, n-1); for (var i=0;i<wF.length;i++) r.push([f].concat(wF[i]));
+      var woF = _combN(rest, n); for (var i=0;i<woF.length;i++) r.push(woF[i]);
+      return r;
+    }
+    function _plBuild(morph) {
+      var mf={}; for (var i=0;i<=9;i++) mf[i]=0; var pf={}; var rf={}; var n=0;
+      for (var j=0;j<_reUseData.length;j++) {
+        var nd=getNums(_reUseData[j]); var ct={}; for (var k=0;k<nd.length;k++) ct[nd[k]]=(ct[nd[k]]||0)+1;
+        var ok = morph==="wb"?true:false;
+        if (morph==="wb") { ok=true; for (var k in ct) { if (ct[k]!==1) { ok=false; break; } } }
+        else { for (var k in ct) { if (ct[k]===2) { ok=true; break; } } }
+        if (!ok) continue; n++;
+        var s={}; for (var k=0;k<nd.length;k++) s[nd[k]]=true;
+        for (var k in s) mf[k|0]=(mf[k|0]||0)+1;
+        var keys=Object.keys(s).map(function(x){return x|0;});
+        for (var a=0;a<keys.length;a++) for (var b=a+1;b<keys.length;b++){
+          var pk=keys[a]<keys[b]?keys[a]+','+keys[b]:keys[b]+','+keys[a];
+          pf[pk]=(pf[pk]||0)+1;
+        }
+        if (morph!=="wb") { for (var k in ct) { if (ct[k]===2) rf[k]=(rf[k]||0)+1; } }
+      }
+      return {mf:mf, pf:pf, rf:rf, n:n};
+    }
+    /* 五不同推荐 */
+    var wbEng = _plBuild("wb");
+    if (wbEng.n >= 10) {
+      var oddR=_plDynRange("wb","odd"), bigR=_plDynRange("wb","big"), luR=_plDynRange("wb","lu0");
+      var primeR=_plDynRange("wb","prime"), sumR=_plDynRange("wb","sum"), spanR=_plDynRange("wb","span");
+      var kk=_plKill(), dm=_plDanma(wbEng.mf);
+      var cand=[]; for(var i=0;i<=9;i++){if(!kk[i])cand.push(i);}
+      if(cand.indexOf(dm[0])<0)cand.push(dm[0]); if(cand.indexOf(dm[1])<0)cand.push(dm[1]);
+      var scored=[], all5=_combN(cand,5);
+      var fq={}; for(var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq[nd[k]]=(fq[nd[k]]||0)+1;}
+      for(var m=0;m<all5.length;m++){
+        var c=all5[m]; if(c.indexOf(dm[0])<0) continue;
+        var o=c.filter(function(x){return x%2===1;}).length;
+        var b=c.filter(function(x){return x>=5;}).length;
+        var l=c.filter(function(x){return x%3===0;}).length;
+        var p=c.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+        var su=c.reduce(function(a,b){return a+b;},0);
+        var sp=Math.max.apply(null,c)-Math.min.apply(null,c);
+        if(oddR&&oddR.indexOf(o)<0)continue; if(bigR&&bigR.indexOf(b)<0)continue;
+        if(luR&&luR.indexOf(l)<0)continue; if(primeR&&primeR.indexOf(p)<0)continue;
+        if(sumR&&sumR.indexOf(su)<0)continue; if(spanR&&spanR.indexOf(sp)<0)continue;
+        var heat=0;for(var k=0;k<c.length;k++)heat+=(fq[c[k]]||0);
+        var spec=0;for(var k=0;k<c.length;k++)spec+=(wbEng.mf[c[k]]||0)*1.5;
+        scored.push({combo:c,score:heat+spec+_plPairScore(c)*5});
+      }
+      scored.sort(function(a,b){return b.score-a.score;});
+      var seen={}, top5wb=[];
+      for(var m=0;m<scored.length;m++){var k=scored[m].combo.slice().sort().join(',');if(!seen[k]){seen[k]=true;top5wb.push(scored[m].combo);if(top5wb.length>=5)break;}}
+      if(top5wb.length>0){
+        _reHtml += '<div class="rec-card" style="border-left-color:#e91e63;background:linear-gradient(135deg,#fce4ec,#f8bbd0)"><div class="rec-header">🎯 五不同推荐（' + top5wb.length + '组×120注=' + (top5wb.length*120) + '注/' + (top5wb.length*240) + '元）</div>';
+        for(var g=0;g<top5wb.length;g++){
+          var gc=top5wb[g].slice().sort(function(a,b){return a-b;});
+          _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
+          gc.forEach(function(n){_reHtml+='<span class="dt-ball dan" style="width:22px;height:22px;font-size:10px">'+String(n).padStart(2,'0')+'</span>';});
+          _reHtml+='</div></div>';
+        }
+        _reHtml+='<div class="rec-reason">杀号+定胆+奇偶/大小/012路/质合/和值/跨度 | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+      }
+    }
+    /* 二同推荐 */
+    var etEng = _plBuild("et");
+    if (etEng.n >= 10) {
+      var oddR2=_plDynRange("et","odd"), bigR2=_plDynRange("et","big"), luR2=_plDynRange("et","lu0");
+      var primeR2=_plDynRange("et","prime"), sumR2=_plDynRange("et","sum"), spanR2=_plDynRange("et","span");
+      var kk2=_plKill(), dm2=_plDanma(etEng.mf);
+      var cand2=[]; for(var i=0;i<=9;i++){if(!kk2[i])cand2.push(i);}
+      if(cand2.indexOf(dm2[0])<0)cand2.push(dm2[0]); if(cand2.indexOf(dm2[1])<0)cand2.push(dm2[1]);
+      var scored2=[], all4=_combN(cand2,4);
+      var fq2={}; for(var j=0;j<_reUseData.length;j++){var nd=getNums(_reUseData[j]);for(var k=0;k<nd.length;k++)fq2[nd[k]]=(fq2[nd[k]]||0)+1;}
+      for(var m=0;m<all4.length;m++){
+        var c=all4[m]; if(c.indexOf(dm2[0])<0) continue;
+        for(var pr=0;pr<4;pr++){
+          var rp=c[pr]; var n5=c.concat([rp]);
+          var o=n5.filter(function(x){return x%2===1;}).length;
+          var b=n5.filter(function(x){return x>=5;}).length;
+          var l=n5.filter(function(x){return x%3===0;}).length;
+          var p=n5.filter(function(x){return x===2||x===3||x===5||x===7;}).length;
+          var su=n5.reduce(function(a,b){return a+b;},0);
+          var sp=Math.max.apply(null,n5)-Math.min.apply(null,n5);
+          if(oddR2&&oddR2.indexOf(o)<0)continue; if(bigR2&&bigR2.indexOf(b)<0)continue;
+          if(luR2&&luR2.indexOf(l)<0)continue; if(primeR2&&primeR2.indexOf(p)<0)continue;
+          if(sumR2&&sumR2.indexOf(su)<0)continue; if(spanR2&&spanR2.indexOf(sp)<0)continue;
+          var heat=(fq2[c[0]]||0)+(fq2[c[1]]||0)+(fq2[c[2]]||0)+(fq2[c[3]]||0);
+          var spec=((etEng.mf[c[0]]||0)+(etEng.mf[c[1]]||0)+(etEng.mf[c[2]]||0)+(etEng.mf[c[3]]||0))*1.5;
+          var follow=0;
+          for(var pa=0;pa<4;pa++)for(var pb=pa+1;pb<4;pb++){var pv=c[pa]<c[pb]?c[pa]+','+c[pb]:c[pb]+','+c[pa];follow+=(etEng.pf[pv]||0)/Math.max(etEng.n,1);}
+          var rpBonus=(etEng.rf[rp]||0)*2;
+          scored2.push({combo:c,repeat:rp,score:heat+spec+follow*20+rpBonus+_plPairScore(c)*3});
+        }
+      }
+      scored2.sort(function(a,b){return b.score-a.score;});
+      var seen2={}, top5et=[];
+      for(var m=0;m<scored2.length;m++){var k=scored2[m].combo.slice().sort().join(',');if(!seen2[k]){seen2[k]=true;top5et.push(scored2[m]);if(top5et.length>=5)break;}}
+      if(top5et.length>0){
+        _reHtml+='<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（' + top5et.length + '组×60注=' + (top5et.length*60) + '注/' + (top5et.length*120) + '元）</div>';
+        for(var g=0;g<top5et.length;g++){
+          var gc=top5et[g].combo.slice().sort(function(a,b){return a-b;});
+          _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">'+(g+1)+'</span><div class="dt-balls">';
+          gc.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
+          _reHtml+='<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ce93d8,#ab47bc);color:#fff">重'+String(top5et[g].repeat).padStart(2,'0')+'</span></div></div>';
+        }
+        _reHtml+='<div class="rec-reason">杀号+定胆+奇偶/大小/012路/质合/和值/跨度+跟随 | 全约束综合法</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+      }
+    }
+  }
+
   var _reEs = document.getElementById("enhancedSection");
   var _reEr = document.getElementById("enhancedRecs");
   if (_reEs && _reEr) {
-    if (_reHtml) { _reEs.style.display = "block"; _reEr.innerHTML = _reHtml; }
-    else { _reEs.style.display = "none"; }
+    if (cfg.type === "lotto" || cfg.type === "keno") {
+      if (!_reHtml) {
+        _reHtml = '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 综合推荐</div><div class="rec-reason">数据不足，无法生成增强推荐</div></div>';
+      }
+      _reEs.style.display = "block"; _reEr.innerHTML = _reHtml;
+    } else {
+      if (_reHtml) { _reEs.style.display = "block"; _reEr.innerHTML = _reHtml; }
+      else { _reEs.style.display = "none"; }
+    }
   }
 
   /* ===== 命中率 ===== */
