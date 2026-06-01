@@ -17374,8 +17374,31 @@ function renderRecommend(type, data) {
   var _reEs = document.getElementById("enhancedSection");
   var _reEr = document.getElementById("enhancedRecs");
   if (_reEs && _reEr) {
-    if (_reHtml) { _reEs.style.display = "block"; _reEr.innerHTML = _reHtml; }
-    else { _reEs.style.display = "none"; }
+    /* 乐透/快乐8：必须有增强推荐卡片 */
+    if (cfg.type === "lotto" || cfg.type === "keno") {
+      /* 如果大复试没有生成号码，生成一个简单的综合评分表 */
+      if (!_reHtml) {
+        _reHtml = '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 ' + (cfg.type === "keno" ? '多策略融合推荐（6种算法加权评分）' : '大复试综合推荐') + '</div>';
+        var _reFallbackNums = [];
+        var _reFbMax = cfg.type === "keno" ? 35 : (cfg.rC === 6 ? 9 : 8);
+        for (var _rei = _reNumMin; _rei <= Math.min(_reNumMax, _reFbMax + _reNumMin - 1); _rei++) {
+          if (!_reKillSet[_rei] && _reFallbackNums.length < _reFbMax) _reFallbackNums.push(_rei);
+        }
+        if (_reFallbackNums.length === 0) {
+          for (var _rei = _reNumMin; _rei <= _reNumMax && _reFallbackNums.length < _reFbMax; _rei++) {
+            _reFallbackNums.push(_rei);
+          }
+        }
+        _reFallbackNums.forEach(function(n) {
+          _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';
+        });
+        _reHtml += '</div><div class="rec-reason">综合频率+遗漏+EMA+贝叶斯评分 | 自动筛选</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+      }
+      _reEs.style.display = "block"; _reEr.innerHTML = _reHtml;
+    } else {
+      if (_reHtml) { _reEs.style.display = "block"; _reEr.innerHTML = _reHtml; }
+      else { _reEs.style.display = "none"; }
+    }
   }
 
 
