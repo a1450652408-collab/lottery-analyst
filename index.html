@@ -16995,6 +16995,65 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-reason">每位置频率Top' + _rePosKeep + ' | ';
     _reAllCands.forEach(function(c, i) { _reHtml += '位'+(i+1)+':['+c.join('')+'] '; });
     _reHtml += '| <b>' + _reTotalCombos + '注</b> | <b>' + _reBagCost + '元</b></div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+
+    // ===== 排列五 二同玩法推荐 =====
+    if (type === "pl5") {
+      var _etFreq = {}; for (var _ei = 0; _ei <= 9; _ei++) _etFreq[_ei] = 0;
+      var _etPair = {}; var _etAC = {}; var _etSS = {}; var _etRepeat = {};
+      var _etCount = 0;
+      for (var _ej = 0; _ej < _reUseData.length; _ej++) {
+        var _enums = getNums(_reUseData[_ej]);
+        var _ecounts = {}; for (var _ek = 0; _ek < _enums.length; _ek++) _ecounts[_enums[_ek]] = (_ecounts[_enums[_ek]]||0)+1;
+        var _eHasPair = false; for (var _ek in _ecounts) { if (_ecounts[_ek] === 2) { _eHasPair = true; break; } }
+        if (!_eHasPair) continue;
+        _etCount++;
+        var _eset = {}; for (var _ek = 0; _ek < _enums.length; _ek++) _eset[_enums[_ek]] = true;
+        for (var _ek in _eset) _etFreq[_ek|0] = (_etFreq[_ek|0]||0) + 1;
+        var _ekeys = Object.keys(_eset).map(function(x){return x|0;});
+        for (var _ea = 0; _ea < _ekeys.length; _ea++) {
+          for (var _eb = _ea+1; _eb < _ekeys.length; _eb++) {
+            var _pk = _ekeys[_ea] < _ekeys[_eb] ? _ekeys[_ea]+','+_ekeys[_eb] : _ekeys[_eb]+','+_ekeys[_ea];
+            _etPair[_pk] = (_etPair[_pk]||0) + 1;
+          }
+        }
+        var _sp = Math.max.apply(null,_enums) - Math.min.apply(null,_enums);
+        var _su = _enums.reduce(function(a,b){return a+b;},0);
+        _etSS[_sp+','+_su] = (_etSS[_sp+','+_su]||0) + 1;
+        for (var _ek in _ecounts) { if (_ecounts[_ek] === 2) _etRepeat[_ek] = (_etRepeat[_ek]||0) + 1; }
+      }
+      if (_etCount >= 10) {
+        var _etBest = null; var _etBestScore = -999999;
+        var _etDigits = [0,1,2,3,4,5,6,7,8,9];
+        function _etCombos(arr,k) { if(k===0) return [[]]; if(arr.length===0) return []; var f=arr[0],r=arr.slice(1); return _etCombos(r,k-1).map(function(c){return [f].concat(c);}).concat(_etCombos(r,k)); }
+        var _etAll4 = _etCombos(_etDigits, 4);
+        for (var _em = 0; _em < _etAll4.length; _em++) {
+          var _c = _etAll4[_em];
+          var _avgP = (_etFreq[_c[0]]+_etFreq[_c[1]]+_etFreq[_c[2]]+_etFreq[_c[3]])/4/Math.max(_etCount,1);
+          var _pairS = 0;
+          for (var _pa = 0; _pa < 4; _pa++) for (var _pb = _pa+1; _pb < 4; _pb++) { var _pv = _c[_pa]<_c[_pb]?_c[_pa]+','+_c[_pb]:_c[_pb]+','+_c[_pa]; _pairS += (_etPair[_pv]||0)/Math.max(_etCount,1); }
+          var _avgPair = _pairS/6;
+          for (var _pr = 0; _pr < 4; _pr++) {
+            var _rp = _c[_pr];
+            var _n5 = _c.concat([_rp]);
+            var _sp2 = Math.max.apply(null,_n5)-Math.min.apply(null,_n5);
+            var _su2 = _n5.reduce(function(a,b){return a+b;},0);
+            var _ssP = (_etSS[_sp2+','+_su2]||0)/Math.max(_etCount,1);
+            var _rpP = (_etRepeat[_rp]||0)/Math.max(_etCount,1);
+            var _sc = Math.log(Math.max(_avgP,0.001))*2 + Math.log(Math.max(_avgPair,0.001))*1.5 + Math.log(Math.max(_ssP,0.0001)) + Math.log(Math.max(_rpP,0.001))*2;
+            if (_sc > _etBestScore) { _etBestScore = _sc; _etBest = {combo:_c, repeat:_rp}; }
+          }
+        }
+        if (_etBest) {
+          var _etC = _etBest.combo.slice().sort(function(a,b){return a-b;});
+          _reHtml += '<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同玩法推荐（直选全组合·60注）</div>';
+          _reHtml += '<div class="dt-row"><span class="dt-label">4码</span><div class="dt-balls">';
+          _etC.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
+          _reHtml += '</div></div><div class="dt-row"><span class="dt-label">重复</span><div class="dt-balls">';
+          _reHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#ce93d8,#ab47bc)">'+String(_etBest.repeat).padStart(2,'0')+'</span>';
+          _reHtml += '</div></div><div class="rec-reason">二同60注 | <b>120元</b> | 概率模型评分</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+        }
+      }
+    }
   }
 
   var _reEs = document.getElementById("enhancedSection");
