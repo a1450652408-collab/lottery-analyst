@@ -11668,6 +11668,70 @@ function renderRecommend(type, data) {
       _reHtml += '</div><span style="font-size:8px;color:#999">' + _c10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    
+    /* ===== 旋转矩阵：Top13拆分组 ===== */
+    var _rmTop13 = _knTop35Ordered.slice(0, 13);
+    var _rmPool = _knTop35Ordered.slice(13, 35); // 剩下22个作为拖池
+    // 两组9胆：每组从13个里选9个，重叠5个（旋转覆盖面）
+    var _rmGroups = [
+      { idx: 'A', dans: _rmTop13.slice(0, 9).sort(function(a,b){return a-b;}) },
+      { idx: 'B', dans: _rmTop13.slice(4, 13).sort(function(a,b){return a-b;}) }
+    ];
+    // 每组拖码：从池里取Top5
+    var _rmTuos = _rmPool.slice(0, 5).sort(function(a,b){return a-b;});
+    
+    // 计算覆盖分析
+    var _rmOverlap = [];
+    for (var _rmi = 0; _rmi < 13; _rmi++) {
+      var n = _rmTop13[_rmi];
+      var inA = _rmGroups[0].dans.indexOf(n) >= 0;
+      var inB = _rmGroups[1].dans.indexOf(n) >= 0;
+      _rmOverlap.push(n + '(' + (inA?'A':'') + (inB?'B':'') + ')');
+    }
+    // 覆盖统计
+    var _rmACover = 9, _rmBCover = 9, _rmBoth = 5, _rmUnique = 13;
+    
+    _reHtml += '<div class="rec-card" style="border-left-color:#e040fb"><div class="rec-header">🔄 旋转矩阵·胆拖（Top13拆分·9胆+5拖×2组）</div>';
+    _reHtml += '<div style="font-size:9px;color:#888;padding:2px 6px;background:#f3e5f5;border-radius:4px;margin-bottom:4px">';
+    _reHtml += '13码覆盖: ' + _rmOverlap.join(' ') + ' | A组9码+B组9码 | 重叠' + _rmBoth + '码';
+    _reHtml += '</div>';
+    
+    for (var _rmg = 0; _rmg < _rmGroups.length; _rmg++) {
+      var _rmgrp = _rmGroups[_rmg];
+      var _rmLabel = _rmgrp.idx + '组·胆' + _rmgrp.dans.length + '个';
+      
+      // 胆
+      _reHtml += '<div class="rec-row"><span class="dt-label" style="color:#9c27b0">' + _rmLabel + '</span>';
+      _reHtml += '<div class="dt-balls">';
+      _rmgrp.dans.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div></div>';
+      
+      // 拖
+      _reHtml += '<div class="rec-row" style="margin-left:36px"><span style="font-size:9px;color:#999">+拖</span><div class="dt-balls">';
+      _rmTuos.forEach(function(n) { _reHtml += '<span class="dt-ball tuo">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div><span style="font-size:8px;color:#999">C(5,1)=5注×10元</span></div>';
+      
+      // 生成的5注
+      _reHtml += '<div style="font-size:8px;color:#666;margin:2px 0 4px 36px">';
+      _reHtml += '<span style="color:#9c27b0">选十方案:</span> ';
+      for (var _rmti = 0; _rmti < _rmTuos.length; _rmti++) {
+        var _rmCombo = _rmgrp.dans.slice();
+        _rmCombo.push(_rmTuos[_rmti]);
+        _rmCombo.sort(function(a,b){return a-b;});
+        _reHtml += '<span style="display:inline-block;margin:1px 3px;padding:0 3px;background:#f3e5f5;border-radius:3px">';
+        _reHtml += _rmCombo.join(',');
+        _reHtml += '</span>';
+      }
+      _reHtml += '</div>';
+    }
+    
+    // 覆盖概率分析
+    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fafafa;border-radius:4px;margin-top:4px">';
+    _reHtml += '📊 当Top35池爆发(含≥12个开奖号): Top13含约6~10个 | ';
+    _reHtml += 'A组含约' + Math.round(9/13*100) + '% | B组含约' + Math.round(9/13*100) + '% | ';
+    _reHtml += '两组并集覆盖13码100%';
+    _reHtml += '</div>';
+    _reHtml += '<div class="rec-reason">旋转矩阵·Top13分两组9胆+5拖 | 每组选十C(5,1)=5注10元 | 全天20元</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
   /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
