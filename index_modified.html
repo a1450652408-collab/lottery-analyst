@@ -84,7 +84,7 @@ window.MiniDestroy=function(id){ if(_charts[id]){_charts[id].destroy();delete _c
 })();
 </script>
 <script>
-/* 开奖数据 - 自动生成 - 2026-06-02 12:21:34 */
+/* 开奖数据 - 自动生成 - 2026-06-02 12:51:22 */
 window.__LOTTERY_DATA = {
   "ssq": [
     {
@@ -15813,7 +15813,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>独胆推荐</div><div class="right">EMA热度+遗漏交汇→最佳独胆</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（不定位）</div><div class="right">EMA+MACD综合评分→3组3码</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16475,17 +16475,92 @@ function renderPatternTrack(type, data) {
   if (ptEl) ptEl.innerHTML = html;
 }
 
-/* ===== 独胆推荐（EMA+MACD+冷号混合+爆击检测） ===== */
+/* ===== 推荐3组（不定位·EMA+MACD综合评分） ===== */
 function renderDanRecommend(type, data) {
   var useData = data.slice(1, 31);
-  var numMin = 0, numMax = 9;
   var latestPeriod = data[0] ? (data[0].p || data[0].period || '') : '';
   var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
+  var numMin = 0, numMax = 9;
   
+  /* 对3位数字彩(fc3d/pl3): 显示3组推荐（不定位） */
+  if (posCount === 3) {
+    /* 全位置综合评分 */
+    var scores = {};
+    for (var d = numMin; d <= numMax; d++) scores[d] = 0;
+    
+    for (var pos = 0; pos < 3; pos++) {
+      var seqList = {};
+      for (var d = numMin; d <= numMax; d++) {
+        seqList[d] = [];
+        for (var i = 0; i < useData.length; i++) {
+          var ns = getNums(useData[i]);
+          seqList[d].push(ns.length > pos && ns[pos] === d ? 1 : 0);
+        }
+      }
+      for (var d = numMin; d <= numMax; d++) {
+        var s = seqList[d];
+        var e = s[0] || 0;
+        for (var j = 1; j < s.length; j++) e = 0.3 * s[j] + 0.7 * e;
+        var shortE = s[0] || 0, longE = s[0] || 0;
+        for (var j = 1; j < s.length; j++) { shortE = 0.5 * s[j] + 0.5 * shortE; longE = 0.15 * s[j] + 0.85 * longE; }
+        var macd = shortE - longE;
+        var burst = 0;
+        for (var j = 0; j < Math.min(3, s.length); j++) if (s[j] === 1) burst++;
+        scores[d] += e * 0.35 + Math.max(-0.3, Math.min(0.3, macd)) * 0.2 + (burst / 3) * 0.2;
+      }
+    }
+    
+    /* 排序 */
+    var ranked = [];
+    for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
+    ranked.sort(function(a,b){return b.s-a.s;});
+    
+    /* 3组: TOP3 / 3-5 / 5-7 */
+    var groups = [
+      [ranked[0].n, ranked[1].n, ranked[2].n],
+      [ranked[2].n, ranked[3].n, ranked[4].n],
+      [ranked[4].n, ranked[5].n, ranked[6].n]
+    ];
+    groups.forEach(function(g){g.sort(function(a,b){return a-b;});});
+    
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 不定位3组3码</div>';
+    /* 10个数字的评分条 */
+    html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:6px">10码评分: ';
+    ranked.forEach(function(r, i) {
+      var bg = i < 3 ? '#ff5722' : (i < 5 ? '#ffaa44' : (i < 7 ? '#ffddaa' : '#eee'));
+      html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + (i<3?'#fff':'#666') + '">' + r.n + '</span>';
+    });
+    var topScore = ranked[0].s, botScore = ranked[ranked.length-1].s;
+    html += '</div>';
+    
+    /* 3组详情 */
+    var labels = ['主推', '次推', '补防'];
+    var colors = ['#ff5722', '#ffaa44', '#ffddaa'];
+    groups.forEach(function(g, gi) {
+      html += '<div class="sm-row" style="background:' + (gi===0?'#fff3e0':'#fafafa') + ';border-radius:4px;margin-bottom:3px;padding:3px 4px">';
+      html += '<span class="sm-label" style="width:36px;font-size:11px;color:' + colors[gi] + '">' + labels[gi] + '</span>';
+      html += '<span class="sm-val" style="font-size:18px;color:' + colors[gi] + ';font-weight:700;letter-spacing:2px">';
+      g.forEach(function(n) { html += n; });
+      html += '</span>';
+      /* 每组中每个数字的详细评分 */
+      html += '<span style="font-size:8px;color:#999;margin-left:6px">';
+      g.forEach(function(n, ni) {
+        var rItem = ranked.find(function(x){return x.n===n;});
+        html += (ni>0?' ':'') + n + '=' + rItem.s.toFixed(2);
+      });
+      html += '</span></div>';
+    });
+    
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 3组覆盖7个不同数字 · 不定位</div>';
+    
+    var drEl = document.getElementById("danRec");
+    if (drEl) drEl.innerHTML = html;
+    return;
+  }
+  
+  /* 对其他类型(pl5/qxc等)保持原来的位置独胆逻辑 */
   var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期之前30期数据 · EMA+MACD+冷号混合</div>';
-
   for (var pos = 0; pos < posCount; pos++) {
-    /* 构建每个数字的出现序列 */
     var seqList = {};
     for (var d = numMin; d <= numMax; d++) {
       seqList[d] = [];
@@ -16494,8 +16569,6 @@ function renderDanRecommend(type, data) {
         seqList[d].push(ns.length > pos && ns[pos] === d ? 1 : 0);
       }
     }
-    
-    /* EMA评分（标准EMA 0.3） */
     var emaScore = {};
     for (var d = numMin; d <= numMax; d++) {
       var s = seqList[d];
@@ -16503,63 +16576,40 @@ function renderDanRecommend(type, data) {
       for (var j = 1; j < s.length; j++) e = 0.3 * s[j] + 0.7 * e;
       emaScore[d] = e;
     }
-    
-    /* MACD趋势检测: 短EMA(0.5) - 长EMA(0.15), 正值=升温, 负值=降温 */
     var macd = {};
     for (var d = numMin; d <= numMax; d++) {
       var s = seqList[d];
       var shortE = s[0] || 0;
       var longE = s[0] || 0;
-      for (var j = 1; j < s.length; j++) {
-        shortE = 0.5 * s[j] + 0.5 * shortE;
-        longE = 0.15 * s[j] + 0.85 * longE;
-      }
+      for (var j = 1; j < s.length; j++) { shortE = 0.5 * s[j] + 0.5 * shortE; longE = 0.15 * s[j] + 0.85 * longE; }
       macd[d] = shortE - longE;
     }
-    
-    /* 近3期爆击检测(近3期出现2次+) */
     var burst3 = {};
     for (var d = numMin; d <= numMax; d++) {
       var cnt = 0;
-      for (var j = 0; j < Math.min(3, seqList[d].length); j++) {
-        if (seqList[d][j] === 1) cnt++;
-      }
+      for (var j = 0; j < Math.min(3, seqList[d].length); j++) if (seqList[d][j] === 1) cnt++;
       burst3[d] = cnt;
     }
-    
-    /* 冷号混合补偿: 近5-8期出过的小加分, 遗漏短分高 */
     var coldMix = {};
     for (var d = numMin; d <= numMax; d++) {
       var lastSeen = -1;
-      for (var j = 0; j < seqList[d].length; j++) {
-        if (seqList[d][j] === 1) lastSeen = j;
-      }
-      // 补偿: 最近出现过且遗漏<10
+      for (var j = 0; j < seqList[d].length; j++) if (seqList[d][j] === 1) lastSeen = j;
       if (lastSeen >= 0 && lastSeen < 10) coldMix[d] = (10 - lastSeen) * 0.15;
       else coldMix[d] = 0;
     }
-    
-    /* 综合评分: EMA*0.35 + MACD*0.2 + 爆击*0.2 + 冷号混合*0.15 + 遗漏*0.1 */
     var scores = [];
     for (var d = numMin; d <= numMax; d++) {
       var miss = 0;
-      for (var j = 0; j < seqList[d].length; j++) {
-        if (seqList[d][j] === 1) miss = 0; else miss++;
-      }
-      var score = emaScore[d] * 0.35 + Math.max(-0.3, Math.min(0.3, macd[d])) * 0.2
-                + (burst3[d] / 3) * 0.2 + coldMix[d] * 0.15
-                + (1 - miss / Math.max(useData.length, 1)) * 0.1;
+      for (var j = 0; j < seqList[d].length; j++) { if (seqList[d][j] === 1) miss = 0; else miss++; }
+      var score = emaScore[d] * 0.35 + Math.max(-0.3, Math.min(0.3, macd[d])) * 0.2 + (burst3[d] / 3) * 0.2 + coldMix[d] * 0.15 + (1 - miss / Math.max(useData.length, 1)) * 0.1;
       scores.push({n: d, ema: emaScore[d], miss: miss, score: score, macd: macd[d], burst: burst3[d]});
     }
-    
     scores.sort(function(a,b){return b.score-a.score;});
     var best = scores[0];
     var macdIcon = best.macd > 0.05 ? '↑' : (best.macd < -0.05 ? '↓' : '→');
-    
     html += '<div class="sm-row"><span class="sm-label">第'+(pos+1)+'位独胆</span><span class="sm-val" style="font-size:16px;color:#ff5722">' + best.n + '</span>';
     html += '<span style="font-size:9px;color:#999;margin-left:4px">EMA:'+best.ema.toFixed(2)+' '+macdIcon+' 漏'+best.miss+'期 爆'+best.burst+'</span></div>';
   }
-  
   var drEl = document.getElementById("danRec");
   if (drEl) drEl.innerHTML = html;
 }
