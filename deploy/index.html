@@ -84,7 +84,7 @@ window.MiniDestroy=function(id){ if(_charts[id]){_charts[id].destroy();delete _c
 })();
 </script>
 <script>
-/* 开奖数据 - 自动生成 - 2026-06-02 12:13:47 */
+/* 开奖数据 - 自动生成 - 2026-06-02 12:21:34 */
 window.__LOTTERY_DATA = {
   "ssq": [
     {
@@ -16852,6 +16852,26 @@ function renderRecommend(type, data) {
     var _knTop35 = _knRanked.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
     var _knTop35Ordered = _knRanked.slice(0, 35).map(function(x) { return x.n; });
     
+    /* ===== 四区TOP4=16码池（选五5组 + 旋转矩阵共用） ===== */
+    var _xwZones = [[1,20],[21,40],[41,60],[61,80]];
+    var _xwPool = [];
+    _xwZones.forEach(function(z) {
+      var zoneNums = [];
+      _knRanked.forEach(function(item) {
+        if (item.n >= z[0] && item.n <= z[1] && item.s > -999) zoneNums.push(item);
+      });
+      zoneNums.sort(function(a,b){return b.s-a.s;});
+      for (var _zi = 0; _zi < Math.min(4, zoneNums.length); _zi++) _xwPool.push(zoneNums[_zi].n);
+    });
+    var _xwCompScore = {};
+    for (var _cni = 1; _cni <= _knTotal; _cni++) {
+      _xwCompScore[_cni] = 0;
+      for (var _cj = 0; _cj < Math.min(10, _knPeriod); _cj++) {
+        if (getNums(_reUseData[_cj]).indexOf(_cni) >= 0) _xwCompScore[_cni] += 0.3;
+      }
+    }
+    var _xwSortedPool = _xwPool.slice().sort(function(a,b){return (_knScores[b]||0)+(_xwCompScore[b]||0)-((_knScores[a]||0)+(_xwCompScore[a]||0));});
+    
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
     _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
@@ -16872,23 +16892,27 @@ function renderRecommend(type, data) {
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
-    /* ===== 旋转矩阵：Top13拆分组 ===== */
-    var _rmTop13 = _knTop35Ordered.slice(0, 13);
-    var _rmPool = _knTop35Ordered.slice(13, 35);
+    /* ===== 旋转矩阵：16码拆两组（基于四区TOP4=16码池） ===== */
+    var _rmTop16 = _xwSortedPool.slice();  // 16码（已按评分排序）
     var _rmGroups = [
-      { idx: 'A', dans: _rmTop13.slice(0, 9).sort(function(a,b){return a-b;}) },
-      { idx: 'B', dans: _rmTop13.slice(4, 13).sort(function(a,b){return a-b;}) }
+      { idx: 'A', dans: _rmTop16.slice(0, 9).sort(function(a,b){return a-b;}) },
+      { idx: 'B', dans: _rmTop16.slice(7, 16).sort(function(a,b){return a-b;}) }
     ];
-    var _rmTuos = _rmPool.slice(0, 5).sort(function(a,b){return a-b;});
+    // 合并去重后所有胆码
+    var _rmAllDans = {};
+    _rmGroups[0].dans.concat(_rmGroups[1].dans).forEach(function(n) { _rmAllDans[n] = 1; });
+    var _rmAllDanList = Object.keys(_rmAllDans).map(Number).sort(function(a,b){return a-b;});
+    // 托码: 16池中不在任一组的
+    var _rmTuos = _xwPool.filter(function(n) { return _rmAllDans[n] === undefined; }).slice(0, 5);
     
     var _rmBoth = 0;
-    _rmTop13.forEach(function(n) {
+    _xwSortedPool.forEach(function(n) {
       if (_rmGroups[0].dans.indexOf(n) >= 0 && _rmGroups[1].dans.indexOf(n) >= 0) _rmBoth++;
     });
     
-    _reHtml += '<div class="rec-card" style="border-left-color:#e040fb"><div class="rec-header">🔄 旋转矩阵·胆拖（Top13拆分·9胆+5拖×2组）</div>';
-    _reHtml += '<div style="font-size:9px;color:#888;padding:2px 6px;background:#f3e5f5;border-radius:4px;margin-bottom:4px">Top13: ';
-    _rmTop13.forEach(function(n, i) {
+    _reHtml += '<div class="rec-card" style="border-left-color:#e040fb"><div class="rec-header">🔄 旋转矩阵·胆拖（16码拆分·9胆+5拖×2组）</div>';
+    _reHtml += '<div style="font-size:9px;color:#888;padding:2px 6px;background:#f3e5f5;border-radius:4px;margin-bottom:4px">16码池(四区TOP4): ';
+    _xwSortedPool.forEach(function(n) {
       var inA = _rmGroups[0].dans.indexOf(n) >= 0;
       var inB = _rmGroups[1].dans.indexOf(n) >= 0;
       _reHtml += '<span style="display:inline-block;margin:0 1px;padding:0 2px;background:' + (inA&&inB?'#ce93d8':(inA?'#e1bee7':'#f3e5f5')) + ';border-radius:2px">' + String(n).padStart(2,'0') + '</span>';
@@ -16913,8 +16937,8 @@ function renderRecommend(type, data) {
       _reHtml += '</div>';
     }
     
-    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fafafa;border-radius:4px;margin-top:4px">📊 当Top35爆发(含≥12开奖号): Top13含约6~10个 | A组+B组并集覆盖13码100%</div>';
-    _reHtml += '<div class="rec-reason">旋转矩阵·Top13分两组9胆+5拖 | 每组选十C(5,1)=5注10元 | 全天20元 | 两组并集覆盖13码</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fafafa;border-radius:4px;margin-top:4px">📊 四区TOP4=16码池 | A组9码+B组9码 | 重叠' + _rmBoth + '码 | 并集' + (_rmGroups[0].dans.length+_rmGroups[1].dans.length-_rmBoth) + '码</div>';
+    _reHtml += '<div class="rec-reason">旋转矩阵·16码分两组9胆+5拖 | 每组选十C(5,1)=5注10元 | 全天20元 | 基于四区TOP4</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
     /* ===== 选五5组策略（16池·每区TOP4·EMA评分） ===== */
     var _xwZones = [[1,20],[21,40],[41,60],[61,80]];
@@ -17000,7 +17024,7 @@ function renderRecommend(type, data) {
     _xwGroups.forEach(function(g, _gidx) {
       var gHot = g.filter(function(n){return _xwSortedPool.indexOf(n) < 5;}).length;
       _reHtml += '<div class="rec-row" style="padding:1px 2px">';
-      _reHtml += '<span style="display:inline-block;width:40px;font-size:10px;color:#666">第' + (_gidx+1) + '组</span>';
+      _reHtml += '<span class="dt-label" style="display:inline-block;width:40px;font-size:10px;color:#666">第' + (_gidx+1) + '组</span>';
       _reHtml += '<div class="dt-balls">';
       g.forEach(function(n) {
         var isHotG = _xwSortedPool.indexOf(n) < 5;
