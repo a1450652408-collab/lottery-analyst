@@ -16964,6 +16964,7 @@ function renderRecommend(type, data) {
     var _xwSortedPool = _xwPool.slice().sort(function(a,b){return (_knScores[b]||0)+(_xwCompScore[b]||0)-((_knScores[a]||0)+(_xwCompScore[a]||0));});
     
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
     _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
@@ -16983,57 +16984,23 @@ function renderRecommend(type, data) {
     }
     _reHtml += '<div class="rec-reason">EMA排序选胆 | 无区限制 | 2~13胆可选 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
-    /* ===== 旋转矩阵：16码拆两组（基于四区TOP4=16码池） ===== */
-    var _rmTop16 = _xwSortedPool.slice();  // 16码（已按评分排序）
-    var _rmGroups = [
-      { idx: 'A', dans: _rmTop16.slice(0, 9).sort(function(a,b){return a-b;}) },
-      { idx: 'B', dans: _rmTop16.slice(7, 16).sort(function(a,b){return a-b;}) }
-    ];
-    // 合并去重后所有胆码
-    var _rmAllDans = {};
-    _rmGroups[0].dans.concat(_rmGroups[1].dans).forEach(function(n) { _rmAllDans[n] = 1; });
-    var _rmAllDanList = Object.keys(_rmAllDans).map(Number).sort(function(a,b){return a-b;});
-    // 托码: 16池中不在任一组的
-    var _rmTuos = _xwPool.filter(function(n) { return _rmAllDans[n] === undefined; }).slice(0, 5);
-    
-    var _rmBoth = 0;
-    _xwSortedPool.forEach(function(n) {
-      if (_rmGroups[0].dans.indexOf(n) >= 0 && _rmGroups[1].dans.indexOf(n) >= 0) _rmBoth++;
-    });
-    
-    _reHtml += '<div class="rec-card" style="border-left-color:#e040fb"><div class="rec-header">🔄 旋转矩阵·胆拖（16码拆分·9胆+5拖×2组）</div>';
-    _reHtml += '<div style="font-size:9px;color:#888;padding:2px 6px;background:#f3e5f5;border-radius:4px;margin-bottom:4px">16码池(四区TOP4): ';
-    _xwSortedPool.forEach(function(n) {
-      var inA = _rmGroups[0].dans.indexOf(n) >= 0;
-      var inB = _rmGroups[1].dans.indexOf(n) >= 0;
-      _reHtml += '<span style="display:inline-block;margin:0 1px;padding:0 2px;background:' + (inA&&inB?'#ce93d8':(inA?'#e1bee7':'#f3e5f5')) + ';border-radius:2px">' + String(n).padStart(2,'0') + '</span>';
-    });
-    _reHtml += ' | A组+B组 | 重叠' + _rmBoth + '码</div>';
-    
-    for (var _rmg = 0; _rmg < _rmGroups.length; _rmg++) {
-      var _rmgrp = _rmGroups[_rmg];
-      _reHtml += '<div class="rec-row"><span class="dt-label" style="color:#9c27b0">' + _rmgrp.idx + '组·' + _rmgrp.dans.length + '胆</span><div class="dt-balls">';
-      _rmgrp.dans.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div></div>';
-      _reHtml += '<div class="rec-row" style="margin-left:30px"><span style="font-size:9px;color:#999">+5拖:</span><div class="dt-balls">';
-      _rmTuos.forEach(function(n) { _reHtml += '<span class="dt-ball tuo">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div><span style="font-size:8px;color:#999">C(5,1)=5注10元</span></div>';
-      _reHtml += '<div style="font-size:8px;color:#666;margin:1px 0 3px 30px">';
-      for (var _rmti = 0; _rmti < _rmTuos.length; _rmti++) {
-        var _c = _rmgrp.dans.slice();
-        _c.push(_rmTuos[_rmti]);
-        _c.sort(function(a,b){return a-b;});
-        _reHtml += '<span style="display:inline-block;margin:0 2px;padding:0 3px;background:#f3e5f5;border-radius:3px">' + _c.join(',') + '</span>';
+    /* ===== 智能增强35码池·二次筛选 2胆~13胆方案 ===== */
+    /* 二次筛选：和EMA胆拖一样，从35码池按评分取前N个作为胆码 */
+    _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 智能增强·35码池胆拖（二次筛选·2胆~13胆）</div>';
+    for (var _xndc = 2; _xndc <= 13; _xndc++) {
+      var _xndan = _knTop35Ordered.slice(0, _xndc);
+      var _xc10 = 0;
+      if (_xndan.length >= 10) {
+        _xc10 = 1;
+        for (var _xci = 0; _xci < 10; _xci++) _xc10 = Math.round(_xc10 * (_xndan.length - _xci) / (_xci + 1));
       }
-      _reHtml += '</div>';
+      var _xc10Str = _xndan.length >= 10 ? _xc10 + '注' + (_xc10*2) + '元' : '选十需≥10胆';
+      _reHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff">' + _xndc + '胆</span><div class="dt-balls">';
+      _xndan.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div><span style="font-size:8px;color:#999">' + _xc10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
     }
-    
-    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fafafa;border-radius:4px;margin-top:4px">📊 四区TOP4=16码池 | A组9码+B组9码 | 重叠' + _rmBoth + '码 | 并集' + (_rmGroups[0].dans.length+_rmGroups[1].dans.length-_rmBoth) + '码</div>';
-    _reHtml += '<div class="rec-reason">旋转矩阵·16码分两组9胆+5拖 | 每组选十C(5,1)=5注10元 | 全天20元 | 基于四区TOP4</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-    
-    /* ===== ⚠️ 16码池仅供参考 ===== */
-    /* 回测验证：16码池平均命中3.9/20(随机期望4.0), A/B组9胆平均2.2/9(随机2.25) */
-    /* 任何选号组合长期返奖率均收敛于法定58%天花板，不具备盈利能力 */
+    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px">📊 35码池(EMA+动量+重号+杀冷号) | 二次筛选取前N胆 | C(n,10)注数 | 与EMA胆拖同逻辑</div>';
+    _reHtml += '<div class="rec-reason">智能增强35码池·二次筛选 | EMA评分+动量+重号+杀冷号 | 2~13胆 | C(n,10)注数</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
   /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
