@@ -15813,7 +15813,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（不定位）</div><div class="right">EMA+MACD综合评分→3组3码</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（4码方案C）</div><div class="right">EMA+MACD评分→3组4码覆盖全10码</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16515,20 +16515,20 @@ function renderDanRecommend(type, data) {
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
     ranked.sort(function(a,b){return b.s-a.s;});
     
-    /* 3组: TOP3 / 3-5 / 5-7 */
+    /* 3组: TOP4 / 4-7 / 7-10（方案C：3组4码重叠覆盖全10码） */
     var groups = [
-      [ranked[0].n, ranked[1].n, ranked[2].n],
-      [ranked[2].n, ranked[3].n, ranked[4].n],
-      [ranked[4].n, ranked[5].n, ranked[6].n]
+      [ranked[0].n, ranked[1].n, ranked[2].n, ranked[3].n],
+      [ranked[3].n, ranked[4].n, ranked[5].n, ranked[6].n],
+      [ranked[6].n, ranked[7].n, ranked[8].n, ranked[9].n]
     ];
     groups.forEach(function(g){g.sort(function(a,b){return a-b;});});
     
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 不定位3组3码</div>';
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 不定位3组4码（方案C）</div>';
     /* 10个数字的评分条 */
     html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:6px">10码评分: ';
     ranked.forEach(function(r, i) {
-      var bg = i < 3 ? '#ff5722' : (i < 5 ? '#ffaa44' : (i < 7 ? '#ffddaa' : '#eee'));
-      html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + (i<3?'#fff':'#666') + '">' + r.n + '</span>';
+      var bg = i < 4 ? '#ff5722' : (i < 7 ? '#ffaa44' : '#ffddaa');
+      html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + (i<4?'#fff':'#666') + '">' + r.n + '</span>';
     });
     var topScore = ranked[0].s, botScore = ranked[ranked.length-1].s;
     html += '</div>';
@@ -16551,7 +16551,7 @@ function renderDanRecommend(type, data) {
       html += '</span></div>';
     });
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 3组覆盖7个不同数字 · 不定位</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 3组4码重叠覆盖全10码 · 中3率21.1%(回测470期)</div>';
     
     var drEl = document.getElementById("danRec");
     if (drEl) drEl.innerHTML = html;
