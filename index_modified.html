@@ -16963,26 +16963,7 @@ function renderRecommend(type, data) {
     }
     var _xwSortedPool = _xwPool.slice().sort(function(a,b){return (_knScores[b]||0)+(_xwCompScore[b]||0)-((_knScores[a]||0)+(_xwCompScore[a]||0));});
     
-    /* ===== 选五5组（基于四区TOP4=16码池·滑动窗口） ===== */
-    var _x5Pool = _xwSortedPool.slice();
-    var _x5Windows = [[0,4],[3,7],[5,9],[8,12],[11,15]];
-    var _x5Groups = [];
-    _x5Windows.forEach(function(w) {
-      var grp = _x5Pool.slice(w[0], w[1]+1);
-      if (grp.length < 5) return;
-      grp.sort(function(a,b){return a-b;});
-      _x5Groups.push(grp);
-    });
-    
-    _reHtml += '<div class="rec-card" style="border-left-color:#4caf50;background:linear-gradient(135deg,#e8f5e9,#f1f8e9)"><div class="rec-header">🎯 选五5组（四区TOP4=16码池·滑动窗口）</div>';
-    for (var _xgi = 0; _xgi < _x5Groups.length; _xgi++) {
-      _reHtml += '<div class="rec-row"><span class="dt-label" style="color:#2e7d32">' + (_xgi+1) + '</span><div class="dt-balls">';
-      _x5Groups[_xgi].forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div><span style="font-size:9px;color:#999">选五·1注2元</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
-    }
-    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#e8f5e9;border-radius:4px;margin-top:4px">📊 5组×2元=10元/期 | 16码池(四区TOP4)滑动窗口 | 回测102.3%返奖率</div>';
-    _reHtml += '<div class="rec-reason">EMA评分·四区TOP4=16码池 | 滑动窗口5组覆盖全池 | +337元/4年(1450期)</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-    
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🏆 EMA评分推荐（Top35码池·含动量+重号）</div><div class="rec-balls">';
     _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
