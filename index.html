@@ -17000,7 +17000,7 @@ function renderRecommend(type, data) {
     _xwGroups.forEach(function(g, _gidx) {
       var gHot = g.filter(function(n){return _xwSortedPool.indexOf(n) < 5;}).length;
       _reHtml += '<div class="rec-row" style="padding:1px 2px">';
-      _reHtml += '<span style="display:inline-block;width:40px;font-size:10px;color:#666">第' + (_gidx+1) + '组</span>';
+      _reHtml += '<span class="dt-label" style="display:inline-block;width:40px;font-size:10px;color:#666">第' + (_gidx+1) + '组</span>';
       _reHtml += '<div class="dt-balls">';
       g.forEach(function(n) {
         var isHotG = _xwSortedPool.indexOf(n) < 5;
