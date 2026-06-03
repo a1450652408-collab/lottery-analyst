@@ -14720,7 +14720,16 @@ function recommendLotto(data, cfg) {
   hotReds.sort(function(a, b) { return b.score - a.score; });
   var hotRedNums = hotReds.map(function(x) { return x.n; });
 
-  var coldReds = sortByMiss(rMiss, 1, rMax);
+  /* 近5期频率 + 渐进过热惩罚（避免每天相同的胆拖推荐） */
+  var _lR5 = {};
+  for (var _li = 0; _li < Math.min(5, recent.length); _li++) {
+    getNums(recent[_li]).forEach(function(n) { _lR5[n] = (_lR5[n] || 0) + 1; });
+  }
+  function _lPen(n) { var c = _lR5[n]||0; return c >= 5 ? 80 : c >= 4 ? 40 : c >= 3 ? 15 : c >= 2 ? 4 : 0; }
+  /* 按原排名+惩罚排序，惩罚大的号排后面 */
+  var penalizedHotNums = hotRedNums.slice().sort(function(a,b) {
+    return (hotRedNums.indexOf(a) + _lPen(a)) - (hotRedNums.indexOf(b) + _lPen(b));
+  });  var coldReds = sortByMiss(rMiss, 1, rMax);
 
   /* 蓝球分析（如果有） */
   var hotBlues = [], coldBlues = [], bFreq = {}, bMiss = {};
@@ -14791,9 +14800,9 @@ function recommendLotto(data, cfg) {
   var bRec1 = bC > 0 ? pickBlue(hotBlues) : [];
   var bRec2 = bC > 0 ? pickBlue(coldBlues) : [];
 
-  /* 胆拖推荐 */
+  /* 胆拖推荐（渐进过热惩罚版：用过热惩罚后的排序取胆） */
   function makeDanTuo(danCount) {
-    var dan = hotRedNums.slice(0, danCount);
+    var dan = penalizedHotNums.slice(0, danCount);
     var danSet = {};
     dan.forEach(function(n) { danSet[n] = 1; });
     var tuoPool = [];
@@ -14989,6 +14998,16 @@ function recommendKeno(data, cfg) {
     return wB - wA;
   });
 
+  /* 近5期频率 + 渐进过热惩罚（避免每天相同的胆拖推荐） */
+  var _koR5 = {};
+  for (var _ki = 0; _ki < Math.min(5, recent.length); _ki++) {
+    getNums(recent[_ki]).forEach(function(n) { _koR5[n] = (_koR5[n] || 0) + 1; });
+  }
+  function _koPen(n) { var c = _koR5[n]||0; return c >= 5 ? 80 : c >= 4 ? 40 : c >= 3 ? 15 : c >= 2 ? 4 : 0; }
+  var penalizedAllNums = allNums.slice().sort(function(a,b) {
+    return (allNums.indexOf(a) + _koPen(a)) - (allNums.indexOf(b) + _koPen(b));
+  });
+
   /* 按纯频率排序 */
   var hotNums = sortByFreq(freq, 1, rMax);
   /* 按纯遗漏排序 */
@@ -15002,9 +15021,9 @@ function recommendKeno(data, cfg) {
   var coldPart = coldNums.slice(0, 10);
   var basic2 = uniqueSorted(hotPart.concat(coldPart)).slice(0, rC);
 
-  /* 胆拖推荐（快乐8胆拖：选胆码+拖码，总选中>=1个胆码才算中奖） */
+  /* 胆拖推荐（渐进过热惩罚版） */
   function makeKenoDanTuo(danCount) {
-    var dan = allNums.slice(0, danCount).sort(function(a, b) { return a - b; });
+    var dan = penalizedAllNums.slice(0, danCount).sort(function(a, b) { return a - b; });
     var danSet = {};
     dan.forEach(function(n) { danSet[n] = 1; });
     // 拖码：排除胆码，从剩余综合权重+高遗漏中选
@@ -15316,17 +15335,27 @@ function recommendDigit(data, cfg) {
   allHot.forEach(function(n) { hotFreq[n] = (hotFreq[n] || 0) + 1; });
   var globalHot = Object.keys(hotFreq).map(Number).sort(function(a,b){return hotFreq[b]-hotFreq[a];});
 
+  /* 近5期频率 + 渐进过热惩罚（数字彩仅0-9，惩罚力度减半） */
+  var _dgR5 = {};
+  for (var _di = 0; _di < Math.min(5, recent.length); _di++) {
+    getNums(recent[_di]).forEach(function(n) { _dgR5[n] = (_dgR5[n] || 0) + 1; });
+  }
+  function _dgPen(n) { var c = _dgR5[n]||0; return c >= 5 ? 40 : c >= 4 ? 20 : c >= 3 ? 8 : c >= 2 ? 2 : 0; }
+  var penalizedGlobalHot = globalHot.slice().sort(function(a,b) {
+    return (globalHot.indexOf(a) + _dgPen(a)) - (globalHot.indexOf(b) + _dgPen(b));
+  });
+
   function makeDigitDanTuo(danCount, tuoCount) {
-    // 胆码：全局热号前 danCount 个
-    var dan = globalHot.slice(0, danCount).sort(function(a,b){return a-b;});
+    // 胆码：过热惩罚后的全局热号前 danCount 个
+    var dan = penalizedGlobalHot.slice(0, danCount).sort(function(a,b){return a-b;});
     var danSet = {};
     dan.forEach(function(n) { danSet[n] = true; });
     // 拖码：从剩余热号里取 tuoCount 个
     var tuo = [];
-    for (var i = 0; i < globalHot.length && tuo.length < tuoCount; i++) {
-      if (!danSet[globalHot[i]]) {
-        tuo.push(globalHot[i]);
-        danSet[globalHot[i]] = true; // 避免重复
+    for (var i = 0; i < penalizedGlobalHot.length && tuo.length < tuoCount; i++) {
+      if (!danSet[penalizedGlobalHot[i]]) {
+        tuo.push(penalizedGlobalHot[i]);
+        danSet[penalizedGlobalHot[i]] = true; // 避免重复
       }
     }
     tuo.sort(function(a,b){return a-b;});
