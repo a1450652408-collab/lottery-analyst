@@ -16500,7 +16500,7 @@ function renderDanRecommend(type, data) {
       for (var d = numMin; d <= numMax; d++) {
         var s = seqList[d];
         var e = s[0] || 0;
-        for (var j = 1; j < s.length; j++) e = 0.3 * s[j] + 0.7 * e;
+        for (var j = 1; j < s.length; j++) e = 0.5 * s[j] + 0.5 * e;
         var shortE = s[0] || 0, longE = s[0] || 0;
         for (var j = 1; j < s.length; j++) { shortE = 0.5 * s[j] + 0.5 * shortE; longE = 0.15 * s[j] + 0.85 * longE; }
         var macd = shortE - longE;
@@ -16573,7 +16573,7 @@ function renderDanRecommend(type, data) {
     for (var d = numMin; d <= numMax; d++) {
       var s = seqList[d];
       var e = s[0] || 0;
-      for (var j = 1; j < s.length; j++) e = 0.3 * s[j] + 0.7 * e;
+      for (var j = 1; j < s.length; j++) e = 0.5 * s[j] + 0.5 * e;
       emaScore[d] = e;
     }
     var macd = {};
