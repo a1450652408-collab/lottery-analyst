@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [auto-update]
-  push:
-    branches: [master]
+  # ⚠️ 不监听 push，避免手动推送代码时触发冲突
 
 permissions:
   contents: write
@@ -42,6 +41,9 @@ jobs:
 
           PUSH_URL="https://${PAT}@github.com/a1450652408-collab/lottery-analyst.git"
 
+          # === 先拉取远程避免冲突 ===
+          git pull --rebase "$PUSH_URL" master
+
           # === 提交数据变化（index.html + saved_recs.json）===
           DATA_CHANGED=false
           git add index.html data/saved_recs.json
@@ -52,27 +54,4 @@ jobs:
             echo "✅ 数据已更新并推送"
           else
             echo "📭 数据无变化"
-          fi
-
-          # === 自链式触发：push时间戳保活，维持工作流链 ===
-          LAST_PUSH_FILE=.last-push
-          if [ -f "$LAST_PUSH_FILE" ]; then
-            LAST_TS=$(cat "$LAST_PUSH_FILE" | head -1)
-          else
-            LAST_TS=0
-          fi
-          NOW=$(date +%s)
-          HOURS_SINCE=$(( (NOW - LAST_TS) / 3600 ))
-
-          if [ "$HOURS_SINCE" -ge 6 ]; then
-            echo "$NOW" > "$LAST_PUSH_FILE"
-            git add "$LAST_PUSH_FILE"
-            git commit -m "chore: keep-alive $(date +%Y-%m-%d_%H:%M)"
-            git push "$PUSH_URL" master
-            echo "✅ 保活推送成功，工作流链已维持（上次推送 ${HOURS_SINCE}h 前）"
-          else
-            echo "🕐 距上次推送仅 ${HOURS_SINCE}h（<6h），跳过保活推送"
-            if [ "$DATA_CHANGED" = "false" ]; then
-              echo "工作流链暂停，等待下次触发"
-            fi
           fi

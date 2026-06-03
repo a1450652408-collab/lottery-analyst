@@ -44,10 +44,10 @@ for t, a, l in TYPES:
     except Exception as e: print(f"{t}: FAIL {e}")
     time.sleep(2)
 
-js = "/* 开奖数据 - 自动生成 - " + time.strftime("%Y-%m-%d %H:%M:%S") + " */\n"
+js = "/* 开奖数据 - auto */\n"
 js += "window.__LOTTERY_DATA = " + json.dumps(all_data, ensure_ascii=False, indent=2) + ";"
 
-for fn in ["index.html", "deploy/index.html"]:
+for fn in ["index.html", "deploy/index.html", "index_modified.html"]:
     if not os.path.exists(fn):
         print(f"{fn}: not found, skip")
         continue
