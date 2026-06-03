@@ -16968,10 +16968,17 @@ function renderRecommend(type, data) {
     _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
-    /* EMA胆拖 2胆~13胆 */
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 EMA胆拖方案（Top35池·无区限制）</div>';
+    /* EMA胆拖 2胆~13胆（带过热惩罚：近5期≥3次的号降权） */
+    var _kdPool = _knTop35Ordered.slice();
+    var _kdScores = {};
+    _knTop35Ordered.forEach(function(n, idx) {
+      _kdScores[n] = 35 - idx;
+      if ((_knR5[n] || 0) >= 3) _kdScores[n] -= 10;
+    });
+    _kdPool.sort(function(a,b){ return (_kdScores[b]||0) - (_kdScores[a]||0); });
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 EMA胆拖方案（Top35池·含过热调整）</div>';
     for (var _kndc = 2; _kndc <= 13; _kndc++) {
-      var _kndan = _knTop35Ordered.slice(0, _kndc);
+      var _kndan = _kdPool.slice(0, _kndc);
       var _c10 = 0;
       if (_kndan.length >= 10) {
         _c10 = 1;
