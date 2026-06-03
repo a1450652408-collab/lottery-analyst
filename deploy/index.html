@@ -16987,6 +16987,7 @@ function renderRecommend(type, data) {
     /* ===== 智能增强35码池·二次筛选 2胆~13胆方案 ===== */
     /* 二次筛选：多因子投票（EMA排名+动量排名+30期频率排名，三票总分排序） */
     /* 验证：三段回测 2胆49.7%/54.7%/50.0%，远优于EMA直接取胆41~45% */
+    /* 过热惩罚：近5期≥3次的号扣20分，避免同一个号一直霸榜 */
     var _xvPool = _knTop35.slice();  // 35码池
     var _xvMomRank = _xvPool.slice().sort(function(a,b){ return (_knMom[b]||-999) - (_knMom[a]||-999); });
     var _xvFreqRank = _xvPool.slice().sort(function(a,b){ return (_knFreq30[b]||-999) - (_knFreq30[a]||-999); });
@@ -16995,7 +16996,10 @@ function renderRecommend(type, data) {
       var emaR = _knRanked.indexOf(_knRanked.find(function(x){return x.n===n;}));
       var momR = _xvMomRank.indexOf(n);
       var freqR = _xvFreqRank.indexOf(n);
-      _xvVotes[n] = (35 - Math.min(emaR, 34)) + (35 - Math.min(momR, 34)) + (35 - Math.min(freqR, 34));
+      var vote = (35 - Math.min(emaR, 34)) + (35 - Math.min(momR, 34)) + (35 - Math.min(freqR, 34));
+      /* 过热惩罚：近5期出现≥3次的号扣20分，让其他号有机会 */
+      if ((_knR5[n] || 0) >= 3) vote -= 20;
+      _xvVotes[n] = vote;
     });
     var _xvOrdered = _xvPool.slice().sort(function(a,b){ return (_xvVotes[b]||0) - (_xvVotes[a]||0); });
     
