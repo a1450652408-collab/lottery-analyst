@@ -16893,7 +16893,7 @@ function renderRecommend(type, data) {
       for (var _j2 = 0; _j2 < _knPeriod; _j2++) _seq.push(getNums(_reUseData[_j2]).indexOf(_kni) >= 0 ? 1 : 0);
       if (_seq.length === 0) { _knEma[_kni] = 0; continue; }
       var _e = _seq[0];
-      for (var _j3 = 1; _j3 < _seq.length; _j3++) _e = 0.3 * _seq[_j3] + 0.7 * _e;
+      for (var _j3 = 1; _j3 < _seq.length; _j3++) _e = 0.5 * _seq[_j3] + 0.5 * _e;
       _knEma[_kni] = _e;
     }
     
