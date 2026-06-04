@@ -17015,14 +17015,14 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 EMA胆拖方案（Top35池·含过热调整）</div>';
     for (var _kndc = 2; _kndc <= 13; _kndc++) {
       var _kndan;
-      if (_kndc === 3) {
-        /* 选三优化：top-1(EMA) + 动量最高 + 30期频率最高 → 回测18.1%中2+ */
+      if (_kndc >= 3) {
+        /* 选三~选十三优化：top-1(EMA) + 动量最高 + 30期频率最高 → 其余按排名补满 */
         _kndan = [_kdPool[0]];
         var _k3m = _kdPool.slice(1).sort(function(a,b){return(_knMom[b]||-999)-(_knMom[a]||-999);})[0];
         if (_k3m !== undefined && _kndan.indexOf(_k3m)<0) _kndan.push(_k3m);
         var _k3f = _kdPool.slice(1).sort(function(a,b){return(_knFreq30[b]||0)-(_knFreq30[a]||0);})[0];
         if (_k3f !== undefined && _kndan.indexOf(_k3f)<0) _kndan.push(_k3f);
-        for (var _k3i=1; _kndan.length<3 && _k3i<_kdPool.length; _k3i++) {
+        for (var _k3i=1; _kndan.length<_kndc && _k3i<_kdPool.length; _k3i++) {
           if (_kndan.indexOf(_kdPool[_k3i])<0) _kndan.push(_kdPool[_k3i]);
         }
       } else {
@@ -17066,14 +17066,14 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 智能增强·35码池胆拖（多因子投票·2胆~13胆）</div>';
     for (var _xndc = 2; _xndc <= 13; _xndc++) {
       var _xndan;
-      if (_xndc === 3) {
-        /* 选三优化：top-1(多因子投票) + 动量最高 + 30期频率最高 → 回测18.1%中2+ */
+      if (_xndc >= 3) {
+        /* 选三~选十三优化：top-1(多因子投票) + 动量最高 + 30期频率最高 → 其余按排名补满 */
         _xndan = [_xvOrdered[0]];
         var _x3m = _xvOrdered.slice(1).sort(function(a,b){return(_knMom[b]||-999)-(_knMom[a]||-999);})[0];
         if (_x3m !== undefined && _xndan.indexOf(_x3m)<0) _xndan.push(_x3m);
         var _x3f = _xvOrdered.slice(1).sort(function(a,b){return(_knFreq30[b]||0)-(_knFreq30[a]||0);})[0];
         if (_x3f !== undefined && _xndan.indexOf(_x3f)<0) _xndan.push(_x3f);
-        for (var _x3i=1; _xndan.length<3 && _x3i<_xvOrdered.length; _x3i++) {
+        for (var _x3i=1; _xndan.length<_xndc && _x3i<_xvOrdered.length; _x3i++) {
           if (_xndan.indexOf(_xvOrdered[_x3i])<0) _xndan.push(_xvOrdered[_x3i]);
         }
       } else {
