@@ -14725,7 +14725,7 @@ function recommendLotto(data, cfg) {
   for (var _li = 0; _li < Math.min(5, recent.length); _li++) {
     getNums(recent[_li]).forEach(function(n) { _lR5[n] = (_lR5[n] || 0) + 1; });
   }
-  function _lPen(n) { var c = _lR5[n]||0; return c >= 5 ? 80 : c >= 4 ? 40 : c >= 3 ? 15 : c >= 2 ? 4 : 0; }
+  function _lPen(n) { var c = _lR5[n]||0; return c >= 5 ? 20 : c >= 4 ? 12 : c >= 3 ? 6 : c >= 2 ? 2 : 0; }
   /* 按原排名+惩罚排序，惩罚大的号排后面 */
   var penalizedHotNums = hotRedNums.slice().sort(function(a,b) {
     return (hotRedNums.indexOf(a) + _lPen(a)) - (hotRedNums.indexOf(b) + _lPen(b));
@@ -15003,7 +15003,7 @@ function recommendKeno(data, cfg) {
   for (var _ki = 0; _ki < Math.min(5, recent.length); _ki++) {
     getNums(recent[_ki]).forEach(function(n) { _koR5[n] = (_koR5[n] || 0) + 1; });
   }
-  function _koPen(n) { var c = _koR5[n]||0; return c >= 5 ? 80 : c >= 4 ? 40 : c >= 3 ? 15 : c >= 2 ? 4 : 0; }
+  function _koPen(n) { var c = _koR5[n]||0; return c >= 5 ? 18 : c >= 4 ? 10 : c >= 3 ? 5 : c >= 2 ? 2 : 0; }
   var penalizedAllNums = allNums.slice().sort(function(a,b) {
     return (allNums.indexOf(a) + _koPen(a)) - (allNums.indexOf(b) + _koPen(b));
   });
@@ -15340,7 +15340,7 @@ function recommendDigit(data, cfg) {
   for (var _di = 0; _di < Math.min(5, recent.length); _di++) {
     getNums(recent[_di]).forEach(function(n) { _dgR5[n] = (_dgR5[n] || 0) + 1; });
   }
-  function _dgPen(n) { var c = _dgR5[n]||0; return c >= 5 ? 40 : c >= 4 ? 20 : c >= 3 ? 8 : c >= 2 ? 2 : 0; }
+  function _dgPen(n) { var c = _dgR5[n]||0; return c >= 5 ? 10 : c >= 4 ? 6 : c >= 3 ? 3 : c >= 2 ? 1 : 0; }
   var penalizedGlobalHot = globalHot.slice().sort(function(a,b) {
     return (globalHot.indexOf(a) + _dgPen(a)) - (globalHot.indexOf(b) + _dgPen(b));
   });
@@ -17002,12 +17002,12 @@ function renderRecommend(type, data) {
     var _kdScores = {};
     _knTop35Ordered.forEach(function(n, idx) {
       _kdScores[n] = 35 - idx;
-      /* 渐进过热惩罚：近期出现越频繁扣越多 */
+      /* 温和渐进过热惩罚：近期出现越频繁扣越多 */
       var _kdc = _knR5[n] || 0;
-      if (_kdc >= 5) _kdScores[n] -= 100;
-      else if (_kdc >= 4) _kdScores[n] -= 50;
-      else if (_kdc >= 3) _kdScores[n] -= 20;
-      else if (_kdc >= 2) _kdScores[n] -= 5;
+      if (_kdc >= 5) _kdScores[n] -= 18;
+      else if (_kdc >= 4) _kdScores[n] -= 10;
+      else if (_kdc >= 3) _kdScores[n] -= 5;
+      else if (_kdc >= 2) _kdScores[n] -= 1;
     });
     _kdPool.sort(function(a,b){ return (_kdScores[b]||0) - (_kdScores[a]||0); });
     /* 数字转中文显示（2胆→选二，3胆→选三...） */
@@ -17040,12 +17040,12 @@ function renderRecommend(type, data) {
       var momR = _xvMomRank.indexOf(n);
       var freqR = _xvFreqRank.indexOf(n);
       var vote = (35 - Math.min(emaR, 34)) + (35 - Math.min(momR, 34)) + (35 - Math.min(freqR, 34));
-      /* 过热惩罚：近5期出现越频繁扣越多（渐进式） */
+      /* 过热惩罚：近5期出现越频繁扣越多（温和版） */
       var _xvc = _knR5[n] || 0;
-      if (_xvc >= 5) vote -= 150;
-      else if (_xvc >= 4) vote -= 80;
-      else if (_xvc >= 3) vote -= 30;
-      else if (_xvc >= 2) vote -= 10;
+      if (_xvc >= 5) vote -= 35;
+      else if (_xvc >= 4) vote -= 20;
+      else if (_xvc >= 3) vote -= 10;
+      else if (_xvc >= 2) vote -= 3;
       _xvVotes[n] = vote;
     });
     var _xvOrdered = _xvPool.slice().sort(function(a,b){ return (_xvVotes[b]||0) - (_xvVotes[a]||0); });
