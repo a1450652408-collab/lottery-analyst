@@ -17093,24 +17093,33 @@ function renderRecommend(type, data) {
     var _reBigBlue = 3;
     var _reRMax = cfg.rMax;
     var _reBMax = cfg.bMax;
-    var _reRScores = {};
-    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
-      if (_reKillSet.has(_rei)) continue;
-      var _rF = _reFreq[_rei] || 0, _rM = _reMiss[_rei] || 0, _rRecent = 0;
-      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getNums(_reUseData[_rri]).indexOf(_rei) >= 0) _rRecent++; }
-      _reRScores[_rei] = _rF * 1.0 + _rM * 0.3 + _rRecent * 3.0;
-    }
-    var _reRSorted = [];
-    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) { if (_reKillSet.has(_rei)) continue; _reRSorted.push({ n: _rei, s: _reRScores[_rei] || 0 }); }
-    _reRSorted.sort(function(a, b) { return b.s - a.s; });
-    var _reBigPicks = _reRSorted.slice(0, _reBigRed).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
+    /* 用7因子综合评分(hotReds)替换原来的简单3因子评分 */
+    var _reBigPicks = [];
+    var _rePerZone = Math.ceil(_reBigRed / zones.length);
+    /* 每区间取7因子评分最高的 */
+    zones.forEach(function(zn) {
+      var bestInZone = hotReds.filter(function(x) {
+        return x.n >= zn[0] && x.n <= zn[1] && _reBigPicks.indexOf(x.n) < 0;
+      });
+      for (var _rzi = 0; _rzi < Math.min(_rePerZone, bestInZone.length); _rzi++) {
+        if (_reBigPicks.indexOf(bestInZone[_rzi].n) < 0) _reBigPicks.push(bestInZone[_rzi].n);
+      }
+    });
+    /* 补齐剩余高分号 */
+    hotReds.forEach(function(x) {
+      if (_reBigPicks.length >= _reBigRed) return;
+      if (_reBigPicks.indexOf(x.n) < 0) _reBigPicks.push(x.n);
+    });
+    _reBigPicks.sort(function(a,b){return a-b;});
     var _reRedCount = _reBigPicks.length;
+    /* 蓝球改进：用最近10期热点+总频率+遗漏3因子评分 */
     var _reBScores = {};
     for (var _rbi = 1; _rbi <= _reBMax; _rbi++) {
-      var _bF = 0, _bRecent = 0;
+      var _bF = 0, _bRecent = 0, _bMiss = 0;
       _reUseData.forEach(function(d) { var _bb = getBlues(d); if (_bb.indexOf(_rbi) >= 0) _bF++; });
       for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getBlues(_reUseData[_rri]).indexOf(_rbi) >= 0) _bRecent++; }
-      _reBScores[_rbi] = _bF * 0.5 + _bRecent * 3.0;
+      for (var _bmi = 0; _bmi < _reUseData.length; _bmi++) { if (getBlues(_reUseData[_bmi]).indexOf(_rbi) >= 0) { _bMiss = _bmi; break; } else { _bMiss = _reUseData.length; } }
+      _reBScores[_rbi] = _bF * 0.3 + _bRecent * 3.0 + (_reUseData.length - _bMiss) * 0.2;
     }
     var _reBSorted = [];
     for (var _rbi = 1; _rbi <= _reBMax; _rbi++) _reBSorted.push({ n: _rbi, s: _reBScores[_rbi] || 0 });
@@ -17123,7 +17132,7 @@ function renderRecommend(type, data) {
     _reBigPicks.forEach(function(x) { _reHtml += '<span class="ball r">' + String(x).padStart(2, "0") + "</span>"; });
     _reHtml += '<span style="margin:0 4px;color:#999"> | </span>';
     _reBpick.forEach(function(_rbn) { _reHtml += '<span class="ball b">' + String(_rbn).padStart(2, "0") + "</span>"; });
-    _reHtml += '</div><div class="rec-reason">C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b> | 频率+遗漏+近期热度 | Top' + _reBigRed + '选</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '</div><div class="rec-reason">EMA+MACD+贝叶斯+线性趋势+泊松+间隔均匀度+区间均衡 | 7因子综合评分 | 蓝球3因子 | C(' + _reRedCount + ',' + cfg.rC + ')×' + _reBlueCount + ' = <b>' + _reBetCount + '注</b> | <b>' + _reCost + '元</b></div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
   }
 
   /* ===== 七乐彩专用推荐 (30选7 无蓝球) 8维评分 ===== */
