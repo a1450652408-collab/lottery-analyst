@@ -17100,33 +17100,18 @@ function renderRecommend(type, data) {
     else if (_reRMax === 35) _reZones = [[1, 12], [13, 23], [24, 35]];
     else _reZones = [[1, Math.ceil(_reRMax / 3)], [Math.ceil(_reRMax / 3) + 1, Math.ceil(_reRMax * 2 / 3)], [Math.ceil(_reRMax * 2 / 3) + 1, _reRMax]];
     var _rePerZone = Math.ceil(_reBigRed / _reZones.length);
-    if (cfg.rC === 6) {
-      /* 双色球：用7因子综合评分(hotReds) + 三区均衡 */
-      _reZones.forEach(function(zn) {
-        var bestInZone = hotReds.filter(function(x) {
-          return x.n >= zn[0] && x.n <= zn[1] && _reBigPicks.indexOf(x.n) < 0;
-        });
-        for (var _rzi = 0; _rzi < Math.min(_rePerZone, bestInZone.length); _rzi++) {
-          if (_reBigPicks.indexOf(bestInZone[_rzi].n) < 0) _reBigPicks.push(bestInZone[_rzi].n);
-        }
-      });
-      hotReds.forEach(function(x) {
-        if (_reBigPicks.length >= _reBigRed) return;
-        if (_reBigPicks.indexOf(x.n) < 0) _reBigPicks.push(x.n);
-      });
-    } else {
-      /* 大乐透：旧3因子评分 + 三区均衡（回测480期最佳方案） */
-      var _reScores = {};
-      for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
-        if (_reKillSet.has(_rei)) continue;
-        var _rF = _reFreq[_rei] || 0, _rM = _reMiss[_rei] || 0, _rRecent = 0;
-        for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getNums(_reUseData[_rri]).indexOf(_rei) >= 0) _rRecent++; }
-        _reScores[_rei] = _rF * 1.0 + _rM * 0.3 + _rRecent * 3.0;
-      }
-      var _reRanked = [];
-      for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) { if (_reKillSet.has(_rei)) continue; _reRanked.push({ n: _rei, s: _reScores[_rei] || 0 }); }
-      _reRanked.sort(function(a, b) { return b.s - a.s; });
-      _reZones.forEach(function(zn) {
+    /* 统一用旧3因子评分 + 三区均衡（双色球&大乐透共用） */
+    var _reScores = {};
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) {
+      if (_reKillSet.has(_rei)) continue;
+      var _rF = _reFreq[_rei] || 0, _rM = _reMiss[_rei] || 0, _rRecent = 0;
+      for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) { if (getNums(_reUseData[_rri]).indexOf(_rei) >= 0) _rRecent++; }
+      _reScores[_rei] = _rF * 1.0 + _rM * 0.3 + _rRecent * 3.0;
+    }
+    var _reRanked = [];
+    for (var _rei = _reNumMin; _rei <= _reRMax; _rei++) { if (_reKillSet.has(_rei)) continue; _reRanked.push({ n: _rei, s: _reScores[_rei] || 0 }); }
+    _reRanked.sort(function(a, b) { return b.s - a.s; });
+    _reZones.forEach(function(zn) {
         _reRanked.forEach(function(x) {
           if (_reBigPicks.length >= _reBigRed) return;
           var zoneCount = 0;
@@ -17138,7 +17123,6 @@ function renderRecommend(type, data) {
         if (_reBigPicks.length >= _reBigRed) return;
         if (_reBigPicks.indexOf(x.n) < 0) _reBigPicks.push(x.n);
       });
-    }
     _reBigPicks.sort(function(a,b){return a-b;});
     var _reRedCount = _reBigPicks.length;
     /* 蓝球改进：用最近10期热点+总频率+遗漏3因子评分 */
