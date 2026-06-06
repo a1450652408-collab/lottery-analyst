@@ -18196,9 +18196,11 @@ function _copyNums(el) {
       parts.push('蓝: ' + bNums.join(' '));
     } else {
       var allBalls = card.querySelectorAll('.ball');
-      var nums = [];
-      allBalls.forEach(function(b) { nums.push(b.textContent.trim()); });
-      parts.push(nums.join(' '));
+      var posParts = [];
+      allBalls.forEach(function(b, i) {
+        posParts.push('位' + (i+1) + ': ' + b.textContent.trim());
+      });
+      parts.push(posParts.join('  '));
     }
   }
   var text = parts.join('\n');
