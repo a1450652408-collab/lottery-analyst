@@ -2503,7 +2503,7 @@ function renderDanRecommend(type, data) {
       var grp = [startNum];
       var used = {}; used[startNum] = true;
       if (excludeMap) for (var k in excludeMap) used[k] = true;
-      while (grp.length < 4) {
+      while (grp.length < 3) {
         var bestN = -1, bestS = -999;
         for (var di = 0; di < ranked.length; di++) {
           var dn = ranked[di].n;
@@ -2527,7 +2527,7 @@ function renderDanRecommend(type, data) {
     var allUsed = {}; g1.forEach(function(n){allUsed[n]=true;}); g2.forEach(function(n){allUsed[n]=true;});
     var g3 = [];
     for (var d = 0; d <= 9; d++) { if (!allUsed[d]) g3.push(d); }
-    for (var di = 0; di < ranked.length && g3.length < 4; di++) { if (g3.indexOf(ranked[di].n) < 0) g3.push(ranked[di].n); }
+    for (var di = 0; di < ranked.length && g3.length < 3; di++) { if (g3.indexOf(ranked[di].n) < 0) g3.push(ranked[di].n); }
     g3.sort(function(a,b){return a-b;});
     
     var groups = [g1, g2, g3];
