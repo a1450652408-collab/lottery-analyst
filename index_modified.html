@@ -18195,12 +18195,30 @@ function _copyNums(el) {
       parts.push('红: ' + rNums.join(' '));
       parts.push('蓝: ' + bNums.join(' '));
     } else {
-      var allBalls = card.querySelectorAll('.ball');
-      var posParts = [];
-      allBalls.forEach(function(b, i) {
-        posParts.push('位' + (i+1) + ': ' + b.textContent.trim());
-      });
-      parts.push(posParts.join('  '));
+      /* 检测分位置结构（数字彩包号推荐：位1: 多个球） */
+      var posGroups = [];
+      for (var ci = 0; ci < card.children.length; ci++) {
+        var child = card.children[ci];
+        if (child.tagName !== 'DIV') continue;
+        var fc = child.firstElementChild;
+        if (!fc || fc.tagName !== 'SPAN') continue;
+        var lt = fc.textContent.trim();
+        if (!/^位\d/.test(lt)) continue;
+        var gb = child.querySelectorAll('.ball');
+        if (gb.length === 0) continue;
+        var gn = [];
+        for (var gi = 0; gi < gb.length; gi++) gn.push(gb[gi].textContent.trim());
+        posGroups.push(lt + ': ' + gn.join(' '));
+      }
+      if (posGroups.length > 1) {
+        parts.push(posGroups.join('  '));
+      } else {
+        /* 纯号码列表 */
+        var allBalls = card.querySelectorAll('.ball');
+        var nums = [];
+        allBalls.forEach(function(b) { nums.push(b.textContent.trim()); });
+        parts.push(nums.join(' '));
+      }
     }
   }
   var text = parts.join('\n');
