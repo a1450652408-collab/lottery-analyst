@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（三期融合）</div><div class="right">短10+中20+长40期加权评分→共现分组</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐6码包组六</div><div class="right">三期融合评分→共现分组→20注40元</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16570,7 +16570,7 @@ function renderDanRecommend(type, data) {
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
     ranked.sort(function(a,b){return b.s-a.s;});
     
-    /* 共现分析分组 */
+    /* 共现分组：单组6码 */
     var cooc = {};
     for (var d = 0; d <= 9; d++) { cooc[d] = {}; for (var dd = 0; dd <= 9; dd++) cooc[d][dd] = 0; }
     var coocWin = Math.min(50, data.length);
@@ -16582,67 +16582,47 @@ function renderDanRecommend(type, data) {
         }
       }
     }
-    function _coocGroup(startNum, excludeMap, newBonus) {
-      var grp = [startNum];
-      var used = {}; used[startNum] = true;
-      if (excludeMap) for (var k in excludeMap) used[k] = true;
-      while (grp.length < 3) {
-        var bestN = -1, bestS = -999;
-        for (var di = 0; di < ranked.length; di++) {
-          var dn = ranked[di].n;
-          if (used[dn]) continue;
-          var cs = 0; for (var gi = 0; gi < grp.length; gi++) cs += cooc[dn][grp[gi]];
-          var bonus = (!excludeMap || !excludeMap[dn]) ? (newBonus||0) : 0;
-          var sc = cs * 0.4 + scores[dn] * 0.5 + bonus;
-          if (sc > bestS) { bestS = sc; bestN = dn; }
-        }
-        if (bestN >= 0) { grp.push(bestN); used[bestN] = true; }
-        else break;
+    var group6 = [ranked[0].n];
+    var used6 = {}; used6[ranked[0].n] = true;
+    while (group6.length < 6) {
+      var bestN = -1, bestS = -999;
+      for (var di = 0; di < ranked.length; di++) {
+        var dn = ranked[di].n;
+        if (used6[dn]) continue;
+        var cs = 0; for (var gi = 0; gi < group6.length; gi++) cs += cooc[dn][group6[gi]];
+        var sc = cs * 0.4 + scores[dn] * 0.5;
+        if (sc > bestS) { bestS = sc; bestN = dn; }
       }
-      grp.sort(function(a,b){return a-b;});
-      return grp;
+      if (bestN >= 0) { group6.push(bestN); used6[bestN] = true; }
+      else break;
     }
-    var g1 = _coocGroup(ranked[0].n, null, 0);
-    var excl = {}; g1.forEach(function(n){excl[n]=true;});
-    var g2Start = null;
-    for (var di = 0; di < ranked.length; di++) { if (!excl[ranked[di].n]) { g2Start = ranked[di].n; break; } }
-    var g2 = g2Start !== null ? _coocGroup(g2Start, excl, 0.5) : g1.slice();
-    var allUsed = {}; g1.forEach(function(n){allUsed[n]=true;}); g2.forEach(function(n){allUsed[n]=true;});
-    var g3 = [];
-    for (var di = 0; di < ranked.length && g3.length < 3; di++) { if (!allUsed[ranked[di].n]) g3.push(ranked[di].n); }
-    g3.sort(function(a,b){return a-b;});
+    group6.sort(function(a,b){return a-b;});
     
-    var groups = [g1, g2, g3];
-    
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · EMA+遗漏+频率+共现分组（改良V2）</div>';
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 三期融合评分·共现分组6码包组六</div>';
     /* 10个数字的评分条 */
     html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:6px">10码评分: ';
     ranked.forEach(function(r, i) {
       var bg = i < 4 ? '#ff5722' : (i < 7 ? '#ffaa44' : '#ffddaa');
       html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + (i<4?'#fff':'#666') + '">' + r.n + '</span>';
     });
-    var topScore = ranked[0].s, botScore = ranked[ranked.length-1].s;
     html += '</div>';
     
-    /* 3组详情 */
-    var labels = ['主推', '次推', '补防'];
-    var colors = ['#ff5722', '#ffaa44', '#ffddaa'];
-    groups.forEach(function(g, gi) {
-      html += '<div class="sm-row" style="background:' + (gi===0?'#fff3e0':'#fafafa') + ';border-radius:4px;margin-bottom:3px;padding:3px 4px">';
-      html += '<span class="sm-label" style="width:36px;font-size:11px;color:' + colors[gi] + '">' + labels[gi] + '</span>';
-      html += '<span class="sm-val" style="font-size:18px;color:' + colors[gi] + ';font-weight:700;letter-spacing:2px">';
-      g.forEach(function(n) { html += n; });
-      html += '</span>';
-      /* 每组中每个数字的详细评分 */
-      html += '<span style="font-size:8px;color:#999;margin-left:6px">';
-      g.forEach(function(n, ni) {
-        var rItem = ranked.find(function(x){return x.n===n;});
-        html += (ni>0?' ':'') + n + '=' + rItem.s.toFixed(2);
-      });
-      html += '</span></div>';
+    /* 单组6码展示 */
+    html += '<div class="sm-row" style="background:#fff3e0;border-radius:4px;padding:4px 6px">';
+    html += '<span class="sm-label" style="width:36px;font-size:11px;color:#ff5722">推荐</span>';
+    html += '<span class="sm-val" style="font-size:22px;color:#ff5722;font-weight:700;letter-spacing:2px">';
+    group6.forEach(function(n) { html += n; });
+    html += '</span>';
+    html += '<span style="font-size:8px;color:#999;margin-left:8px">';
+    group6.forEach(function(n, ni) {
+      var rItem = ranked.find(function(x){return x.n===n;});
+      html += (ni>0?' ':'') + n + '=' + rItem.s.toFixed(2);
     });
+    html += '</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:10px">包组六 20注 40元</span>';
+    html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 三期融合评分 · 回测1470期中3率15.6%(约6.4期/次) 最长连失25期</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 三期融合评分 · 回测1470期中3率24.1%(约4期/次) 最长连失22期(最近2年15期)</div>';
     
     var drEl = document.getElementById("danRec");
     if (drEl) drEl.innerHTML = html;
