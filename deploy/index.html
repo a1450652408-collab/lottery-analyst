@@ -18211,7 +18211,7 @@ function _copyNums(el) {
         posGroups.push(lt + ':' + gn.join(''));
       }
       if (posGroups.length > 1) {
-        parts.push(posGroups.join('  '));
+        posGroups.forEach(function(g) { parts.push(g); });
       } else {
         /* 纯号码列表 */
         var allBalls = card.querySelectorAll('.ball');
