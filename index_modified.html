@@ -17482,8 +17482,18 @@ function renderRecommend(type, data) {
       }
       if(etScored2.length>0){
         etScored2.sort(function(a,b){return b.score-a.score;});
-        var seen2={}, top5et=[];
-        for(var m=0;m<etScored2.length;m++){var k=etScored2[m].combo.slice().sort().join(',');if(!seen2[k]){seen2[k]=true;top5et.push(etScored2[m]);if(top5et.length>=5)break;}}
+        var top5et=[];
+        for(var m=0;m<etScored2.length&&top5et.length<5;m++){
+          var c=etScored2[m];
+          var ck=c.combo.slice().sort().join(',');
+          var dup=false;
+          for(var ti=0;ti<top5et.length;ti++){var tk=top5et[ti].combo.slice().sort().join(',');if(tk===ck){dup=true;break;}}
+          if(dup) continue;
+          var tooSim=false;
+          for(var ti=0;ti<top5et.length;ti++){var ov=0;for(var di=0;di<4;di++)if(top5et[ti].combo.indexOf(c.combo[di])>=0)ov++;if(ov>=3){tooSim=true;break;}}
+          if(tooSim) continue;
+          top5et.push(c);
+        }
         if(top5et.length>0){
           _reHtml+='<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 二同推荐（' + top5et.length + '组×60注=' + (top5et.length*60) + '注/' + (top5et.length*120) + '元）</div>';
           for(var g=0;g<top5et.length;g++){
