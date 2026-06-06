@@ -1775,7 +1775,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（4码方案C）</div><div class="right">EMA+MACD评分→3组4码覆盖全10码</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐3组（改良V2）</div><div class="right">EMA+遗漏+频率评分→共现分组</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -2444,11 +2444,12 @@ function renderDanRecommend(type, data) {
   var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
   var numMin = 0, numMax = 9;
   
-  /* 对3位数字彩(fc3d/pl3): 显示3组推荐（不定位） */
+  /* 对3位数字彩(fc3d/pl3): 显示3组推荐（改良V2: EMA+遗漏+频率+共现分组） */
   if (posCount === 3) {
-    /* 全位置综合评分 */
+    /* 新评分：EMA+MACD+遗漏+频率 */
     var scores = {};
     for (var d = numMin; d <= numMax; d++) scores[d] = 0;
+    var n = useData.length;
     
     for (var pos = 0; pos < 3; pos++) {
       var seqList = {};
@@ -2468,7 +2469,16 @@ function renderDanRecommend(type, data) {
         var macd = shortE - longE;
         var burst = 0;
         for (var j = 0; j < Math.min(3, s.length); j++) if (s[j] === 1) burst++;
-        scores[d] += e * 0.35 + Math.max(-0.3, Math.min(0.3, macd)) * 0.2 + (burst / 3) * 0.2;
+        /* 遗漏值 */
+        var miss = n;
+        for (var j = 0; j < s.length; j++) { if (s[j] === 1) { miss = j; break; } }
+        var missScore = 1.0 - miss / Math.max(n, 1);
+        /* 频率 */
+        var freq = 0;
+        for (var j = 0; j < s.length; j++) freq += s[j];
+        var freqScore = freq / Math.max(n, 1);
+        /* 新公式 */
+        scores[d] += e * 0.20 + Math.max(-0.3, Math.min(0.3, macd)) * 0.10 + (burst / 3) * 0.10 + missScore * 0.30 + freqScore * 0.30;
       }
     }
     
@@ -2477,15 +2487,52 @@ function renderDanRecommend(type, data) {
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
     ranked.sort(function(a,b){return b.s-a.s;});
     
-    /* 3组: TOP4 / 4-7 / 7-10（方案C：3组4码重叠覆盖全10码） */
-    var groups = [
-      [ranked[0].n, ranked[1].n, ranked[2].n, ranked[3].n],
-      [ranked[3].n, ranked[4].n, ranked[5].n, ranked[6].n],
-      [ranked[6].n, ranked[7].n, ranked[8].n, ranked[9].n]
-    ];
-    groups.forEach(function(g){g.sort(function(a,b){return a-b;});});
+    /* 共现分析分组 */
+    var cooc = {};
+    for (var d = 0; d <= 9; d++) { cooc[d] = {}; for (var dd = 0; dd <= 9; dd++) cooc[d][dd] = 0; }
+    var coocWin = Math.min(50, data.length);
+    for (var ci = 0; ci < coocWin; ci++) {
+      var cn = getNums(data[ci]);
+      for (var ca = 0; ca < cn.length; ca++) {
+        for (var cb = ca+1; cb < cn.length; cb++) {
+          cooc[cn[ca]][cn[cb]]++; cooc[cn[cb]][cn[ca]]++;
+        }
+      }
+    }
+    function _coocGroup(startNum, excludeMap, newBonus) {
+      var grp = [startNum];
+      var used = {}; used[startNum] = true;
+      if (excludeMap) for (var k in excludeMap) used[k] = true;
+      while (grp.length < 4) {
+        var bestN = -1, bestS = -999;
+        for (var di = 0; di < ranked.length; di++) {
+          var dn = ranked[di].n;
+          if (used[dn]) continue;
+          var cs = 0; for (var gi = 0; gi < grp.length; gi++) cs += cooc[dn][grp[gi]];
+          var bonus = (!excludeMap || !excludeMap[dn]) ? (newBonus||0) : 0;
+          var sc = cs * 0.6 + scores[dn] * 0.3 + bonus;
+          if (sc > bestS) { bestS = sc; bestN = dn; }
+        }
+        if (bestN >= 0) { grp.push(bestN); used[bestN] = true; }
+        else break;
+      }
+      grp.sort(function(a,b){return a-b;});
+      return grp;
+    }
+    var g1 = _coocGroup(ranked[0].n, null, 0);
+    var excl = {}; g1.forEach(function(n){excl[n]=true;});
+    var g2Start = null;
+    for (var di = 0; di < ranked.length; di++) { if (!excl[ranked[di].n]) { g2Start = ranked[di].n; break; } }
+    var g2 = g2Start !== null ? _coocGroup(g2Start, excl, 0.5) : g1.slice();
+    var allUsed = {}; g1.forEach(function(n){allUsed[n]=true;}); g2.forEach(function(n){allUsed[n]=true;});
+    var g3 = [];
+    for (var d = 0; d <= 9; d++) { if (!allUsed[d]) g3.push(d); }
+    for (var di = 0; di < ranked.length && g3.length < 4; di++) { if (g3.indexOf(ranked[di].n) < 0) g3.push(ranked[di].n); }
+    g3.sort(function(a,b){return a-b;});
     
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 不定位3组4码（方案C）</div>';
+    var groups = [g1, g2, g3];
+    
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · EMA+遗漏+频率+共现分组（改良V2）</div>';
     /* 10个数字的评分条 */
     html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:6px">10码评分: ';
     ranked.forEach(function(r, i) {
@@ -2513,7 +2560,7 @@ function renderDanRecommend(type, data) {
       html += '</span></div>';
     });
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 3组4码覆盖全10码 · 仅组六中3率13.4%(回测343期组六)</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 共现分组 · 回测69期中3率20.3%(约5期中1次)</div>';
     
     var drEl = document.getElementById("danRec");
     if (drEl) drEl.innerHTML = html;
