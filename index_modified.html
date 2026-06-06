@@ -16549,6 +16549,18 @@ function renderDanRecommend(type, data) {
       }
     }
     
+    /* 冷号兜底 */
+    for (var pos = 0; pos < 3; pos++) {
+      for (var d = numMin; d <= numMax; d++) {
+        var appeared = false;
+        for (var i = 0; i < useData.length; i++) {
+          var ns = getNums(useData[i]);
+          if (ns.length > pos && ns[pos] === d) { appeared = true; break; }
+        }
+        if (!appeared) scores[d] += 0.5;
+      }
+    }
+    
     /* 排序 */
     var ranked = [];
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
@@ -16577,7 +16589,7 @@ function renderDanRecommend(type, data) {
           if (used[dn]) continue;
           var cs = 0; for (var gi = 0; gi < grp.length; gi++) cs += cooc[dn][grp[gi]];
           var bonus = (!excludeMap || !excludeMap[dn]) ? (newBonus||0) : 0;
-          var sc = cs * 0.6 + scores[dn] * 0.3 + bonus;
+          var sc = cs * 0.5 + scores[dn] * 0.4 + bonus;
           if (sc > bestS) { bestS = sc; bestN = dn; }
         }
         if (bestN >= 0) { grp.push(bestN); used[bestN] = true; }
@@ -16626,7 +16638,7 @@ function renderDanRecommend(type, data) {
       html += '</span></div>';
     });
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 共现分组 · 回测70期中3率2.9%(约35期中1次)</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 共现分组(冷热均衡) · 回测1470期中3率15.1%(约7期/次) 最长连失29期</div>';
     
     var drEl = document.getElementById("danRec");
     if (drEl) drEl.innerHTML = html;
@@ -16667,6 +16679,18 @@ function renderDanRecommend(type, data) {
       }
     }
     
+    /* 冷号兜底 */
+    for (var pos = 0; pos < 5; pos++) {
+      for (var d = numMin; d <= numMax; d++) {
+        var appeared = false;
+        for (var i = 0; i < useData.length; i++) {
+          var ns = getNums(useData[i]);
+          if (ns.length > pos && ns[pos] === d) { appeared = true; break; }
+        }
+        if (!appeared) scores[d] += 0.5;
+      }
+    }
+    
     var ranked = [];
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
     ranked.sort(function(a,b){return b.s-a.s;});
@@ -16692,7 +16716,7 @@ function renderDanRecommend(type, data) {
           var dn = ranked[di].n;
           if (used[dn]) continue;
           var cs = 0; for (var gi = 0; gi < grp.length; gi++) cs += cooc[dn][grp[gi]];
-          var sc = cs * 0.6 + scores[dn] * 0.3;
+          var sc = cs * 0.5 + scores[dn] * 0.4;
           if (sc > bestS) { bestS = sc; bestN = dn; }
         }
         if (bestN >= 0) { grp.push(bestN); used[bestN] = true; }
