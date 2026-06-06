@@ -16593,8 +16593,7 @@ function renderDanRecommend(type, data) {
     var g2 = g2Start !== null ? _coocGroup(g2Start, excl, 0.5) : g1.slice();
     var allUsed = {}; g1.forEach(function(n){allUsed[n]=true;}); g2.forEach(function(n){allUsed[n]=true;});
     var g3 = [];
-    for (var d = 0; d <= 9; d++) { if (!allUsed[d]) g3.push(d); }
-    for (var di = 0; di < ranked.length && g3.length < 3; di++) { if (g3.indexOf(ranked[di].n) < 0) g3.push(ranked[di].n); }
+    for (var di = 0; di < ranked.length && g3.length < 3; di++) { if (!allUsed[ranked[di].n]) g3.push(ranked[di].n); }
     g3.sort(function(a,b){return a-b;});
     
     var groups = [g1, g2, g3];
@@ -16627,7 +16626,7 @@ function renderDanRecommend(type, data) {
       html += '</span></div>';
     });
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 共现分组 · 回测69期中3率20.3%(约5期中1次)</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 共现分组 · 回测70期中3率2.9%(约35期中1次)</div>';
     
     var drEl = document.getElementById("danRec");
     if (drEl) drEl.innerHTML = html;
@@ -16709,8 +16708,7 @@ function renderDanRecommend(type, data) {
     var g2 = g2s !== null ? _pl5Group(g2s, excl) : g1.slice();
     var allUsed = {}; g1.forEach(function(n){allUsed[n]=true;}); g2.forEach(function(n){allUsed[n]=true;});
     var g3 = [];
-    for (var d = 0; d <= 9; d++) { if (!allUsed[d]) g3.push(d); }
-    for (var di = 0; di < ranked.length && g3.length < 6; di++) { if (g3.indexOf(ranked[di].n) < 0) g3.push(ranked[di].n); }
+    for (var di = 0; di < ranked.length && g3.length < 6; di++) { if (!allUsed[ranked[di].n]) g3.push(ranked[di].n); }
     g3.sort(function(a,b){return a-b;});
     
     var groups = [g1, g2, g3];
