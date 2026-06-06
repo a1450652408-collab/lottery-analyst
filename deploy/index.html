@@ -17482,16 +17482,16 @@ function renderRecommend(type, data) {
       }
       if(etScored2.length>0){
         etScored2.sort(function(a,b){return b.score-a.score;});
-        var top5et=[];
+        var top5et=[], usedReps={};
         for(var m=0;m<etScored2.length&&top5et.length<5;m++){
           var c=etScored2[m];
           var ck=c.combo.slice().sort().join(',');
           var dup=false;
           for(var ti=0;ti<top5et.length;ti++){var tk=top5et[ti].combo.slice().sort().join(',');if(tk===ck){dup=true;break;}}
           if(dup) continue;
-          var tooSim=false;
-          for(var ti=0;ti<top5et.length;ti++){var ov=0;for(var di=0;di<4;di++)if(top5et[ti].combo.indexOf(c.combo[di])>=0)ov++;if(ov>=3||(ov>=2&&c.repeat===top5et[ti].repeat)){tooSim=true;break;}}
-          if(tooSim) continue;
+          // 仅限制重号不能重复
+          if(usedReps[c.repeat]) continue;
+          usedReps[c.repeat]=true;
           top5et.push(c);
         }
         if(top5et.length>0){
