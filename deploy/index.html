@@ -17490,7 +17490,7 @@ function renderRecommend(type, data) {
           for(var ti=0;ti<top5et.length;ti++){var tk=top5et[ti].combo.slice().sort().join(',');if(tk===ck){dup=true;break;}}
           if(dup) continue;
           var tooSim=false;
-          for(var ti=0;ti<top5et.length;ti++){var ov=0;for(var di=0;di<4;di++)if(top5et[ti].combo.indexOf(c.combo[di])>=0)ov++;if(ov>=3){tooSim=true;break;}}
+          for(var ti=0;ti<top5et.length;ti++){var ov=0;for(var di=0;di<4;di++)if(top5et[ti].combo.indexOf(c.combo[di])>=0)ov++;if(ov>=3||(ov>=2&&c.repeat===top5et[ti].repeat)){tooSim=true;break;}}
           if(tooSim) continue;
           top5et.push(c);
         }
