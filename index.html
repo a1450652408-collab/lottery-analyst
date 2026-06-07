@@ -16583,12 +16583,12 @@ function renderDanRecommend(type, data) {
       }
     }
     var group5 = [ranked[0].n];
-    var used5 = {}; used6[ranked[0].n] = true;
+    var used5 = {}; used5[ranked[0].n] = true;
     while (group5.length < 5) {
       var bestN = -1, bestS = -999;
       for (var di = 0; di < ranked.length; di++) {
         var dn = ranked[di].n;
-        if (used6[dn]) continue;
+        if (used5[dn]) continue;
         var cs = 0; for (var gi = 0; gi < group5.length; gi++) cs += cooc[dn][group5[gi]];
         var sc = cs * 0.4 + scores[dn] * 0.5;
         if (sc > bestS) { bestS = sc; bestN = dn; }
