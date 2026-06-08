@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">冷号遗漏30期 + 热号频率15期 → 线性+32/期</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">1胆+8拖=16注=32元/组 · 两组64元/期</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16560,7 +16560,7 @@ function renderDanRecommend(type, data) {
     hotTuos.sort(function(a,b){return a-b;});
     
     /* 渲染 */
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期胆 + 热号频率15期胆 · 各8拖 · 32元/期</div>';
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期胆 + 热号频率15期胆 · 各8拖 · 64元/期</div>';
     
     /* 冷号组 */
     html += '<div class="sm-row" style="background:#e0f2f1;border-radius:4px;padding:4px 6px;margin-bottom:3px">';
@@ -16569,7 +16569,7 @@ function renderDanRecommend(type, data) {
     html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
     coldTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
     html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:6px">16元</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">32元</span>';
     html += '</div>';
     
     /* 热号组 */
@@ -16579,32 +16579,23 @@ function renderDanRecommend(type, data) {
     html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
     hotTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
     html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:6px">16元</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">32元</span>';
     html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计32元/期 · 线性+32/期 · 10期周期 · 回测+10,770元</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计64元/期 · 1胆+8拖组三(16注=32元/组) · 仅供参考</div>';
     
     /* 复制按钮 */
     html += '<div style="text-align:right;padding:0 4px;margin-top:-18px;margin-bottom:4px">';
     html += '<span class="rec-copy" onclick="_copyZu3Nums(' + coldDan + ',' + JSON.stringify(coldTuos) + ',' + hotDan + ',' + JSON.stringify(hotTuos) + ',this)" style="font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</span>';
     html += '</div>';
     
-    /* 线性+32/10期策略表（奖金×步数） */
-    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px;border-left:3px solid #2e7d32">';
-    html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 线性+32/10期 · 每期+32 · 奖金×步数</div>';
-    html += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
-    html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">期</th><th style="text-align:right;padding:1px 4px;color:#999">当期</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中组三</th><th style="text-align:right;padding:1px 4px;color:#999">净利</th></tr>';
-    for (var si = 1; si <= 10; si++) {
-      var cur = 32 * si;
-      var cum = 0; for (var k=1; k<=si; k++) cum += 32*k;
-      var prize = 346 * si;
-      var net = prize - cum;
-      var c = '#2e7d32';
-      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">' + cur + '</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + net + '(' + prize + ')</td><td style="text-align:right;padding:1px 4px;color:#2e7d32">+' + net + '</td></tr>';
-    }
-    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">1760</td><td style="text-align:right;padding:1px 4px;color:#c62828">—</td><td style="text-align:right;padding:1px 4px;color:#c62828">-1760</td></tr>';
-    html += '</table>';
-    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 回测+10,770元 · 67.9%命中率 · 平均9.5天中1次 · 建议本金8,000元</div>';
+    /* 策略表 - 仅供成本参考 */
+    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fff3e0;border-radius:4px;margin-top:4px;border-left:3px solid #e65100">';
+    html += '<div style="font-weight:500;margin-bottom:3px;color:#e65100">⚠️ 回测结果：成本修正后此策略为亏损（-12,778元）</div>';
+    html += '<div style="font-size:9px;color:#666;line-height:1.5">';
+    html += '组三胆托 1胆+8拖 = 16注组三 = <b>32元/组</b>（胆码做重复号8注 + 拖码做重复号8注）<br>';
+    html += '冷+热两组合计 <b>64元/期</b> · 10期周期不倍投 · 全空损失640元<br>';
+    html += '之前所有"盈利"结论因实际成本是计算的2倍，全部作废。</div>';
     html += '</div>';
     
     var drEl = document.getElementById("danRec");
@@ -18424,9 +18415,9 @@ function _copyKenoRow(el) {
 }
 /* ===== 组三推荐复制 ===== */
 function _copyZu3Nums(coldDan, coldTuos, hotDan, hotTuos, el) {
-  var text = '\u2744\u51B7\u80C6' + coldDan + ' \u62D6[' + coldTuos.join(',') + '] 16\u5143\n' +
-             '\uD83D\uDD25\u70ED\u80C6' + hotDan + ' \u62D6[' + hotTuos.join(',') + '] 16\u5143\n' +
-             '\u5408\u8BA132\u5143/\u671F';
+  var text = '\u2744\u51B7\u80C6' + coldDan + ' \u62D6[' + coldTuos.join(',') + '] 32\u5143\n' +
+             '\uD83D\uDD25\u70ED\u80C6' + hotDan + ' \u62D6[' + hotTuos.join(',') + '] 32\u5143\n' +
+             '\u5408\u8BA164\u5143/\u671F';
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).catch(function(){});
   } else {
