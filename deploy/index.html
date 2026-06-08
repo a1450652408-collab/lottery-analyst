@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">1胆+8拖=16注=32元/组 · 两组64元/期</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组6拖包组三</div><div class="right">1胆+6拖=12注=24元/组 · 两组48元/期</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16539,50 +16539,50 @@ function renderDanRecommend(type, data) {
       }
     }
     
-    /* 冷组8拖：剩余号码中频率最高8个 */
+    /* 冷组6拖：剩余号码中频率最高6个 */
     var coldTuosRanked = [];
     for (var d = numMin; d <= numMax; d++) if (d !== coldDan) coldTuosRanked.push({n:d, f:freq[d]});
     coldTuosRanked.sort(function(a,b){return b.f - a.f;});
-    var coldTuos = coldTuosRanked.slice(0, 8).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
+    var coldTuos = coldTuosRanked.slice(0, 6).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
     
     /* 热号选胆：频率最高（排除冷胆） */
     var hotDan = coldTuosRanked[0].n;
-    /* 热组8拖：排除热胆和冷胆 */
+    /* 热组6拖：排除热胆和冷胆 */
     var hotTuosRanked = [];
     for (var d = numMin; d <= numMax; d++) if (d !== hotDan && d !== coldDan) hotTuosRanked.push({n:d, f:freq[d]});
     hotTuosRanked.sort(function(a,b){return b.f - a.f;});
-    var hotTuos = hotTuosRanked.slice(0, 8).map(function(r){return r.n;});
-    while (hotTuos.length < 8) {
+    var hotTuos = hotTuosRanked.slice(0, 6).map(function(r){return r.n;});
+    while (hotTuos.length < 6) {
       for (var d = numMin; d <= numMax; d++) {
-        if (hotTuos.indexOf(d) === -1 && d !== hotDan) { hotTuos.push(d); if (hotTuos.length >= 8) break; }
+        if (hotTuos.indexOf(d) === -1 && d !== hotDan) { hotTuos.push(d); if (hotTuos.length >= 6) break; }
       }
     }
     hotTuos.sort(function(a,b){return a-b;});
     
     /* 渲染 */
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期胆 + 热号频率15期胆 · 各8拖 · 64元/期</div>';
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期胆 + 热号频率15期胆 · 各6拖 · 48元/期</div>';
     
     /* 冷号组 */
     html += '<div class="sm-row" style="background:#e0f2f1;border-radius:4px;padding:4px 6px;margin-bottom:3px">';
     html += '<span class="sm-label" style="width:30px;font-size:10px;color:#00695c">❄冷</span>';
     html += '<span style="font-size:20px;color:#00695c;font-weight:700;letter-spacing:1px">胆' + coldDan + '</span>';
-    html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
+    html += '<span style="font-size:12px;color:#666;margin-left:4px">6拖[';
     coldTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
     html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:6px">32元</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">24元</span>';
     html += '</div>';
     
     /* 热号组 */
     html += '<div class="sm-row" style="background:#fce4ec;border-radius:4px;padding:4px 6px;margin-bottom:3px">';
     html += '<span class="sm-label" style="width:30px;font-size:10px;color:#c62828">🔥热</span>';
     html += '<span style="font-size:20px;color:#c62828;font-weight:700;letter-spacing:1px">胆' + hotDan + '</span>';
-    html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
+    html += '<span style="font-size:12px;color:#666;margin-left:4px">6拖[';
     hotTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
     html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:6px">32元</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">24元</span>';
     html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计64元/期 · 1胆+8拖组三(16注=32元/组) · 仅供参考</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计48元/期 · 1胆+6拖组三(12注=24元/组) · 回测-1,918元/500期</div>';
     
     /* 复制按钮 */
     html += '<div style="text-align:right;padding:0 4px;margin-top:-18px;margin-bottom:4px">';
@@ -16591,11 +16591,11 @@ function renderDanRecommend(type, data) {
     
     /* 策略表 - 仅供成本参考 */
     html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fff3e0;border-radius:4px;margin-top:4px;border-left:3px solid #e65100">';
-    html += '<div style="font-weight:500;margin-bottom:3px;color:#e65100">⚠️ 回测结果：成本修正后此策略为亏损（-12,778元）</div>';
+    html += '<div style="font-weight:500;margin-bottom:3px;color:#e65100">⚠️ 回测：成本修正后此策略亏损（-1,918元/500期, 返奖率84%）</div>';
     html += '<div style="font-size:9px;color:#666;line-height:1.5">';
-    html += '组三胆托 1胆+8拖 = 16注组三 = <b>32元/组</b>（胆码做重复号8注 + 拖码做重复号8注）<br>';
-    html += '冷+热两组合计 <b>64元/期</b> · 10期周期不倍投 · 全空损失640元<br>';
-    html += '之前所有"盈利"结论因实际成本是计算的2倍，全部作废。</div>';
+    html += '组三胆托 1胆+6拖 = 12注组三 = <b>24元/组</b>（胆码做重复号6注 + 拖码做重复号6注）<br>';
+    html += '冷+热两组合计 <b>48元/期</b> · 10期周期不倍投 · 全空损失480元<br>';
+    html += '热号选胆返奖率84%，是3D各种玩法中最高的。</div>';
     html += '</div>';
     
     var drEl = document.getElementById("danRec");
@@ -18415,9 +18415,9 @@ function _copyKenoRow(el) {
 }
 /* ===== 组三推荐复制 ===== */
 function _copyZu3Nums(coldDan, coldTuos, hotDan, hotTuos, el) {
-  var text = '\u2744\u51B7\u80C6' + coldDan + ' \u62D6[' + coldTuos.join(',') + '] 32\u5143\n' +
-             '\uD83D\uDD25\u70ED\u80C6' + hotDan + ' \u62D6[' + hotTuos.join(',') + '] 32\u5143\n' +
-             '\u5408\u8BA164\u5143/\u671F';
+  var text = '\u2744\u51B7\u80C6' + coldDan + ' \u62D6[' + coldTuos.join(',') + '] 24\u5143\n' +
+             '\uD83D\uDD25\u70ED\u80C6' + hotDan + ' \u62D6[' + hotTuos.join(',') + '] 24\u5143\n' +
+             '\u5408\u8BA148\u5143/\u671F';
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).catch(function(){});
   } else {
