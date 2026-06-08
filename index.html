@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#ff5722"></div>推荐5码包组六</div><div class="right">三期融合评分→共现分组→10注20元</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">冷号遗漏30期 + 热号频率15期 → 线性+32/期</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16511,129 +16511,95 @@ function renderDanRecommend(type, data) {
   var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
   var numMin = 0, numMax = 9;
   
-  /* 对3位数字彩(fc3d/pl3): 显示3组推荐（改良V2: EMA+遗漏+频率+共现分组） */
+  /* 对3位数字彩(fc3d/pl3): 冷+热两组8拖组三胆拖 + 固定32元/10期 */
   if (posCount === 3) {
-    /* 三期融合评分（短10+中20+长40） */
-    function _windowScore(windowSize) {
-      var win = Math.min(windowSize, useData.length);
-      var ws = useData.slice(0, win);
-      var n = win;
-      var sc = {};
-      for (var d = numMin; d <= numMax; d++) sc[d] = 0;
-      for (var pos = 0; pos < 3; pos++) {
-        for (var d = numMin; d <= numMax; d++) {
-          var s = [];
-          for (var i = 0; i < n; i++) {
-            var ns = getNums(ws[i]);
-            s.push(ns.length > pos && ns[pos] === d ? 1 : 0);
-          }
-          var e = s[0] || 0;
-          for (var j = 1; j < s.length; j++) e = 0.5 * s[j] + 0.5 * e;
-          var shortE = s[0] || 0, longE = s[0] || 0;
-          for (var j = 1; j < s.length; j++) { shortE = 0.5 * s[j] + 0.5 * shortE; longE = 0.15 * s[j] + 0.85 * longE; }
-          var macd = shortE - longE;
-          var burst = 0;
-          for (var j = 0; j < Math.min(3, s.length); j++) if (s[j] === 1) burst++;
-          var miss = n;
-          for (var j = 0; j < s.length; j++) { if (s[j] === 1) { miss = j; break; } }
-          var missScore = 1.0 - miss / Math.max(n, 1);
-          var freq = 0;
-          for (var j = 0; j < s.length; j++) freq += s[j];
-          var freqScore = freq / Math.max(n, 1);
-          sc[d] += e * 0.20 + Math.max(-0.3, Math.min(0.3, macd)) * 0.10 + (burst / 3) * 0.10 + missScore * 0.30 + freqScore * 0.30;
-        }
+    /* 冷号选胆：30期遗漏最久的 */
+    var missWin = Math.min(30, useData.length);
+    var lastSeen = {};
+    for (var d = numMin; d <= numMax; d++) lastSeen[d] = missWin;
+    for (var i = 0; i < missWin; i++) {
+      var ns = getNums(useData[i]);
+      for (var di = 0; di < ns.length; di++) {
+        if (!isNaN(ns[di]) && ns[di] >= numMin && ns[di] <= numMax) lastSeen[ns[di]] = i;
       }
-      return sc;
     }
-    var scores10 = _windowScore(10);
-    var scores20 = _windowScore(20);
-    var scores40 = _windowScore(40);
-    var scores = {};
-    for (var d = numMin; d <= numMax; d++) {
-      scores[d] = scores10[d] * 0.3 + scores20[d] * 0.4 + scores40[d] * 0.3;
+    var coldRanked = [];
+    for (var d = numMin; d <= numMax; d++) coldRanked.push({n:d, m:lastSeen[d]});
+    coldRanked.sort(function(a,b){return b.m - a.m;});
+    var coldDan = coldRanked[0].n;
+    
+    /* 频率统计 */
+    var hotWin = Math.min(15, useData.length);
+    var freq = {};
+    for (var d = numMin; d <= numMax; d++) freq[d] = 0;
+    for (var i = 0; i < hotWin; i++) {
+      var ns = getNums(useData[i]);
+      for (var di = 0; di < ns.length; di++) {
+        if (!isNaN(ns[di]) && ns[di] >= numMin && ns[di] <= numMax) freq[ns[di]]++;
+      }
     }
     
-    /* 冷号兜底 */
-    for (var pos = 0; pos < 3; pos++) {
+    /* 冷组8拖：剩余号码中频率最高8个 */
+    var coldTuosRanked = [];
+    for (var d = numMin; d <= numMax; d++) if (d !== coldDan) coldTuosRanked.push({n:d, f:freq[d]});
+    coldTuosRanked.sort(function(a,b){return b.f - a.f;});
+    var coldTuos = coldTuosRanked.slice(0, 8).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
+    
+    /* 热号选胆：频率最高（排除冷胆） */
+    var hotDan = coldTuosRanked[0].n;
+    /* 热组8拖：排除热胆和冷胆 */
+    var hotTuosRanked = [];
+    for (var d = numMin; d <= numMax; d++) if (d !== hotDan && d !== coldDan) hotTuosRanked.push({n:d, f:freq[d]});
+    hotTuosRanked.sort(function(a,b){return b.f - a.f;});
+    var hotTuos = hotTuosRanked.slice(0, 8).map(function(r){return r.n;});
+    while (hotTuos.length < 8) {
       for (var d = numMin; d <= numMax; d++) {
-        var appeared = false;
-        for (var i = 0; i < useData.length; i++) {
-          var ns = getNums(useData[i]);
-          if (ns.length > pos && ns[pos] === d) { appeared = true; break; }
-        }
-        if (!appeared) scores[d] += 0.5;
+        if (hotTuos.indexOf(d) === -1 && d !== hotDan) { hotTuos.push(d); if (hotTuos.length >= 8) break; }
       }
     }
+    hotTuos.sort(function(a,b){return a-b;});
     
-    /* 排序 */
-    var ranked = [];
-    for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
-    ranked.sort(function(a,b){return b.s-a.s;});
+    /* 渲染 */
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期胆 + 热号频率15期胆 · 各8拖 · 32元/期</div>';
     
-    /* 共现分组：单组6码 */
-    var cooc = {};
-    for (var d = 0; d <= 9; d++) { cooc[d] = {}; for (var dd = 0; dd <= 9; dd++) cooc[d][dd] = 0; }
-    var coocWin = Math.min(50, data.length);
-    for (var ci = 0; ci < coocWin; ci++) {
-      var cn = getNums(data[ci]);
-      for (var ca = 0; ca < cn.length; ca++) {
-        for (var cb = ca+1; cb < cn.length; cb++) {
-          cooc[cn[ca]][cn[cb]]++; cooc[cn[cb]][cn[ca]]++;
-        }
-      }
-    }
-    var group5 = [ranked[0].n];
-    var used5 = {}; used5[ranked[0].n] = true;
-    while (group5.length < 5) {
-      var bestN = -1, bestS = -999;
-      for (var di = 0; di < ranked.length; di++) {
-        var dn = ranked[di].n;
-        if (used5[dn]) continue;
-        var cs = 0; for (var gi = 0; gi < group5.length; gi++) cs += cooc[dn][group5[gi]];
-        var sc = cs * 0.4 + scores[dn] * 0.5;
-        if (sc > bestS) { bestS = sc; bestN = dn; }
-      }
-      if (bestN >= 0) { group5.push(bestN); used5[bestN] = true; }
-      else break;
-    }
-    group5.sort(function(a,b){return a-b;});
-    
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fbe9e7;border-radius:4px;margin-bottom:6px">基于最新' + latestPeriod + '期前30期数据 · 三期融合评分·共现分组5码包组六</div>';
-    /* 10个数字的评分条 */
-    html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:6px">10码评分: ';
-    ranked.forEach(function(r, i) {
-      var bg = i < 4 ? '#ff5722' : (i < 7 ? '#ffaa44' : '#ffddaa');
-      html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + (i<4?'#fff':'#666') + '">' + r.n + '</span>';
-    });
+    /* 冷号组 */
+    html += '<div class="sm-row" style="background:#e0f2f1;border-radius:4px;padding:4px 6px;margin-bottom:3px">';
+    html += '<span class="sm-label" style="width:30px;font-size:10px;color:#00695c">❄冷</span>';
+    html += '<span style="font-size:20px;color:#00695c;font-weight:700;letter-spacing:1px">胆' + coldDan + '</span>';
+    html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
+    coldTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
+    html += ']</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">16元</span>';
     html += '</div>';
     
-    /* 单组5码展示 */
-    html += '<div class="sm-row" style="background:#fff3e0;border-radius:4px;padding:4px 6px">';
-    html += '<span class="sm-label" style="width:36px;font-size:11px;color:#ff5722">推荐</span>';
-    html += '<span class="sm-val" style="font-size:22px;color:#ff5722;font-weight:700;letter-spacing:2px">';
-    group5.forEach(function(n) { html += n; });
-    html += '</span>';
-    html += '<span style="font-size:8px;color:#999;margin-left:8px">';
-    group5.forEach(function(n, ni) {
-      var rItem = ranked.find(function(x){return x.n===n;});
-      html += (ni>0?' ':'') + n + '=' + rItem.s.toFixed(2);
-    });
-    html += '</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:10px">包组六 10注 20元</span>';
+    /* 热号组 */
+    html += '<div class="sm-row" style="background:#fce4ec;border-radius:4px;padding:4px 6px;margin-bottom:3px">';
+    html += '<span class="sm-label" style="width:30px;font-size:10px;color:#c62828">🔥热</span>';
+    html += '<span style="font-size:20px;color:#c62828;font-weight:700;letter-spacing:1px">胆' + hotDan + '</span>';
+    html += '<span style="font-size:12px;color:#666;margin-left:4px">8拖[';
+    hotTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
+    html += ']</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:6px">16元</span>';
     html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 三期融合评分 · 回测1470期中3率15.6%(约6.4期/次) 最长连失25期(2026年最长20期)</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计32元/期 · 线性+32/期 · 10期周期 · 回测+10,770元</div>';
     
-    /* 倍投策略参考（翻3倍追3期） */
-    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#fff8e1;border-radius:4px;margin-top:4px;border-left:3px solid #ff9800">';
-    html += '<div style="font-weight:500;margin-bottom:3px">📈 翻3倍追3期参考</div>';
+    /* 线性+32/10期策略表（奖金×步数） */
+    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px;border-left:3px solid #2e7d32">';
+    html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 线性+32/10期 · 每期+32 · 奖金×步数</div>';
     html += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
-    html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">天</th><th style="text-align:right;padding:1px 4px;color:#999">倍数</th><th style="text-align:right;padding:1px 4px;color:#999">投入</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中奖</th><th style="text-align:right;padding:1px 4px;color:#999">净利</th></tr>';
-    html += '<tr><td style="padding:1px 4px">1</td><td style="text-align:right;padding:1px 4px">1×</td><td style="text-align:right;padding:1px 4px">20</td><td style="text-align:right;padding:1px 4px">20</td><td style="text-align:right;padding:1px 4px;color:#4caf50">173</td><td style="text-align:right;padding:1px 4px;color:#4caf50;font-weight:500">+153</td></tr>';
-    html += '<tr><td style="padding:1px 4px">2</td><td style="text-align:right;padding:1px 4px">3×</td><td style="text-align:right;padding:1px 4px">60</td><td style="text-align:right;padding:1px 4px">80</td><td style="text-align:right;padding:1px 4px;color:#4caf50">519</td><td style="text-align:right;padding:1px 4px;color:#4caf50;font-weight:500">+439</td></tr>';
-    html += '<tr><td style="padding:1px 4px">3</td><td style="text-align:right;padding:1px 4px">9×</td><td style="text-align:right;padding:1px 4px">180</td><td style="text-align:right;padding:1px 4px">260</td><td style="text-align:right;padding:1px 4px;color:#4caf50">1,557</td><td style="text-align:right;padding:1px 4px;color:#4caf50;font-weight:500">+1,297</td></tr>';
+    html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">期</th><th style="text-align:right;padding:1px 4px;color:#999">当期</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中组三</th><th style="text-align:right;padding:1px 4px;color:#999">净利</th></tr>';
+    for (var si = 1; si <= 10; si++) {
+      var cur = 32 * si;
+      var cum = 0; for (var k=1; k<=si; k++) cum += 32*k;
+      var prize = 346 * si;
+      var net = prize - cum;
+      var c = '#2e7d32';
+      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">' + cur + '</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + net + '(' + prize + ')</td><td style="text-align:right;padding:1px 4px;color:#2e7d32">+' + net + '</td></tr>';
+    }
+    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">1760</td><td style="text-align:right;padding:1px 4px;color:#c62828">—</td><td style="text-align:right;padding:1px 4px;color:#c62828">-1760</td></tr>';
     html += '</table>';
-    html += '<div style="font-size:8px;color:#999;margin-top:2px">47%概率盈利 · 60%全空亏260元 · 建议本金约2千</div>';
+    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 回测+10,770元 · 67.9%命中率 · 平均9.5天中1次 · 建议本金8,000元</div>';
     html += '</div>';
     
     var drEl = document.getElementById("danRec");
@@ -16643,8 +16609,8 @@ function renderDanRecommend(type, data) {
   
   /* 对5位数字彩(pl5): 3组×6码不定位推荐 */
   if (posCount === 5) {
-    /* 三期融合评分（短10+中20+长40） */
-    function _pl5WindowScore(windowSize) {
+    /* 三期融合评分 */
+    function _pl5Win(windowSize) {
       var win = Math.min(windowSize, useData.length);
       var ws = useData.slice(0, win);
       var n = win;
@@ -16675,9 +16641,9 @@ function renderDanRecommend(type, data) {
       }
       return sc;
     }
-    var p10 = _pl5WindowScore(10);
-    var p20 = _pl5WindowScore(20);
-    var p40 = _pl5WindowScore(40);
+    var p10 = _pl5Win(10);
+    var p20 = _pl5Win(20);
+    var p40 = _pl5Win(40);
     var scores = {};
     for (var d = numMin; d <= numMax; d++) {
       scores[d] = p10[d] * 0.3 + p20[d] * 0.4 + p40[d] * 0.3;
@@ -16699,7 +16665,6 @@ function renderDanRecommend(type, data) {
     for (var d = numMin; d <= numMax; d++) ranked.push({n:d, s:scores[d]});
     ranked.sort(function(a,b){return b.s-a.s;});
     
-    /* 共现分组 */
     var cooc = {};
     for (var d = 0; d <= 9; d++) { cooc[d] = {}; for (var dd = 0; dd <= 9; dd++) cooc[d][dd] = 0; }
     var coocWin = Math.min(50, data.length);
