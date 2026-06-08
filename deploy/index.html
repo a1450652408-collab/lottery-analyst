@@ -16430,8 +16430,8 @@ function renderAdvanced(type, data) {
     if (pEl2) pEl2.style.display = "none";
   }
 
-  // -- 6. 独胆推荐 (数字彩) --
-  if (cfg.type === "digit") {
+  // -- 6. 组三胆拖推荐 (仅3位数字彩: 福彩3D/排列三) --
+  if (type === "fc3d" || type === "pl3") {
     var dEl = document.getElementById("cardDan");
     if (dEl) dEl.style.display = "block";
     renderDanRecommend(type, data);
