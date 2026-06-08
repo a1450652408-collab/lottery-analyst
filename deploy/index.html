@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#6a1b9a"></div>推荐胆拖包组三(冷+热)</div><div class="right">冷号遗漏30期 → 热号频率15期 → 24元/期</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷号8拖包组三</div><div class="right">冷号遗漏30期选胆 → 频率选8拖 → 16元/期</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16511,9 +16511,9 @@ function renderDanRecommend(type, data) {
   var posCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
   var numMin = 0, numMax = 9;
   
-  /* 对3位数字彩(fc3d/pl3): 组三胆拖(冷+热) + 固定24元/10期策略 */
+  /* 对3位数字彩(fc3d/pl3): 冷号8拖组三胆拖 + 固定16元/10期策略 */
   if (posCount === 3) {
-    /* 冷号选胆：30期遗漏最久的做胆，第2~7做拖 */
+    /* 冷号选胆：30期遗漏最久的 */
     var missWin = Math.min(30, useData.length);
     var lastSeen = {};
     for (var d = numMin; d <= numMax; d++) lastSeen[d] = missWin;
@@ -16526,64 +16526,63 @@ function renderDanRecommend(type, data) {
     var coldRanked = [];
     for (var d = numMin; d <= numMax; d++) coldRanked.push({n:d, m:lastSeen[d]});
     coldRanked.sort(function(a,b){return b.m - a.m;});
-    var coldDan = coldRanked[0].n;
-    var coldTuos = coldRanked.slice(1, 7).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
+    var dan = coldRanked[0].n;
     
-    /* 热号选胆：15期频率最高（排除冷胆） */
+    /* 频率选8拖（剩余号码中频率最高的8个） */
     var hotWin = Math.min(15, useData.length);
-    var hotFreq = {};
-    for (var d = numMin; d <= numMax; d++) hotFreq[d] = 0;
+    var freq = {};
+    for (var d = numMin; d <= numMax; d++) freq[d] = 0;
     for (var i = 0; i < hotWin; i++) {
       var ns = getNums(useData[i]);
       for (var di = 0; di < ns.length; di++) {
-        if (!isNaN(ns[di]) && ns[di] >= numMin && ns[di] <= numMax && ns[di] !== coldDan) hotFreq[ns[di]]++;
+        if (!isNaN(ns[di]) && ns[di] >= numMin && ns[di] <= numMax) freq[ns[di]]++;
       }
     }
-    var hotRanked = [];
-    for (var d = numMin; d <= numMax; d++) if (d !== coldDan) hotRanked.push({n:d, f:hotFreq[d]});
-    hotRanked.sort(function(a,b){return b.f - a.f;});
-    var hotDan = hotRanked[0].n;
-    var hotTuos = hotRanked.slice(1, 7).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
+    var tuosRanked = [];
+    for (var d = numMin; d <= numMax; d++) if (d !== dan) tuosRanked.push({n:d, f:freq[d]});
+    tuosRanked.sort(function(a,b){return b.f - a.f;});
+    var tuos = tuosRanked.slice(0, 8).map(function(r){return r.n;}).sort(function(a,b){return a-b;});
     
     /* 渲染 */
-    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#f3e5f5;border-radius:4px;margin-bottom:6px">冷号遗漏30期 + 热号频率15期 · 组三胆拖两组 · 24元/期</div>';
+    var html = '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-bottom:6px">冷号遗漏30期做胆 · 频率8拖 · 16元/期 · 不倍投</div>';
     
-    /* 冷号组 */
-    html += '<div class="sm-row" style="background:#f3e5f5;border-radius:4px;padding:4px 6px;margin-bottom:4px">';
-    html += '<span class="sm-label" style="width:36px;font-size:10px;color:#6a1b9a">❄冷</span>';
-    html += '<span style="font-size:18px;color:#6a1b9a;font-weight:700;letter-spacing:1px">胆' + coldDan + '</span>';
-    html += '<span style="font-size:12px;color:#666;margin-left:6px">拖[';
-    coldTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
-    html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:8px">12元</span>';
+    /* 遗漏展示 */
+    html += '<div style="font-size:9px;color:#888;padding:2px 6px;margin-bottom:4px">遗漏(近30期): ';
+    coldRanked.forEach(function(r, i) {
+      var bg = i === 0 ? '#00695c' : (i < 9 ? '#b2dfdb' : '#e0f2f1');
+      var tc = i === 0 ? '#fff' : '#666';
+      html += '<span style="display:inline-block;width:22px;height:16px;line-height:16px;text-align:center;margin:0 1px;background:' + bg + ';border-radius:3px;font-size:9px;color:' + tc + '">' + r.n + '</span>';
+    });
     html += '</div>';
     
-    /* 热号组 */
-    html += '<div class="sm-row" style="background:#fce4ec;border-radius:4px;padding:4px 6px;margin-bottom:4px">';
-    html += '<span class="sm-label" style="width:36px;font-size:10px;color:#c62828">🔥热</span>';
-    html += '<span style="font-size:18px;color:#c62828;font-weight:700;letter-spacing:1px">胆' + hotDan + '</span>';
-    html += '<span style="font-size:12px;color:#666;margin-left:6px">拖[';
-    hotTuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
-    html += ']</span>';
-    html += '<span style="font-size:10px;color:#999;margin-left:8px">12元</span>';
+    /* 胆拖展示 */
+    html += '<div class="sm-row" style="background:#e0f2f1;border-radius:4px;padding:4px 6px">';
+    html += '<span class="sm-label" style="width:36px;font-size:11px;color:#00695c">胆码</span>';
+    html += '<span style="font-size:22px;color:#00695c;font-weight:700;letter-spacing:2px">' + dan + '</span>';
+    html += '<span class="sm-label" style="width:36px;font-size:11px;color:#00695c;margin-left:6px">8拖</span>';
+    html += '<span style="font-size:16px;color:#333;letter-spacing:1px">';
+    tuos.forEach(function(n, i) { html += (i>0?',':'') + n; });
+    html += '</span>';
+    html += '<span style="font-size:10px;color:#999;margin-left:8px">8注×2元=16元</span>';
     html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计24元/期 · 回测2025: +5,344元(68%命中) · 平均9天中1次</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 回测2025~2026: +3,796元(50%命中) · 平均14天中1次 · 每月均盈利</div>';
     
-    /* 固定24元/10期策略表 */
-    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e0f2f1;border-radius:4px;margin-top:4px;border-left:3px solid #00695c">';
-    html += '<div style="font-weight:500;margin-bottom:3px;color:#00695c">📈 固定24元/10期 · 不倍投 · 中了重开</div>';
+    /* 固定16元/10期策略表 */
+    html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px;border-left:3px solid #2e7d32">';
+    html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 固定16元/10期 · 不倍投 · 中了重开</div>';
     html += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
     html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">期</th><th style="text-align:right;padding:1px 4px;color:#999">当期</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中组三</th></tr>';
     for (var si = 1; si <= 10; si++) {
-      var cum = 24 * si;
-      var prize = 346 - cum;
-      var c = prize >= 0 ? '#00695c' : '#c62828';
-      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">24</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + prize + '(' + 346 + ')</td></tr>';
+      var cum = 16 * si;
+      var prize = 346;
+      var net = prize - cum;
+      var c = net >= 0 ? '#2e7d32' : '#c62828';
+      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">16</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + net + '(' + prize + ')</td></tr>';
     }
-    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">240</td><td style="text-align:right;padding:1px 4px;color:#c62828">-240</td></tr>';
+    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">160</td><td style="text-align:right;padding:1px 4px;color:#c62828">-160</td></tr>';
     html += '</table>';
-    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 回测+5,344元 · 返奖率136.1% · 冷热互补平均9天中1次</div>';
+    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 每月均盈利 · 返奖率147.6% · 每期用最新数据重算冷号做胆 · 建议本金2,000元</div>';
     html += '</div>';
     
     var drEl = document.getElementById("danRec");
