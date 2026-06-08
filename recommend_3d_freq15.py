@@ -1,6 +1,6 @@
 """
-福彩3D 推荐：冷+热 两组8拖组三胆拖(32元/期)
-10期周期 · 不倍投 · 回测+3,094元(2025~2026)
+福彩3D 推荐：冷+热 两组8拖组三胆拖(32元/期起步,+32/期)
+10期周期 · 奖金×步数 · 回测+10,770元(2025~2026)
 """
 import json
 from collections import Counter
@@ -36,12 +36,13 @@ cold_tuos=sorted([n for n in range(10) if n!=cold_dan], key=lambda x:-freq[x])[:
 hot_ranked=sorted([n for n in range(10) if n!=cold_dan], key=lambda x:-freq[x])
 hot_dan=hot_ranked[0]
 hot_tuos=sorted([n for n in range(10) if n!=hot_dan and n!=cold_dan], key=lambda x:-freq[x])[:8]
-# 补足到8个
 while len(hot_tuos)<8:
     for nn in range(10):
         if nn not in hot_tuos and nn!=hot_dan: hot_tuos.append(nn)
         if len(hot_tuos)>=8: break
 hot_tuos=sorted(hot_tuos)
+
+BASE=32
 
 print("="*55)
 print(f"📅 {latest} → 次日 福彩3D 推荐")
@@ -50,13 +51,13 @@ print()
 
 print("❄ 冷号组（遗漏最久做胆）")
 print(f"   胆码: {cold_dan}    8拖: {sorted(cold_tuos)}")
-print(f"   {(len(cold_tuos))}注×2元 = {len(cold_tuos)*2}元")
+print(f"   8注×2元 = {len(cold_tuos)*2}元/份")
 print()
 print("🔥 热号组（频率最高做胆，排除冷胆）")
 print(f"   胆码: {hot_dan}    8拖: {hot_tuos}")
-print(f"   {len(hot_tuos)}注×2元 = {len(hot_tuos)*2}元")
+print(f"   8注×2元 = {len(hot_tuos)*2}元/份")
 print()
-print(f"📋 合计：{len(cold_tuos)*2 + len(hot_tuos)*2}元/期 · 10期周期 · 不倍投")
+print(f"📋 合计：32元/期起步 · 每期不中+32 · 10期周期 · 奖金×步数")
 print()
 
 # 遗漏详情
@@ -73,20 +74,26 @@ for n in hot_ranked:
     print(f"  号码 {n}: {freq[n]}次 {m}")
 print()
 
-# 策略表
-COST=32
-print("┌──────┬────────┬────────┬──────────────┐")
-print("│ 期数 │ 当期   │ 累计   │ 中组三(净利) │")
-print("├──────┼────────┼────────┼──────────────┤")
-for s in range(10):
-    cum=COST*(s+1)
-    profit=346-cum
-    print(f"│  {s+1:>3d}  │  {COST}    │  {cum:>4d}   │   +{profit:>3d}({346})   │")
-print(f"├──────┼────────┼────────┼──────────────┤")
-print(f"│ 全空 │   —    │  {COST*10}   │   -{COST*10}     │")
-print("└──────┴────────┴────────┴──────────────┘")
+# 策略表（正确版：奖金×步数）
+print("┌──────┬────────┬────────┬──────────────┬──────────────┐")
+print("│ 期数 │ 当期   │ 累计   │ 中组三(奖金)  │ 净利         │")
+print("├──────┼────────┼────────┼──────────────┼──────────────┤")
+for s in range(1, 11):
+    cum = sum(BASE * i for i in range(1, s+1))
+    prize = 346 * s
+    net = prize - cum
+    print(f"│  {s:>3d}  │ {BASE*s:>5d}  │ {cum:>5d}  │   +{net:>+4d}({prize:>4d})  │ +{net:>+4d}      │")
+print(f"├──────┼────────┼────────┼──────────────┼──────────────┤")
+cum_all = sum(BASE * i for i in range(1, 11))
+print(f"│ 全空 │   —    │ {cum_all:>4d}  │     —         │ -{cum_all:>4d}     │")
+print("└──────┴────────┴────────┴──────────────┴──────────────┘")
 print()
 print("📊 历史回测（2025~2026.6）")
-print("   冷+热各8拖(32元/期)：+3,094元 · 55次命中 · 平均9天中1次")
-print("   2025年: +782元 | 2026年: +2,312元")
-print("   最长空窗37天 · 建议本金5,000元")
+print("   冷+热各8拖 线性+32/期 · 10期周期")
+print("   总盈亏: +10,770元 · 55次命中 · 67.9%命中率")
+print("   2025年: +5,384元 | 2026年: +5,386元")
+print("   平均9.5天中1次 · 最长空窗36天 · 建议本金8,000元")
+print()
+print("⚠️ 每期不中加32元（1→32元, 2→64元, 3→96元...）")
+print("   中奖奖金同步翻倍（第N期奖金=346×N）")
+print("   全空亏1,760元 · 最长连空3轮(30期)")

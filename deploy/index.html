@@ -15842,7 +15842,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div id="patternTrack" class="stat-mini"></div>
   </div>
   <div class="card" id="cardDan" style="display:none">
-    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">冷号遗漏30期 + 热号频率15期 → 32元/期</div></div>
+    <div class="section-head"><div class="left"><div class="dot" style="background:#00695c"></div>推荐冷+热两组8拖包组三</div><div class="right">冷号遗漏30期 + 热号频率15期 → 线性+32/期</div></div>
     <div id="danRec" class="stat-mini"></div>
   </div>
   <div class="card" id="cardKill" style="display:none">
@@ -16582,22 +16582,24 @@ function renderDanRecommend(type, data) {
     html += '<span style="font-size:10px;color:#999;margin-left:6px">16元</span>';
     html += '</div>';
     
-    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计32元/期 · 回测+3,094元 · 平均9天中1次 · 最长空窗37天</div>';
+    html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计32元/期 · 线性+32/期 · 10期周期 · 回测+10,770元</div>';
     
-    /* 固定32元/10期策略表 */
+    /* 线性+32/10期策略表（奖金×步数） */
     html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px;border-left:3px solid #2e7d32">';
-    html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 固定32元/10期 · 两组互补 · 中了重开</div>';
+    html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 线性+32/10期 · 每期+32 · 奖金×步数</div>';
     html += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
-    html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">期</th><th style="text-align:right;padding:1px 4px;color:#999">当期</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中组三</th></tr>';
+    html += '<tr><th style="text-align:left;padding:1px 4px;color:#999">期</th><th style="text-align:right;padding:1px 4px;color:#999">当期</th><th style="text-align:right;padding:1px 4px;color:#999">累计</th><th style="text-align:right;padding:1px 4px;color:#999">中组三</th><th style="text-align:right;padding:1px 4px;color:#999">净利</th></tr>';
     for (var si = 1; si <= 10; si++) {
-      var cum = 32 * si;
-      var net = 346 - cum;
-      var c = net >= 0 ? '#2e7d32' : '#c62828';
-      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">32</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + net + '(' + 346 + ')</td></tr>';
+      var cur = 32 * si;
+      var cum = 0; for (var k=1; k<=si; k++) cum += 32*k;
+      var prize = 346 * si;
+      var net = prize - cum;
+      var c = '#2e7d32';
+      html += '<tr><td style="padding:1px 4px">' + si + '</td><td style="text-align:right;padding:1px 4px">' + cur + '</td><td style="text-align:right;padding:1px 4px">' + cum + '</td><td style="text-align:right;padding:1px 4px;color:' + c + '">+' + net + '(' + prize + ')</td><td style="text-align:right;padding:1px 4px;color:#2e7d32">+' + net + '</td></tr>';
     }
-    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">320</td><td style="text-align:right;padding:1px 4px;color:#c62828">-320</td></tr>';
+    html += '<tr><td style="padding:1px 4px">全空</td><td style="text-align:right;padding:1px 4px">—</td><td style="text-align:right;padding:1px 4px">1760</td><td style="text-align:right;padding:1px 4px;color:#c62828">—</td><td style="text-align:right;padding:1px 4px;color:#c62828">-1760</td></tr>';
     html += '</table>';
-    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 回测+3,094元 · 返奖率119.4% · 建议本金5,000元</div>';
+    html += '<div style="font-size:8px;color:#999;margin-top:2px">✅ 回测+10,770元 · 67.9%命中率 · 平均9.5天中1次 · 建议本金8,000元</div>';
     html += '</div>';
     
     var drEl = document.getElementById("danRec");
