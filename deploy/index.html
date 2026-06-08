@@ -16584,6 +16584,11 @@ function renderDanRecommend(type, data) {
     
     html += '<div style="font-size:9px;color:#999;padding:2px 6px;background:#f5f5f5;border-radius:4px;margin-top:2px">▶ 两组合计32元/期 · 线性+32/期 · 10期周期 · 回测+10,770元</div>';
     
+    /* 复制按钮 */
+    html += '<div style="text-align:right;padding:0 4px;margin-top:-18px;margin-bottom:4px">';
+    html += '<span class="rec-copy" onclick="_copyZu3Nums(' + coldDan + ',' + JSON.stringify(coldTuos) + ',' + hotDan + ',' + JSON.stringify(hotTuos) + ',this)" style="font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</span>';
+    html += '</div>';
+    
     /* 线性+32/10期策略表（奖金×步数） */
     html += '<div style="font-size:10px;color:#666;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px;border-left:3px solid #2e7d32">';
     html += '<div style="font-weight:500;margin-bottom:3px;color:#2e7d32">📈 线性+32/10期 · 每期+32 · 奖金×步数</div>';
@@ -18416,6 +18421,23 @@ function _copyKenoRow(el) {
   }
   el.textContent = '\u2705';
   setTimeout(function(){ el.textContent = '\uD83D\uDCCB'; }, 2000);
+}
+/* ===== 组三推荐复制 ===== */
+function _copyZu3Nums(coldDan, coldTuos, hotDan, hotTuos, el) {
+  var text = '\u2744\u51B7\u80C6' + coldDan + ' \u62D6[' + coldTuos.join(',') + '] 16\u5143\n' +
+             '\uD83D\uDD25\u70ED\u80C6' + hotDan + ' \u62D6[' + hotTuos.join(',') + '] 16\u5143\n' +
+             '\u5408\u8BA132\u5143/\u671F';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function(){});
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+  el.textContent = '\u2705\u5DF2\u590D\u5236';
+  setTimeout(function(){ el.textContent = '\uD83D\uDCCB\u590D\u5236'; }, 2000);
 }
 </script>
 </body>
