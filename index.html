@@ -17376,7 +17376,7 @@ function renderRecommend(type, data) {
   }
 
   /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
-  if (cfg.type === "lotto" && cfg.rC >= 5) {
+  if (cfg.type === "lotto" && cfg.bC > 0 && cfg.rC >= 5) {
     (function() {
       var _lNums = cfg.rMax;
       var _lPick = cfg.rC;
