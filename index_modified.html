@@ -17318,6 +17318,181 @@ function renderRecommend(type, data) {
     })();
   }
 
+  /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
+  if (cfg.type === "lotto" && cfg.rC >= 5) {
+    (function() {
+      var _lNums = cfg.rMax;
+      var _lPick = cfg.rC;
+      var _lBPick = cfg.bC || 0;
+      var _lBMax = cfg.bMax || 0;
+      
+      // 计算三因子评分
+      var _lEma = {}, _lMom = {}, _lFreq = {};
+      for (var _ln = _reNumMin; _ln <= _lNums; _ln++) {
+        var _e = 0, _rCnt = 0, _oCnt = 0;
+        var _recentNums = [], _olderNums = [];
+        var _len = _reUseData.length;
+        for (var _lj = 0; _lj < _len; _lj++) {
+          var _ns = getNums(_reUseData[_lj]);
+          if (_ns.indexOf(_ln) >= 0) {
+            _e += Math.pow(1-0.4, _len-1-_lj);
+            if (_lj < 10) _rCnt++;
+            if (_lj >= Math.max(0, _len-20) && _lj < Math.max(0, _len-10)) _oCnt++;
+          }
+        }
+        _lEma[_ln] = _e;
+        _lMom[_ln] = _rCnt - _oCnt;
+        _lFreq[_ln] = _reFreq[_ln] || 0;
+      }
+      
+      // 多因子投票选候选池（红球/前区）
+      var _lVotes = {};
+      for (var _ln = _reNumMin; _ln <= _lNums; _ln++) { _lVotes[_ln] = 0; }
+      
+      var _lEmaRank = Object.keys(_lEma).sort(function(a,b){return _lEma[b]-_lEma[a];}).slice(0,12).map(Number);
+      var _lMomRank = Object.keys(_lMom).sort(function(a,b){return _lMom[b]-_lMom[a];}).slice(0,12).map(Number);
+      var _lFreqRank = Object.keys(_lFreq).sort(function(a,b){return (_lFreq[b]||0)-(_lFreq[a]||0);}).slice(0,12).map(Number);
+      
+      _lEmaRank.forEach(function(n){ _lVotes[n]++; });
+      _lMomRank.forEach(function(n){ _lVotes[n]++; });
+      _lFreqRank.forEach(function(n){ _lVotes[n]++; });
+      
+      var _lPool = Object.keys(_lVotes).sort(function(a,b){return _lVotes[b]-_lVotes[a];}).slice(0,15).map(Number);
+      
+      if (_lPool.length < _lPick) { return; }
+      
+      // 综合评分
+      var _lSc = {};
+      _lPool.forEach(function(n){ _lSc[n] = _lEma[n]*5 + (_lFreq[n]/Math.max(_len,1))*3 + _lMom[n]*2; });
+      
+      // 候选池排序
+      var _lRanked = _lPool.slice().sort(function(a,b){return(_lSc[b]||0)-(_lSc[a]||0);});
+      
+      // 生成组合：从Top里取C(N, rc)按评分取前30
+      var _lCombos = [];
+      // 限制组合数避免性能问题
+      var _topN = Math.min(_lRanked.length, _lPick === 6 ? 12 : 15);
+      var _lTop = _lRanked.slice(0, _topN);
+      
+      function _combine(arr, k, start, cur, cb) {
+        if (cur.length === k) { cb(cur.slice()); return; }
+        for (var i = start; i < arr.length; i++) {
+          cur.push(arr[i]);
+          _combine(arr, k, i+1, cur, cb);
+          cur.pop();
+        }
+      }
+      
+      _combine(_lTop, _lPick, 0, [], function(g) {
+        var s = 0; g.forEach(function(n){ s += _lSc[n]||0; });
+        _lCombos.push({s:s, g:g.slice()});
+      });
+      
+      _lCombos.sort(function(a,b){return b.s - a.s;});
+      var _lGroups = _lCombos.slice(0, 30).map(function(x){return x.g;});
+      
+      if (_lGroups.length < 10) { return; }
+      
+      // 蓝球/后区评分
+      var _bPool = [];
+      if (_lBMax > 0) {
+        var _bSc = {};
+        for (var _bn = 1; _bn <= _lBMax; _bn++) {
+          var _be = 0, _bf = 0, _br = 0;
+          for (var _bj = 0; _bj < _len; _bj++) {
+            var _bs = getBlues(_reUseData[_bj]);
+            if (_bs.indexOf(_bn) >= 0) {
+              _be += Math.pow(1-0.3, _len-1-_bj);
+              _bf++;
+              if (_bj < 10) _br++;
+            }
+          }
+          _bSc[_bn] = _be * 5 + _bf * 2 + _br * 3;
+        }
+        _bPool = Object.keys(_bSc).sort(function(a,b){return _bSc[b]-_bSc[a];}).slice(0, 4).map(Number);
+      }
+      
+      // 构造卡片
+      var _gameName = cfg.rC === 6 ? '双色球' : '大乐透';
+      var _color = cfg.rC === 6 ? '#c62828' : '#e65100';
+      var _bgColor = cfg.rC === 6 ? '#ffebee' : '#fff3e0';
+      
+      _reHtml += '<div class="rec-card" style="border-left-color:' + _color + ';background:linear-gradient(135deg,' + _bgColor + ',#fff)"><div class="rec-header">🔥 ' + _gameName + '·精英轮换30注</div>';
+      _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#f5f5f5;border-radius:4px;margin-bottom:4px">📊 ' + _lPick + '红/' + _lBPick + '蓝 候选池' + _lPool.length + '码 | 多因子投票排序 | 30注=' + (30*2) + '元/天</div>';
+      
+      // 显示30组
+      var _lHtml = '';
+      for (var _lgi = 0; _lgi < _lGroups.length; _lgi++) {
+        var _lg = _lGroups[_lgi];
+        var _bPick = [];
+        if (_bPool.length > 0) {
+          if (_lBPick === 1) {
+            _bPick = [_bPool[_lgi % _bPool.length]];
+          } else if (_lBPick === 2) {
+            // 大乐透后区，C(4,2)=6种搭配轮流
+            var _bCombos = [];
+            for (var _ba = 0; _ba < _bPool.length; _ba++) {
+              for (var _bb = _ba+1; _bb < _bPool.length; _bb++) {
+                _bCombos.push([_bPool[_ba], _bPool[_bb]]);
+              }
+            }
+            _bPick = _bCombos[_lgi % _bCombos.length];
+          }
+        }
+        
+        var _lgStr = _lg.map(function(n){return String(n).padStart(2,"0");}).join(",");
+        var _lgFull = '红' + _lgStr;
+        if (_bPick.length > 0) {
+          _lgFull += '|蓝' + _bPick.map(function(n){return String(n).padStart(2,"0");}).join(",");
+        }
+        
+        if (_lgi < 5) {
+          _lHtml += '<div class="rec-row"><span class="dt-label" style="color:' + _color + ';min-width:36px">' + (_lgi+1) + '</span><div class="dt-balls">';
+          _lg.sort(function(a,b){return+a-+b}).forEach(function(n) {
+            _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,' + _color + ',' + _color + 'cc);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+          });
+          if (_bPick.length > 0) {
+            _bPick.forEach(function(n) {
+              _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+            });
+          }
+          _lHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _lgFull + '\')">📋</span></div>';
+        } else if (_lgi === 5) {
+          _lHtml += '<div id="_lottoMore" style="display:none">';
+          _lHtml += '<div class="rec-row"><span class="dt-label" style="color:' + _color + ';min-width:36px">' + (_lgi+1) + '</span><div class="dt-balls">';
+          _lg.sort(function(a,b){return+a-+b}).forEach(function(n) {
+            _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,' + _color + ',' + _color + 'cc);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+          });
+          if (_bPick.length > 0) {
+            _bPick.forEach(function(n) {
+              _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+            });
+          }
+          _lHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _lgFull + '\')">📋</span></div>';
+        } else {
+          _lHtml += '<div class="rec-row"><span class="dt-label" style="color:' + _color + ';min-width:36px">' + (_lgi+1) + '</span><div class="dt-balls">';
+          _lg.sort(function(a,b){return+a-+b}).forEach(function(n) {
+            _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,' + _color + ',' + _color + 'cc);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+          });
+          if (_bPick.length > 0) {
+            _bPick.forEach(function(n) {
+              _lHtml += '<span class="dt-ball dan" style="background:linear-gradient(135deg,#1565c0,#42a5f5);font-size:10px;width:22px;height:22px;line-height:22px">' + String(n).padStart(2,"0") + '</span>';
+            });
+          }
+          _lHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _lgFull + '\')">📋</span></div>';
+        }
+      }
+      if (_lGroups.length > 5) _lHtml += '</div>';
+      _reHtml += _lHtml;
+      
+      if (_lGroups.length > 5) {
+        _reHtml += '<div style="text-align:center;margin-top:2px"><span onclick="var d=document.getElementById(\'_lottoMore\');d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent==\'展开全部\'?\'收起\':\'展开全部\'" style="font-size:10px;color:' + _color + ';cursor:pointer;padding:2px 8px;border:1px solid ' + _color + ';border-radius:4px">展开全部</span></div>';
+      }
+      
+      _reHtml += '<div class="rec-reason">精英轮换选号 | 多因子投票候' + _lPool.length + '码池 | TOP12排列组合取30组 | 蓝球评分轮配</div></div>';
+    })();
+  }
+
   /* ===== 大复试推荐（双色球/大乐透：红球+蓝球） ===== */
   if (cfg.type === "lotto" && cfg.bMax > 0) {
     var _reBigRed = cfg.rC === 6 ? 9 : 8;
