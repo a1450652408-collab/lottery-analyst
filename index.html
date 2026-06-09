@@ -17489,6 +17489,35 @@ function renderRecommend(type, data) {
         _reHtml += '<div style="text-align:center;margin-top:2px"><span onclick="var d=document.getElementById(\'_lottoMore\');d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent==\'展开全部\'?\'收起\':\'展开全部\'" style="font-size:10px;color:' + _color + ';cursor:pointer;padding:2px 8px;border:1px solid ' + _color + ';border-radius:4px">展开全部</span></div>';
       }
       
+      // 一键复制全部
+      var _lAllStr = '';
+      for (var _lci = 0; _lci < _lGroups.length; _lci++) {
+        var _lg2 = _lGroups[_lci];
+        var _bPick2 = [];
+        if (_bPool.length > 0) {
+          if (_lBPick === 1) {
+            _bPick2 = [_bPool[_lci % _bPool.length]];
+          } else if (_lBPick === 2) {
+            var _bCombos2 = [];
+            for (var _bai = 0; _bai < _bPool.length; _bai++) {
+              for (var _bbi = _bai+1; _bbi < _bPool.length; _bbi++) {
+                _bCombos2.push([_bPool[_bai], _bPool[_bbi]]);
+              }
+            }
+            _bPick2 = _bCombos2[_lci % _bCombos2.length];
+          }
+        }
+        var _lgStr2 = _lg2.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0");}).join(" ");
+        var _lbStr2 = _bPick2.length > 0 ? _bPick2.map(function(n){return String(n).padStart(2,"0");}).join(" ") : '';
+        _lAllStr += (_lci+1) + ': ' + _lgStr2;
+        if (_lbStr2) _lAllStr += ' ' + _lbStr2;
+        _lAllStr += '\n';
+      }
+      
+      _reHtml += '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:4px">';
+      _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _lAllStr.replace(/'/g,"\\'").replace(/\n/g,'\\n') + '\')">📋复制全部30注</span>';
+      _reHtml += '</div>';
+      
       _reHtml += '<div class="rec-reason">精英轮换选号 | 多因子投票候' + _lPool.length + '码池 | TOP12排列组合取30组 | 蓝球评分轮配</div></div>';
     })();
   }
