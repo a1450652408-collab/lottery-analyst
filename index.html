@@ -17316,6 +17316,63 @@ function renderRecommend(type, data) {
         _reHtml += '<div class="rec-reason">精英轮换策略 | 35码池评分排序(EMA×5+频率×3+动量×2) | 201天回测返奖率90.2% | 胆中4日平均净赚+14.5万</div></div>';
       }
     })();
+
+    /* ===== 选十·精英轮换30组 ===== */
+    (function() {
+      if (_eliteRanked && _eliteRanked.length >= 30) {
+        // 精英轮换生成30组×10号
+        var _es10Groups = [];
+        var _top30 = _eliteRanked.slice(0, 30);
+        var _cur10 = _top30.slice(0, 10);
+        _es10Groups.push(_cur10.slice());
+        for (var _e10i = 10; _e10i < 30; _e10i++) {
+          // 找当前组里评分最低的1个
+          var _min10i = 0, _min10s = _eliteSc[_cur10[0]] || 99999;
+          for (var _m10j = 1; _m10j < 10; _m10j++) {
+            if ((_eliteSc[_cur10[_m10j]]||99999) < _min10s) { _min10s = _eliteSc[_cur10[_m10j]]||99999; _min10i = _m10j; }
+          }
+          _cur10[_min10i] = _top30[_e10i];
+          _es10Groups.push(_cur10.slice());
+        }
+        
+        if (_es10Groups.length >= 30) {
+          _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff;background:linear-gradient(135deg,#e8eaf6,#f3e5f5)"><div class="rec-header">🔟 选十·精英轮换30组（30注=60元/天）</div>';
+          _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#ede7f6;border-radius:4px;margin-bottom:4px">📊 35码池精英轮换 | 每组10号 | 30组=' + (30*2) + '元/天</div>';
+          
+          var _e10Html = '';
+          for (var _e10gi = 0; _e10gi < _es10Groups.length; _e10gi++) {
+            var _e10g = _es10Groups[_e10gi];
+            var _e10Str = _e10g.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(",");
+            var _e10Full = _e10g.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(" ");
+            
+            var _disp = _e10gi < 5 ? '' : (_e10gi === 5 ? '<div id="_es10More" style="display:none">' : '');
+            _e10Html += _disp;
+            _e10Html += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">' + (_e10gi+1) + '</span><div class="dt-balls">';
+            _e10g.sort(function(a,b){return+a-+b}).forEach(function(n) {
+              _e10Html += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>';
+            });
+            _e10Html += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _e10Str + '\')">📋</span></div>';
+          }
+          if (_es10Groups.length > 5) _e10Html += '</div>';
+          _reHtml += _e10Html;
+          
+          if (_es10Groups.length > 5) {
+            _reHtml += '<div style="text-align:center;margin-top:2px"><span onclick="var d=document.getElementById(\'_es10More\');d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent==\'展开全部\'?\'收起\':\'展开全部\'" style="font-size:10px;color:#7c4dff;cursor:pointer;padding:2px 8px;border:1px solid #7c4dff;border-radius:4px">展开全部</span></div>';
+          }
+          
+          // 复制全部
+          var _e10AllStr = '';
+          for (var _e10ci = 0; _e10ci < _es10Groups.length; _e10ci++) {
+            var _e10g2 = _es10Groups[_e10ci];
+            _e10AllStr += (_e10ci+1) + ': ' + _e10g2.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0");}).join(" ") + '\n';
+          }
+          _reHtml += '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:4px">';
+          _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _e10AllStr.replace(/'/g,"\\'").replace(/\n/g,'\\n') + '\')">📋复制全部30组</span></div>';
+          
+          _reHtml += '<div class="rec-reason">精英轮换选号 | 35码池Top30评分排序 | 每组替换最低评分号 | 选十30注=60元/天</div></div>';
+        }
+      }
+    })();
   }
 
   /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
