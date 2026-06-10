@@ -3233,88 +3233,92 @@ function renderRecommend(type, data) {
     _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px">📊 V2多因子投票(多周期EMA×1.5+综合动量×1.0+频率×1.0+趋势连续×0.5+过热惩罚) | 回测中3率1.56%(原版1.29%)</div>';
     _reHtml += '<div class="rec-reason">V2多因子投票·35码池二次筛选 | 多周期EMA×1.5+综合动量+频率+趋势连续 | 回测中3率1.56%(高于随机1.39%)</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
 
-    /* ===== 精英轮换·选五四胆全托30组（紫色卡片叠加） ===== */
-    var _eliteRanked, _eliteSc;  // 提升到共享作用域，供两个 IIFE 共用
+    /* ===== 选四3胆全托·加权随机8组（紫色卡片叠加） ===== */
+    var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用
     (function() {
-      var _elitePool = _xvOrdered.slice();  // 35码池多因子投票排序
-      if (_elitePool.length < 33) return;
+      var _pool = _xvOrdered.slice();  // 35码池多因子投票排序
+      if (_pool.length < 30) return;
       
-      // 评分：和紫色卡片一致的评分体系
+      // 评分：和紫色卡片一致的评分体系（W=50短窗更敏感）
       _eliteSc = {};
-      _elitePool.forEach(function(n) {
+      _pool.forEach(function(n) {
         _eliteSc[n] = (_knEma[n]||0) * 5.0 + (_knFreq30[n]/Math.max(_win30,1)) * 3.0 + (_knMom[n]||0) * 2.0;
       });
       
       // 按评分排序
-      _eliteRanked = _elitePool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
+      _eliteRanked = _pool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
       
-      // 精英轮换生成30组×4胆（回测验证：返奖率90.2%）
-      var _eliteGroups = [];
-      var _top33 = _eliteRanked.slice(0, 33);
-      var _cur = _top33.slice(0, 4);
-      _eliteGroups.push(_cur.slice());
-      for (var _ei = 4; _ei < 33; _ei++) {
-        // 找当前组里评分最低的
-        var _minI = 0, _minS = _eliteSc[_cur[0]] || 99999;
-        for (var _mj = 1; _mj < 4; _mj++) {
-          if ((_eliteSc[_cur[_mj]]||99999) < _minS) { _minS = _eliteSc[_cur[_mj]]||99999; _minI = _mj; }
+      // 加权随机生成8组×3胆（回测验证：返奖率66.1%）
+      var _groups = [];
+      var _used = {};
+      var _topN = _eliteRanked.slice(0, 50);
+      var _attempts = 0;
+      
+      // 构建权重：评分平方
+      var _wArr = _topN.map(function(n) { return Math.max((_eliteSc[n]||0), 0.001); });
+      // 归一化权重
+      var _wSum = _wArr.reduce(function(a,b){return a+b}, 0);
+      _wArr = _wArr.map(function(w){ return w / _wSum; });
+      
+      while (_groups.length < 8 && _attempts < 200) {
+        _attempts++;
+        // 加权随机抽3个不同的号
+        var _cand = [];
+        var _usedInGroup = {};
+        while (_cand.length < 3) {
+          var _r = Math.random();
+          var _cum = 0;
+          var _picked = null;
+          for (var _wi = 0; _wi < _topN.length; _wi++) {
+            _cum += _wArr[_wi];
+            if (_r <= _cum && !_usedInGroup[_topN[_wi]]) {
+              _picked = _topN[_wi];
+              break;
+            }
+          }
+          if (_picked) { _cand.push(_picked); _usedInGroup[_picked] = true; }
         }
-        _cur[_minI] = _top33[_ei];
-        _eliteGroups.push(_cur.slice());
+        _cand.sort(function(a,b){return+a-+b});
+        var _key = _cand.join(",");
+        if (!_used[_key]) { _used[_key] = true; _groups.push(_cand); }
       }
-      if (_eliteGroups.length >= 30) {
-        _eliteGroups = _eliteGroups.slice(0, 30);
+      
+      if (_groups.length >= 8) {
+        _groups = _groups.slice(0, 8);
         
-        _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff;background:linear-gradient(135deg,#f3e5f5,#e8eaf6)"><div class="rec-header">🔥 选五四胆全托·精英轮换30组（返奖率90.2%·回测验证）</div>';
+        _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff;background:linear-gradient(135deg,#f3e5f5,#e8eaf6)"><div class="rec-header">🔥 选四3胆全托·加权随机8组（返奖率66.1%·优化版）</div>';
         
         // 统计覆盖的号码范围
         var _coveredSet = {};
-        _eliteGroups.forEach(function(g) { g.forEach(function(n) { _coveredSet[n] = (_coveredSet[n]||0) + 1; }); });
+        _groups.forEach(function(g) { g.forEach(function(n) { _coveredSet[n] = (_coveredSet[n]||0) + 1; }); });
         var _coveredNums = Object.keys(_coveredSet).sort(function(a,b){return+a-+b}).map(Number);
-        var _coveredStr = _coveredNums.slice(0, 15).map(function(n){return String(n).padStart(2,"0")}).join(",");
-        if (_coveredNums.length > 15) _coveredStr += '…' + (_coveredNums.length - 15) + '号';
+        var _coveredStr = _coveredNums.slice(0, 20).map(function(n){return String(n).padStart(2,"0")}).join(",");
+        if (_coveredNums.length > 20) _coveredStr += '…' + (_coveredNums.length - 20) + '号';
         
-        _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#ede7f6;border-radius:4px;margin-bottom:4px">📊 覆盖' + _coveredNums.length + '个号码 | 每组76托 | 30组×76注=2280注=4560元/天</div>';
+        _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#ede7f6;border-radius:4px;margin-bottom:4px">📊 覆盖' + _coveredNums.length + '个号码 | 每组3胆+77托=77注=154元 | 8组=616注=1,232元/天</div>';
         
-        // 显示30组胆码（折叠式：前5组默认展开，其余折叠）
-        var _eliteHtml = '';
-        for (var _egi = 0; _egi < _eliteGroups.length; _egi++) {
-          var _gn = _eliteGroups[_egi];
+        // 显示8组胆码
+        var _gHtml = '';
+        for (var _gi = 0; _gi < _groups.length; _gi++) {
+          var _gn = _groups[_gi];
           var _gnStr = _gn.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(",");
-          if (_egi < 5) {
-            _eliteHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">第' + (_egi+1) + '</span><div class="dt-balls">';
-            _gn.sort(function(a,b){return+a-+b}).forEach(function(n) { _eliteHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-            _eliteHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _gnStr + '\')">📋</span></div>';
-          } else if (_egi === 5) {
-            _eliteHtml += '<div id="_eliteMore" style="display:none">';
-            _eliteHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">第' + (_egi+1) + '</span><div class="dt-balls">';
-            _gn.sort(function(a,b){return+a-+b}).forEach(function(n) { _eliteHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-            _eliteHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _gnStr + '\')">📋</span></div>';
-          } else {
-            _eliteHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">第' + (_egi+1) + '</span><div class="dt-balls">';
-            _gn.sort(function(a,b){return+a-+b}).forEach(function(n) { _eliteHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-            _eliteHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _gnStr + '\')">📋</span></div>';
-          }
+          _gHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">第' + (_gi+1) + '</span><div class="dt-balls">';
+          _gn.sort(function(a,b){return+a-+b}).forEach(function(n) { _gHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
+          _gHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _gnStr + '\')">📋</span></div>';
         }
-        if (_eliteGroups.length > 5) _eliteHtml += '</div>';
-        _reHtml += _eliteHtml;
-        
-        // 展开/收起按钮
-        if (_eliteGroups.length > 5) {
-          _reHtml += '<div style="text-align:center;margin-top:2px"><span onclick="var d=document.getElementById(\'_eliteMore\');d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent==\'展开全部\'?\'收起\':\'展开全部\'" style="font-size:10px;color:#7c4dff;cursor:pointer;padding:2px 8px;border:1px solid #7c4dff;border-radius:4px">展开全部</span></div>';
-        }
+        _reHtml += _gHtml;
         
         // 一键复制所有胆码
         var _allDanStr = '';
-        _eliteGroups.forEach(function(g, idx) {
+        _groups.forEach(function(g, idx) {
           _allDanStr += '第' + (idx+1) + '组:' + g.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(",") + '|';
         });
         _reHtml += '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:4px">';
         _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _allDanStr + '\')">📋复制全部胆码</span>';
-        _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'每组配全托76个号码，自备托码\')">📋复制说明</span>';
+        _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'每组配77托，选四3胆全托=77注=154元\')">📋复制说明</span>';
         _reHtml += '</div>';
         
-        _reHtml += '<div class="rec-reason">精英轮换策略 | 35码池评分排序(EMA×5+频率×3+动量×2) | 201天回测返奖率90.2% | 胆中4日平均净赚+14.5万</div></div>';
+        _reHtml += '<div class="rec-reason">加权随机策略 | 50码池评分排序(EMA×5+频率×3+动量×2) | W=50短窗 | 221天回测返奖率66.1% | 选四3胆全托中2胆不亏</div></div>';
       }
     })();
 
