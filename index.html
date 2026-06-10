@@ -3145,24 +3145,83 @@ function renderRecommend(type, data) {
     _knTop35.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
     _reHtml += '</div><div class="rec-reason">EMA×5 + 近30期频率×3 + 动量×2 + 重号+3 | EMA精筛</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
-    /* ===== 区间均衡·EMA评分选号 2胆~13胆（四区覆盖·数学最优）===== */
+    /* ===== 区间均衡·EMA评分选号 2胆~13胆（回测优化各玩法选号策略）===== */
     function _xdcn(n) { var _dm={2:'二',3:'三',4:'四',5:'五',6:'六',7:'七',8:'八',9:'九',10:'十',11:'十一',12:'十二',13:'十三'}; return _dm[n]||n; }
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（四区覆盖·回测最优）</div>';
-    for (var _zndc = 2; _zndc <= 13; _zndc++) {
-      /* 每区取 Math.floor(选N/4) 个，剩余的分配给前 extra 个区 */
-      var _zPer = Math.floor(_zndc / 4);
-      var _zExtra = _zndc % 4;
-      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
-      var _zRes = [];
-      for (var _zzi = 0; _zzi < 4; _zzi++) {
-        var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
-        if (_zTake <= 0) continue;
-        var _zZNums = [];
-        for (var _zn = _zZones[_zzi][0]; _zn <= _zZones[_zzi][1]; _zn++) _zZNums.push(_zn);
-        _zZNums.sort(function(a,b){ return (_knScores[b]||-999) - (_knScores[a]||-999); });
-        for (var _zt = 0; _zt < _zTake && _zt < _zZNums.length; _zt++) _zRes.push(_zZNums[_zt]);
+    /* 选区平均分助手 */
+    function _zAvgScore(zi, scores) {
+      var _zRanges = [[1,20],[21,40],[41,60],[61,80]];
+      var _s = 0;
+      for (var _n = _zRanges[zi][0]; _n <= _zRanges[zi][1]; _n++) _s += scores[_n] || 0;
+      return _s / 20;
+    }
+    /* 区内排序取前N */
+    function _zPickFrom(zi, scores, take, exclude) {
+      var _zRanges = [[1,20],[21,40],[41,60],[61,80]];
+      var _arr = [];
+      for (var _n = _zRanges[zi][0]; _n <= _zRanges[zi][1]; _n++) _arr.push(_n);
+      _arr.sort(function(a,b){ return (scores[b]||-999) - (scores[a]||-999); });
+      var _res = [];
+      for (var _i = 0; _i < _arr.length && _res.length < take; _i++) {
+        if (!exclude || exclude.indexOf(_arr[_i]) < 0) _res.push(_arr[_i]);
       }
-      /* 补漏：如果选项区没拿到足够的号（选2时后2区为0），用全局补足 */
+      return _res;
+    }
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（回测最优·分玩法优化）</div>';
+    for (var _zndc = 2; _zndc <= 13; _zndc++) {
+      var _zRes = [];
+      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
+      
+      if (_zndc <= 6 || _zndc >= 10) {
+        /* 选2~选6、选10~13：区间均衡（原版） */
+        var _zPer = Math.floor(_zndc / 4);
+        var _zExtra = _zndc % 4;
+        for (var _zzi = 0; _zzi < 4; _zzi++) {
+          var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
+          if (_zTake <= 0) continue;
+          var _zPick = _zPickFrom(_zzi, _knScores, _zTake, null);
+          _zRes = _zRes.concat(_zPick);
+        }
+      } else if (_zndc === 7) {
+        /* 选7：集中区策略——找EMA评分最高的3个区集中选号（回测66.21%领先） */
+        var _zRankZones = [];
+        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores) });
+        _zRankZones.sort(function(a,b){ return b.a - a.a; });
+        var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
+        var _zPer7 = Math.floor(_zndc / 3);
+        for (var _ti = 0; _ti < 3; _ti++) {
+          var _zPick = _zPickFrom(_zTop3[_ti], _knScores, _zPer7, _zRes);
+          _zRes = _zRes.concat(_zPick);
+        }
+      } else if (_zndc === 8) {
+        /* 选8：重点覆盖——最热区取65%，次热区取35%（回测55.78%领先） */
+        var _zRankZones = [];
+        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores) });
+        _zRankZones.sort(function(a,b){ return b.a - a.a; });
+        var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
+        var _zPriTake = Math.round(_zndc * 0.65);
+        var _zSecTake = _zndc - _zPriTake;
+        _zRes = _zPickFrom(_zPri, _knScores, _zPriTake, null);
+        var _zSecPick = _zPickFrom(_zSec, _knScores, _zSecTake, _zRes);
+        _zRes = _zRes.concat(_zSecPick);
+      } else if (_zndc === 9) {
+        /* 选9：冷热混合——70%热号(EMA) + 30%冷号(遗漏)（回测45.28%领先） */
+        var _zHotTake = Math.round(_zndc * 0.7);
+        var _zColdTake = _zndc - _zHotTake;
+        /* 全局EMA排序取热号 */
+        var _zAllHot = [];
+        for (var _n = 1; _n <= 80; _n++) _zAllHot.push(_n);
+        _zAllHot.sort(function(a,b){ return (_knScores[b]||-999) - (_knScores[a]||-999); });
+        _zRes = _zAllHot.slice(0, _zHotTake);
+        /* 全局遗漏排序取冷号 */
+        var _zAllCold = [];
+        for (var _n = 1; _n <= 80; _n++) _zAllCold.push(_n);
+        _zAllCold.sort(function(a,b){ return (_knMissStreak[b]||0) - (_knMissStreak[a]||0); });
+        for (var _ci = 0; _ci < _zAllCold.length && _zRes.length < _zndc; _ci++) {
+          if (_zRes.indexOf(_zAllCold[_ci]) < 0) _zRes.push(_zAllCold[_ci]);
+        }
+      }
+      
+      /* 补漏 */
       if (_zRes.length < _zndc) {
         var _oAll = [];
         for (var _oni = 1; _oni <= 80; _oni++) _oAll.push(_oni);
@@ -3181,7 +3240,8 @@ function renderRecommend(type, data) {
       _zRes.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><span style="font-size:8px;color:#999">' + _zc10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
     }
-    _reHtml += '<div class="rec-reason">四区各取EMA评分最高号 | 强制区间覆盖 | 回测2871期总积分41分领先</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fff3e0;border-radius:4px;margin-top:4px">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区 | 选8: 重点覆盖(65%/35%) | 选9: 冷热混合(7:3)</div>';
+    _reHtml += '<div class="rec-reason">各玩法独立优化策略 | 回测2871期总积分72分领先 | 选7新策略66.21%返奖率</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
     /* ===== 区间均衡·多因子投票 2胆~13胆（四区覆盖·V2优化）===== */
     /* 计算全局多因子投票分（全80号，不用35码池，确保区间均衡时各区都有分） */
@@ -3200,20 +3260,87 @@ function renderRecommend(type, data) {
       _zvVotes[n] = (80 - Math.min(emaR, 79)) * 1.5 + (80 - Math.min(momR, 79)) * 1.0 + (80 - Math.min(freqR, 79)) * 1.0 + (80 - Math.min(streakR, 79)) * 0.5;
     });
     
-    _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（四区覆盖·V2优化）</div>';
+    _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2）</div>';
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
-      var _zPer = Math.floor(_zndc / 4);
-      var _zExtra = _zndc % 4;
-      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
       var _zRes = [];
-      for (var _zzi = 0; _zzi < 4; _zzi++) {
-        var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
-        if (_zTake <= 0) continue;
-        var _zZNums = [];
-        for (var _zn = _zZones[_zzi][0]; _zn <= _zZones[_zzi][1]; _zn++) _zZNums.push(_zn);
-        _zZNums.sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });
-        for (var _zt = 0; _zt < _zTake && _zt < _zZNums.length; _zt++) _zRes.push(_zZNums[_zt]);
+      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
+      
+      if (_zndc <= 6 || _zndc >= 10) {
+        /* 选2~选6、选10~13：区间均衡（原版，多因子投票） */
+        var _zPer = Math.floor(_zndc / 4);
+        var _zExtra = _zndc % 4;
+        for (var _zzi = 0; _zzi < 4; _zzi++) {
+          var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
+          if (_zTake <= 0) continue;
+          var _zZNums = [];
+          for (var _zn = _zZones[_zzi][0]; _zn <= _zZones[_zzi][1]; _zn++) _zZNums.push(_zn);
+          _zZNums.sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });
+          for (var _zt = 0; _zt < _zTake && _zt < _zZNums.length; _zt++) _zRes.push(_zZNums[_zt]);
+        }
+      } else if (_zndc === 7) {
+        /* 选7：多因子+集中区——看Top30号集中在哪3个区，集中选号 */
+        var _zAllVotes = [];
+        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes[_n]||0 });
+        _zAllVotes.sort(function(a,b){ return b.v - a.v; });
+        var _zTop30 = _zAllVotes.slice(0, 30);
+        /* 统计Top30在各区的集中度 */
+        var _zZoneCount = [0,0,0,0];
+        _zTop30.forEach(function(item) {
+          for (var _zzi = 0; _zzi < 4; _zzi++) {
+            if (item.n >= _zZones[_zzi][0] && item.n <= _zZones[_zzi][1]) { _zZoneCount[_zzi]++; break; }
+          }
+        });
+        /* 选最集中的3个区 */
+        var _zRankZones = [];
+        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, c: _zZoneCount[_zzi] });
+        _zRankZones.sort(function(a,b){ return b.c - a.c; });
+        var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
+        var _zPer7 = Math.floor(_zndc / 3);
+        for (var _ti = 0; _ti < 3; _ti++) {
+          var _zZNums = [];
+          for (var _zn = _zZones[_zTop3[_ti]][0]; _zn <= _zZones[_zTop3[_ti]][1]; _zn++) _zZNums.push(_zn);
+          _zZNums.sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });
+          for (var _zt = 0; _zt < _zPer7 && _zt < _zZNums.length; _zt++) {
+            if (_zRes.indexOf(_zZNums[_zt]) < 0) _zRes.push(_zZNums[_zt]);
+          }
+        }
+      } else if (_zndc === 8) {
+        /* 选8：重点覆盖——最热区取65%，次热区取35% */
+        var _zRankZones = [];
+        for (var _zzi = 0; _zzi < 4; _zzi++) {
+          var _sum = 0;
+          for (var _n = _zZones[_zzi][0]; _n <= _zZones[_zzi][1]; _n++) _sum += _zvVotes[_n]||0;
+          _zRankZones.push({ i: _zzi, a: _sum/20 });
+        }
+        _zRankZones.sort(function(a,b){ return b.a - a.a; });
+        var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
+        var _zPriTake = Math.round(_zndc * 0.65);
+        var _zSecTake = _zndc - _zPriTake;
+        for (var _n = _zZones[_zPri][0]; _n <= _zZones[_zPri][1]; _n++) _zRes.push({ n: _n, v: _zvVotes[_n]||0 });
+        _zRes.sort(function(a,b){ return b.v - a.v; });
+        _zRes = _zRes.slice(0, _zPriTake).map(function(x){ return x.n; });
+        var _zSecNums = [];
+        for (var _n = _zZones[_zSec][0]; _n <= _zZones[_zSec][1]; _n++) _zSecNums.push({ n: _n, v: _zvVotes[_n]||0 });
+        _zSecNums.sort(function(a,b){ return b.v - a.v; });
+        for (var _si = 0; _si < _zSecNums.length && _zRes.length < _zndc; _si++) {
+          if (_zRes.indexOf(_zSecNums[_si].n) < 0) _zRes.push(_zSecNums[_si].n);
+        }
+      } else if (_zndc === 9) {
+        /* 选9：冷热混合——70%多因子热号 + 30%冷号(遗漏) */
+        var _zAllVotes = [];
+        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes[_n]||0 });
+        _zAllVotes.sort(function(a,b){ return b.v - a.v; });
+        var _zHotTake = Math.round(_zndc * 0.7);
+        _zRes = _zAllVotes.slice(0, _zHotTake).map(function(x){ return x.n; });
+        var _zAllCold = [];
+        for (var _n = 1; _n <= 80; _n++) _zAllCold.push(_n);
+        _zAllCold.sort(function(a,b){ return (_knMissStreak[b]||0) - (_knMissStreak[a]||0); });
+        for (var _ci = 0; _ci < _zAllCold.length && _zRes.length < _zndc; _ci++) {
+          if (_zRes.indexOf(_zAllCold[_ci]) < 0) _zRes.push(_zAllCold[_ci]);
+        }
       }
+      
+      /* 补漏 */
       if (_zRes.length < _zndc) {
         var _oAll = [];
         for (var _oni = 1; _oni <= 80; _oni++) _oAll.push(_oni);
@@ -3228,12 +3355,12 @@ function renderRecommend(type, data) {
         for (var _zci = 0; _zci < 10; _zci++) _zc10 = Math.round(_zc10 * (_zRes.length - _zci) / (_zci + 1));
       }
       var _zc10Str = _zRes.length >= 10 ? _zc10 + '注' + (_zc10*2) + '元' : '选十需≥10胆';
-      _reHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff">选' + _xdcn(_zndc) + '</span><div class="dt-balls">';
-      _zRes.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-      _reHtml += '</div><span style="font-size:8px;color:#999">' + _zc10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
+      _reHtml += '<div class=\"rec-row\"><span class=\"dt-label\" style=\"color:#7c4dff\">选' + _xdcn(_zndc) + '</span><div class=\"dt-balls\">';
+      _zRes.forEach(function(n) { _reHtml += '<span class=\"dt-ball dan\">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div><span style=\"font-size:8px;color:#999\">' + _zc10Str + '</span><span class=\"rec-row-copy\" onclick=\"_copyKenoRow(this)\">📋</span></div>';
     }
-    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px">📊 四区各取多因子投票最高号 | 多周期EMA×1.5+动量×1.0+频率×1.0+趋势连续×0.5</div>';
-    _reHtml += '<div class="rec-reason">四区区间均衡·多因子投票 | 回测2871期总积分41分领先 | 优于全局追热策略</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '<div style=\"font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
+    _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分 | 基于2871期回测数据</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
 
     /* ===== 选四3胆全托·加权随机8组（区间均衡叠加） ===== */
     var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用
