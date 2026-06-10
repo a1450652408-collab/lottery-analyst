@@ -17234,18 +17234,19 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-reason">多因子投票·35码池二次筛选 | EMA+动量+频率三票排序 | 2胆命中率51.2%</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
 
     /* ===== 精英轮换·选五四胆全托30组（紫色卡片叠加） ===== */
+    var _eliteRanked, _eliteSc;  // 提升到共享作用域，供两个 IIFE 共用
     (function() {
       var _elitePool = _xvOrdered.slice();  // 35码池多因子投票排序
       if (_elitePool.length < 33) return;
       
       // 评分：和紫色卡片一致的评分体系
-      var _eliteSc = {};
+      _eliteSc = {};
       _elitePool.forEach(function(n) {
         _eliteSc[n] = (_knEma[n]||0) * 5.0 + (_knFreq30[n]/Math.max(_win30,1)) * 3.0 + (_knMom[n]||0) * 2.0;
       });
       
       // 按评分排序
-      var _eliteRanked = _elitePool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
+      _eliteRanked = _elitePool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
       
       // 精英轮换生成30组×4胆（回测验证：返奖率90.2%）
       var _eliteGroups = [];
