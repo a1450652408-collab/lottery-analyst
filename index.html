@@ -17896,52 +17896,6 @@ function renderRecommend(type, data) {
       }
     }
     
-    /* ===== 排列五·五不同包七号 ===== */
-    (function() {
-      // 杀3个号（1固定公式+2最低分），保留7个
-      var p7kk = {};
-      var p7last = getNums(_reUseData[0]);
-      p7kk[(p7last[4]*2+3)%10] = true; // 固定杀
-      // 找最低分的2个号杀
-      var p7sc = Object.keys(wbScores).filter(function(k){return !p7kk[k];}).sort(function(a,b){return (wbScores[a]||0)-(wbScores[b]||0);});
-      for (var p7i = 0; p7i < 2 && p7i < p7sc.length; p7i++) p7kk[p7sc[p7i]] = true;
-      var p7cand = []; for (var i = 0; i <= 9; i++) { if (!p7kk[i]) p7cand.push(i); }
-      if (p7cand.length !== 7) { // 保证7个
-        p7cand = []; for (var i = 0; i <= 9; i++) p7cand.push(i);
-        p7cand = p7cand.sort(function(a,b){return (wbScores[b]||0)-(wbScores[a]||0);}).slice(0,7);
-      }
-      // 生成C(7,5)
-      var p7all = _combN(p7cand, 5);
-      var p7scored = [];
-      for (var m = 0; m < p7all.length; m++) {
-        var c = p7all[m]; var cs = 0;
-        for (var k = 0; k < c.length; k++) cs += (wbScores[c[k]] || 0);
-        cs += _plPairScore(c) * 2;
-        p7scored.push({combo: c, score: cs});
-      }
-      p7scored.sort(function(a,b){return b.score - a.score;});
-      var p7top = Math.min(p7scored.length, 10);
-      var p7seen = {}, p7display = [];
-      for (var m = 0; m < p7scored.length; m++) {
-        var k = p7scored[m].combo.slice().sort().join(',');
-        if (!p7seen[k]) { p7seen[k] = true; p7display.push(p7scored[m].combo); if (p7display.length >= p7top) break; }
-      }
-      _reHtml += '<div class="rec-card" style="border-left-color:#9c27b0;background:linear-gradient(135deg,#f3e5f5,#e1bee7)"><div class="rec-header">🎯 五不同·包七号（杀3留7）</div>';
-      _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:3px;margin:4px 0;padding:4px;background:#ede7f6;border-radius:4px"><span style="font-size:9px;color:#666;line-height:22px">候选池:</span>';
-      p7cand.sort(function(a,b){return a-b;}).forEach(function(n){
-        _reHtml += '<span class="ball r" style="width:20px;height:20px;font-size:10px;line-height:20px">' + n + '</span>';
-      });
-      _reHtml += '</div>';
-      _reHtml += '<div style="font-size:9px;color:#666;margin-bottom:3px">' + p7all.length + '组×120注=' + (p7all.length*120) + '注 | 推荐Top' + p7display.length + '组</div>';
-      for (var g = 0; g < p7display.length; g++) {
-        var gc = p7display[g].slice().sort(function(a,b){return a-b;});
-        _reHtml += '<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#999;width:20px">' + (g+1) + '</span><div class="dt-balls">';
-        gc.forEach(function(n){ _reHtml += '<span class="dt-ball dan" style="width:20px;height:20px;font-size:9px">'+n+'</span>'; });
-        _reHtml += '</div></div>';
-      }
-      _reHtml += '<div class="rec-reason">杀3号(1固定公式+2最低分) | TOP7候选 | C(7,5)=21组 | 全部2520注=5040元/天</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-    })();
-
 /* 二同推荐 (V2: 杀2个+EMA评分) */
     function _plBuildEtStats() {
       var mf2={}, pf2={}, rf2={}, etN2=0;
