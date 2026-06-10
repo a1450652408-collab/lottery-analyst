@@ -3248,8 +3248,17 @@ function renderRecommend(type, data) {
       // 按评分排序
       _eliteRanked = _pool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
       
-      // 确定性伪随机（用最新期号做种子，保证同一期数据产生相同号码）
-      var _seed = data && data[0] ? (parseInt(data[0].p) || parseInt(data[0].period) || 2026151) : 2026151;
+      // 确定性伪随机（基于最新期号哈希，保证所有设备号码一致）
+      var _seed = 20260610;
+      var _latestDraw = (data && data[0]) || {};
+      var _periodStr = String(_latestDraw.p || _latestDraw.period || _latestDraw.d || '');
+      for (var _si = 0; _si < _periodStr.length; _si++) {
+        _seed = ((_seed << 5) - _seed) + _periodStr.charCodeAt(_si);
+        _seed = _seed | 0;
+      }
+      // 避免种子为0
+      if (!_seed || _seed === 0) _seed = 20260610;
+      
       var _srng = function() {
         _seed = (_seed * 1664525 + 1013904223) | 0;
         return ((_seed >>> 0) % 100000) / 100000;
