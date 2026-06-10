@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>竞彩足球·价值投注推荐</title>
+<style>
+:root{--red:#e53935;--blue:#1976d2;--green:#4caf50;--orange:#f57c00;--purple:#7b1fa2;--cyan:#0097a7;--bg:#f0f2f5;--sub:#999;--text:#333;--card:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.header{padding:16px;background:linear-gradient(135deg,#d32f2f,#b71c1c);color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(211,47,47,.3)}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:20px;font-weight:700;letter-spacing:1px}
+.header .sub{font-size:12px;margin-top:4px;color:rgba(255,255,255,.85);letter-spacing:2px}
+.type-bar{display:flex;overflow-x:auto;margin-bottom:4px;gap:6px;padding:4px 0 10px 0;scrollbar-width:thin;scrollbar-color:#d32f2f #f0f0f0}
+.type-bar::-webkit-scrollbar{display:block;height:6px}
+.type-bar::-webkit-scrollbar-track{background:#f0f0f0;border-radius:3px;margin:0 10px}
+.type-bar::-webkit-scrollbar-thumb{background:#d32f2f;border-radius:3px}
+.type-btn{padding:6px 14px;border-radius:20px;background:var(--card);cursor:pointer;white-space:nowrap;font-size:13px;border:1.5px solid #e0e0e0;transition:all .2s;font-weight:500;text-decoration:none;color:var(--text);display:inline-block}
+.type-btn.active{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 8px rgba(244,67,54,.3)}
+.type-btn.jc-link{background:var(--red);color:#fff;border-color:var(--red)}
+.card{background:var(--card);margin:8px 12px;padding:14px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.page{padding:4px 0 70px 0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page.active{display:block;animation:fadeIn .25s ease}
+.match-card{background:#fff;margin:8px 12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+.match-top{padding:10px 12px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:8px}
+.match-star{color:#ff9800;font-size:14px}
+.match-league{font-size:11px;color:#888}
+.match-time{font-size:10px;color:#999;margin-left:auto}
+.match-body{padding:10px 12px}
+.match-teams{font-size:15px;font-weight:700;margin-bottom:6px}
+.match-vs{color:#999;font-size:12px;font-weight:400;margin:0 4px}
+.match-odds{display:flex;gap:8px;margin:8px 0}
+.odds-box{flex:1;text-align:center;padding:6px 4px;background:#fafafa;border-radius:8px}
+.odds-box .odds-label{font-size:10px;color:#999;margin-bottom:2px}
+.odds-box .odds-val{font-size:16px;font-weight:700;color:var(--text)}
+.odds-box.pick{background:#fff5f5;border:1.5px solid var(--red)}
+.odds-box.pick .odds-val{color:var(--red)}
+.match-rec{display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:#fff5f5;border-radius:6px;font-size:13px;color:var(--red);font-weight:700}
+.match-conf{font-size:11px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;font-weight:400}
+.match-detail{display:none;padding:0 12px 10px 12px;border-top:1px solid #f5f5f5}
+.match-detail.open{display:block}
+.detail-btn{font-size:10px;color:#999;cursor:pointer;padding:4px;text-align:center;border-top:1px solid #f5f5f5;user-select:none}
+.detail-btn:hover{background:#fafafa}
+.empty-box{text-align:center;padding:40px 12px;color:#999;font-size:14px;line-height:2}
+.footer{position:fixed;bottom:0;width:100%;max-width:480px;display:flex;background:var(--card);border-top:1px solid #eee;z-index:100}
+.footer .tab-btn{flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;color:#999;font-weight:500;text-align:center;text-decoration:none;display:block}
+.footer .tab-btn.active{color:var(--red);font-weight:700}
+.loading{text-align:center;padding:60px 0;color:#999;font-size:14px}
+.loading .spinner{width:24px;height:24px;border:3px solid #f0f0f0;border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head><body>
+
+<div class="header">
+  <div class="header-top"><h1>⚽ 竞彩足球·价值投注</h1></div>
+  <div class="sub">基于赔率价值分析 · 每日更新 <span id="jcUpdateTime" style="font-size:10px;color:rgba(255,255,255,.7)"></span></div>
+</div>
+
+<div class="type-bar" style="padding:8px 12px">
+  <span class="type-btn active">竞彩足球</span>
+  <a class="type-btn" href="index.html">双色球</a>
+  <a class="type-btn" href="index.html">大乐透</a>
+  <a class="type-btn" href="index.html">快乐8</a>
+  <a class="type-btn" href="index.html">福彩3D</a>
+  <a class="type-btn" href="index.html">排列三</a>
+  <a class="type-btn" href="index.html">排列五</a>
+</div>
+
+<div class="page active" id="mainPage">
+  <div id="loadingIndicator" class="loading">
+    <div class="spinner"></div>
+    <div>正在加载竞彩数据...</div>
+  </div>
+  <div id="matchList" style="display:none"></div>
+  <div id="emptyMessage" class="empty-box" style="display:none">
+    <div style="font-size:40px;margin-bottom:12px">⚽</div>
+    <div>今日暂无竞彩比赛数据</div>
+    <div style="font-size:12px;color:#bbb;margin-top:6px">数据源: 竞彩网官方 webapi.sporttery.cn</div>
+  </div>
+</div>
+
+<div class="footer">
+  <a class="tab-btn active" href="jc.html">竞彩</a>
+  <a class="tab-btn" href="index.html">推荐</a>
+  <a class="tab-btn" href="index.html">走势</a>
+  <a class="tab-btn" href="index.html">数据</a>
+</div>
+
+<script>
+// ===== 数据内嵌（由 jc_analysis.py 自动生成更新） =====
+var JC_DATA = {"date": "2026-06-10", "updateTime": "20:12", "totalMatches": 21, "topRecommend": {"matchId": 2040163, "matchNum": "周四002", "league": "世界杯", "homeTeam": "韩国", "awayTeam": "捷克", "matchDate": "2026-06-12", "matchTime": "10:00", "had_h": 2.43, "had_d": 2.84, "had_a": 2.74, "juice": 12.9, "score": 36.2, "reasons": ["赔率接近(均衡对决)", "平赔偏高(价值选项)", "主胜中赔(可博)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group A", "away_group": "Group A", "best_odds": 2.43, "best_value": 12.9}, "recommendations": [{"matchId": 2040163, "matchNum": "周四002", "league": "世界杯", "homeTeam": "韩国", "awayTeam": "捷克", "matchDate": "2026-06-12", "matchTime": "10:00", "had_h": 2.43, "had_d": 2.84, "had_a": 2.74, "juice": 12.9, "score": 36.2, "reasons": ["赔率接近(均衡对决)", "平赔偏高(价值选项)", "主胜中赔(可博)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group A", "away_group": "Group A", "best_odds": 2.43, "best_value": 12.9}, {"matchId": 2040172, "matchNum": "周日011", "league": "世界杯", "homeTeam": "科特迪瓦", "awayTeam": "厄瓜多尔", "matchDate": "2026-06-15", "matchTime": "07:00", "had_h": 3.36, "had_d": 2.65, "had_a": 2.2, "juice": 13.0, "score": 31.0, "reasons": ["让球盘支持主胜", "赔率适中"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group E", "away_group": "Group E", "best_odds": 3.36, "best_value": 13.0}, {"matchId": 2040184, "matchNum": "周三023", "league": "世界杯", "homeTeam": "加纳", "awayTeam": "巴拿马", "matchDate": "2026-06-18", "matchTime": "07:00", "had_h": 1.93, "had_d": 3.0, "had_a": 3.6, "juice": 12.9, "score": 26.1, "reasons": ["赔率适中", "平赔偏高(价值选项)", "主胜中赔(可博)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group L", "away_group": "Group L", "best_odds": 1.93, "best_value": 12.9}, {"matchId": 2040162, "matchNum": "周四001", "league": "世界杯", "homeTeam": "墨西哥", "awayTeam": "南非", "matchDate": "2026-06-12", "matchTime": "03:00", "had_h": 1.3, "had_d": 4.15, "had_a": 8.4, "juice": 12.9, "score": 23.1, "reasons": ["平赔偏高(价值选项)", "主胜低赔(信心场)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group A", "away_group": "Group A", "best_odds": 1.3, "best_value": 12.9}, {"matchId": 2040164, "matchNum": "周五003", "league": "世界杯", "homeTeam": "加拿大", "awayTeam": "波黑", "matchDate": "2026-06-13", "matchTime": "03:00", "had_h": 1.59, "had_d": 3.38, "had_a": 4.9, "juice": 12.9, "score": 23.1, "reasons": ["平赔偏高(价值选项)", "主胜低赔(信心场)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group B", "away_group": "Group B", "best_odds": 1.59, "best_value": 12.9}, {"matchId": 2040177, "matchNum": "周一016", "league": "世界杯", "homeTeam": "伊朗", "awayTeam": "新西兰", "matchDate": "2026-06-16", "matchTime": "09:00", "had_h": 1.56, "had_d": 3.3, "had_a": 5.4, "juice": 12.9, "score": 23.1, "reasons": ["平赔偏高(价值选项)", "主胜低赔(信心场)"], "recommend": "主胜", "confidence": "⭐⭐⭐", "home_strength": 50, "away_strength": 50, "home_group": "Group G", "away_group": "Group G", "best_odds": 1.56, "best_value": 12.9}], "s2recommend": {"match1": "韩国 vs 捷克", "match1_rec": "主胜 @2.43", "match2": "加纳 vs 巴拿马", "match2_rec": "主胜 @1.93", "combined_odds": 4.69, "note": "两场全中才中奖，每注2元×赔率=奖金"}, "dataSource": {"odds": "webapi.sporttery.cn (竞彩网)", "teamData": "api.football-data.org", "teamDataStatus": "ok"}, "bigOddsParlays": [{"name": "保守3串4(容错1场)", "matches": "韩国(主胜@2.43) × 加纳(主胜@1.93) × 加拿大(主胜@1.59)", "type": "3串4", "cost": 8, "breakEvenWhen": "中韩国+加纳回本(9.38元)", "maxPayout": "中3场=38元", "detail": "3注2串1+1注3串1"}, {"name": "激进3串4(容错1场)", "matches": "科特迪瓦(主胜@3.36) × 韩国(主胜@2.43) × 加纳(主胜@1.93)", "type": "3串4", "cost": 8, "breakEvenWhen": "中任何2场都≥9.38元，全都回本", "maxPayout": "中3场=70元", "detail": "含高赔3.36，容错1场也稳赚"}, {"name": "低赔4串5(容错1场)", "matches": "墨西哥(1.30) × 加拿大(1.59) × 伊朗(1.56) × 加纳(1.93)", "type": "4串5", "cost": 10, "breakEvenWhen": "中3场最高返14.9元(赚49%)，最低返8元(亏20%)", "maxPayout": "中4场=64元", "detail": "4注3串1+1注4串1"}, {"name": "精选4串11(容错2场)", "matches": "韩国(2.43) × 加纳(1.93) × 加拿大(1.59) × 墨西哥(1.30)", "type": "4串11", "cost": 22, "breakEvenWhen": "中3场必回本(40+元)，中2场回血", "maxPayout": "中4场=100+元", "detail": "6注2串1+4注3串1+1注4串1"}, {"name": "超级5串16(容错2场)", "matches": "韩国(2.43) × 加纳(1.93) × 加拿大(1.59) × 伊朗(1.56) × 墨西哥(1.30)", "type": "5串16", "cost": 32, "breakEvenWhen": "中3场回本(≈32元)，中4场大赚", "maxPayout": "中5场=200+元", "detail": "10注3串1+5注4串1+1注5串1"}]};
+
+function renderData(data) {
+  var ml = document.getElementById('matchList');
+  var ld = document.getElementById('loadingIndicator');
+  var em = document.getElementById('emptyMessage');
+  var ut = document.getElementById('jcUpdateTime');
+  
+  ld.style.display = 'none';
+  if (ut) ut.textContent = '· 更新于 ' + data.date + ' ' + data.updateTime;
+  
+  var html = '';
+  var recs = data.recommendations || [];
+  
+  // 顶部统计
+  html += '<div class="card" style="text-align:center">';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">今日数据</div>';
+  html += '<div style="display:flex;gap:8px;justify-content:center">';
+  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;color:var(--red)">' + data.totalMatches + '</div><div style="font-size:10px;color:#999">比赛场次</div></div>';
+  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;color:var(--red)">' + recs.length + '</div><div style="font-size:10px;color:#999">推荐场次</div></div>';
+  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;' + (data.posEvCount > 0 ? 'color:#4caf50' : 'color:#999') + '">' + (data.posEvCount||0) + '</div><div style="font-size:10px;color:#999">正EV场次</div></div>';
+  html += '</div></div>';
+  
+  // 2串1推荐
+  if (data.s2recommend) {
+    var s2 = data.s2recommend;
+    html += '<div class="match-card" style="border-left:3px solid #ff9800">';
+    html += '<div class="match-top"><span class="match-star">🔗</span><span class="match-league" style="color:#e65100;font-weight:700">2串1推荐</span><span class="match-time" style="color:#e65100">两场全中才中奖</span></div>';
+    html += '<div class="match-body" style="padding:8px 12px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    html += '<div style="flex:1;text-align:center;padding:6px;background:#fafafa;border-radius:6px;font-size:12px">';
+    html += '<div style="font-weight:700;margin-bottom:2px">' + s2.match1 + '</div>';
+    html += '<div style="color:#c62828;font-weight:700">' + s2.match1_rec + '</div>';
+    if (s2.match1_ev) html += '<div style="color:#4caf50;font-size:10px">EV' + s2.match1_ev + '</div>';
+    html += '</div>';
+    html += '<span style="font-size:18px;color:#999;font-weight:700">×</span>';
+    html += '<div style="flex:1;text-align:center;padding:6px;background:#fafafa;border-radius:6px;font-size:12px">';
+    html += '<div style="font-weight:700;margin-bottom:2px">' + s2.match2 + '</div>';
+    html += '<div style="color:#c62828;font-weight:700">' + s2.match2_rec + '</div>';
+    if (s2.match2_ev) html += '<div style="color:#4caf50;font-size:10px">EV' + s2.match2_ev + '</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div style="text-align:center;padding:4px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:6px;font-size:14px;font-weight:700;color:#e65100">总赔率: ' + s2.combined_odds + '</div>';
+    html += '<div style="font-size:10px;color:#999;margin-top:4px;text-align:center">' + (s2.note||'') + '</div>';
+    html += '</div></div>';
+  }
+  
+  // 串关推荐（支持新旧格式）
+  if (data.bigOddsParlays) {
+    html += '<div class="card" style="border-left:3px solid #e65100;margin-top:12px">';
+    html += '<div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:8px">🔥 正EV组合 · 串关推荐</div>';
+    data.bigOddsParlays.forEach(function(p, pi) {
+      var bgColors = ['#fff3e0','#fff8e1','#fce4ec','#f3e5f5','#e8f5e9'];
+      html += '<div style="padding:8px 10px;margin-bottom:6px;background:' + bgColors[pi % bgColors.length] + ';border-radius:8px;font-size:12px">';
+      html += '<div style="font-weight:700;color:#c62828;margin-bottom:3px">' + (pi+1) + '. ' + p.name + '</div>';
+      html += '<div style="color:#666;line-height:1.6;margin-bottom:3px;font-size:11px">' + p.matches + '</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
+      html += '<span style="background:#c62828;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">' + (p.type||'串关') + ' ' + p.cost + '元</span>';
+      if (p.maxPayout) html += '<span style="background:#e65100;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">' + p.maxPayout + '</span>';
+      html += '</div>';
+      if (p.note) html += '<div style="color:#999;font-size:10px;margin-top:2px">' + p.note + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  
+  // 推荐列表
+  recs.forEach(function(r, idx) {
+    var isTop = (idx === 0);
+    html += '<div class="match-card">';
+    html += '<div class="match-top">';
+    if (isTop) html += '<span class="match-star">🏆</span>';
+    html += '<span class="match-league">' + (r.league||'竞彩') + '</span>';
+    if (r.matchNum) html += '<span style="font-size:10px;color:#bbb">' + r.matchNum + '</span>';
+    html += '<span class="match-time">' + (r.matchDate||'') + ' ' + (r.matchTime||'') + '</span>';
+    html += '</div>';
+    html += '<div class="match-body">';
+    html += '<div class="match-teams">' + r.homeTeam + ' <span class="match-vs">vs</span> ' + r.awayTeam + '</div>';
+    html += '<div class="match-odds">';
+    var items = [
+      {label:'主胜', val:r.had_h, pick:r.recommend==='主胜'},
+      {label:'平局', val:r.had_d, pick:r.recommend==='平局'},
+      {label:'客胜', val:r.had_a, pick:r.recommend==='客胜'}
+    ];
+    items.forEach(function(oi) {
+      html += '<div class="odds-box' + (oi.pick?' pick':'') + '">';
+      html += '<div class="odds-label">' + oi.label + '</div>';
+      html += '<div class="odds-val">' + (oi.val ? oi.val.toFixed(2) : '-') + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="match-rec">🏆 推荐 ' + r.recommend + ' @ ' + r.best_odds + ' <span class="match-conf">' + (r.confidence||'⭐') + '</span></div>';
+    
+    var detailId = 'detail_' + idx;
+    var hasReasons = r.reasons && r.reasons.length > 0;
+    html += '<div class="detail-btn" onclick="toggleDetail(\'' + detailId + '\')">' + (hasReasons ? '📊 查看分析理由 ▼' : '📊 价值评分: ' + r.score) + '</div>';
+    html += '<div class="match-detail" id="' + detailId + '">';
+    if (hasReasons) {
+      html += '<div style="padding:8px 0;font-size:12px;color:#666;line-height:1.8">';
+      r.reasons.forEach(function(reason) { html += '• ' + reason + '<br>'; });
+      html += '</div>';
+    }
+    html += '<div style="font-size:11px;color:#999;padding:4px 0;border-top:1px solid #f5f5f5">';
+    html += '评分: ' + r.score;
+    if (r.ev !== undefined) html += ' | EV: ' + (r.ev > 0 ? '<span style="color:#4caf50">' : '') + (r.ev > 0 ? '+' : '') + r.ev + '%' + (r.ev > 0 ? '</span>' : '');
+    html += ' | 抽水: ' + r.juice + '%';
+    if (r.best_value !== undefined) html += ' | 价值: ' + r.best_value + '%';
+    // 凯利建议
+    if (r.kelly_advice && r.kelly_advice.suggest_stake > 0) {
+      html += '<br>💰 ' + r.kelly_advice.note;
+    }
+    if (r.home_group) html += '<br>📌 ' + r.home_group + ' | ' + r.homeTeam + ' 实力:' + (r.home_strength||'?') + ' ' + r.awayTeam + ' 实力:' + (r.away_strength||'?');
+    html += '</div></div>';
+    html += '</div></div>';
+  });
+  
+  ml.innerHTML = html;
+  ml.style.display = 'block';
+  
+  if (recs.length === 0) { ml.style.display = 'none'; em.style.display = 'block'; }
+}
+
+function init() {
+  var ml = document.getElementById('matchList');
+  var ld = document.getElementById('loadingIndicator');
+  var em = document.getElementById('emptyMessage');
+  
+  // 先用内嵌数据渲染
+  if (JC_DATA && JC_DATA.recommendations && JC_DATA.recommendations.length > 0) {
+    renderData(JC_DATA);
+  } else {
+    ld.style.display = 'none';
+    em.style.display = 'block';
+  }
+  
+  // 同时尝试fetch最新数据（如果成功则覆盖）
+  fetch('jc_recommend.json?_t=' + Date.now())
+    .then(function(r) {
+      if (!r.ok) throw new Error('No remote data');
+      return r.json();
+    })
+    .then(function(data) {
+      if (data && data.recommendations && data.recommendations.length > 0) {
+        renderData(data);
+      }
+    })
+    .catch(function() {
+      // 静默失败，已用内嵌数据展示
+    });
+}
+
+function toggleDetail(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body></html>
