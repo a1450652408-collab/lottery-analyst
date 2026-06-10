@@ -3248,6 +3248,13 @@ function renderRecommend(type, data) {
       // 按评分排序
       _eliteRanked = _pool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
       
+      // 确定性伪随机（用最新期号做种子，保证同一期数据产生相同号码）
+      var _seed = data && data[0] ? (parseInt(data[0].p) || parseInt(data[0].period) || 2026151) : 2026151;
+      var _srng = function() {
+        _seed = (_seed * 1664525 + 1013904223) | 0;
+        return ((_seed >>> 0) % 100000) / 100000;
+      };
+      
       // 加权随机生成8组×3胆（回测验证：返奖率66.1%）
       var _groups = [];
       var _used = {};
@@ -3266,7 +3273,7 @@ function renderRecommend(type, data) {
         var _cand = [];
         var _usedInGroup = {};
         while (_cand.length < 3) {
-          var _r = Math.random();
+          var _r = _srng();  // 使用确定性随机，非 Math.random()
           var _cum = 0;
           var _picked = null;
           for (var _wi = 0; _wi < _topN.length; _wi++) {
