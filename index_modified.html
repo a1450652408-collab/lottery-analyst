@@ -16035,6 +16035,28 @@ function fetchData(type) {
       if (item.b && Array.isArray(item.b)) item.b.sort(function(a,b){return a-b;});
       return item;
     });
+    // 快乐8嵌入数据可能不足（自动更新只保留最新1期），额外从kl8_500.json加载
+    if (type === "kl8" && list.length < 50) {
+      return fetch('data/kl8_500.json').then(function(res) {
+        if (!res.ok) throw new Error('网络错误');
+        return res.json();
+      }).then(function(extData) {
+        // 合并：去重（按期号p去重），嵌入数据优先（最新）
+        var existing = {};
+        list.forEach(function(d) { if (d.p) existing[d.p] = true; });
+        extData.forEach(function(d) {
+          if (d.p && !existing[d.p]) list.push(d);
+        });
+        // 按期号降序排列（最新在前）
+        list.sort(function(a,b){ return parseInt(b.p) - parseInt(a.p); });
+        cache[type] = list;
+        return list;
+      }).catch(function() {
+        // 外部加载失败，就用嵌入的少量数据
+        cache[type] = list;
+        return list;
+      });
+    }
     cache[type] = list;
     return Promise.resolve(list);
   }
