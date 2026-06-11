@@ -138,6 +138,32 @@ def evaluate_three_outcomes(match):
         ) / (4/3)  # 归一化到 0~1
         hhad_balance = max(0, min(1, hhad_balance))
 
+    # ===== 阵容深度评分（基于football-data.org数据）=====
+    squad_home_score = 0
+    squad_away_score = 0
+    squad_insights = []
+    home_coach = match.get('home_coach', '—')
+    away_coach = match.get('away_coach', '—')
+
+    # 年龄分析
+    ha = match.get('home_avg_age', 0)
+    aa = match.get('away_avg_age', 0)
+    if ha and aa:
+        def _ab(a): d=abs(a-26.5); return 1.5 if d<=1.5 else 0.5 if d<=3 else -0.5
+        hb, abm = _ab(ha), _ab(aa)
+        squad_home_score += hb; squad_away_score += abm
+        if abs(ha-aa) > 1.5:
+            o = 'home' if ha > aa else 'away'
+            squad_insights.append(f'均龄{ha if o=="home" else aa}岁')
+
+    # 教练名气
+    _elite = {'Lionel Scaloni','Carlo Ancelotti','Thomas Tuchel','Julian Nagelsmann',
+              'Ronald Koeman','Mauricio Pochettino','Didier Deschamps','Marcelo Bielsa'}
+    if home_coach in _elite: squad_home_score += 2; squad_insights.append(f'教练{home_coach}')
+    if away_coach in _elite: squad_away_score += 2; squad_insights.append(f'教练{away_coach}')
+
+    squad_net = round(squad_home_score - squad_away_score, 1)
+
     # ===== 三选项评分 =====
     options = []
     for i in range(3):
@@ -235,6 +261,22 @@ def evaluate_three_outcomes(match):
                 bonus = 3
                 score += bonus
                 reasons.append('实力接近')
+
+        # 4. 阵容深度评分（结合球队阵容数据进行调整）
+        # 基于年龄、教练实力等因子，方向性影响（不改变推荐方向，只微调分数）
+        if squad_net != 0:
+            if labels[i] == '主胜' and squad_net > 0:
+                bonus = min(4, squad_net * 1.5)
+                score += bonus
+                if squad_insights:
+                    reasons.extend(squad_insights[:2])
+            elif labels[i] == '客胜' and squad_net < 0:
+                bonus = min(4, abs(squad_net) * 1.5)
+                score += bonus
+                if squad_insights:
+                    reasons.extend(squad_insights[:2])
+            elif labels[i] == '平局' and abs(squad_net) < 1:
+                score += 1  # 实力接近
 
         options.append({
             'label': labels[i],
@@ -583,29 +625,14 @@ def main():
             print(f'   {away_info}')
             print(f'   核心: {a_players}')
         
-        # 对比分析
-        insights = []
-        if home_age and away_age:
-            age_diff = home_age - away_age
-            if abs(age_diff) > 1.5:
-                older = r["homeTeam"] if age_diff > 0 else r["awayTeam"]
-                younger = r["awayTeam"] if age_diff > 0 else r["homeTeam"]
-                insights.append(f'{older}经验丰富(+{abs(age_diff):.1f}岁均龄)')
-        
-        if r.get('home_coach') and r.get('away_coach'):
-            known_coaches = {'Lionel Scaloni','Carlo Ancelotti','Thomas Tuchel','Julian Nagelsmann',
-                           'Ronald Koeman','Mauricio Pochettino','Ralf Rangnick','Roberto Martínez',
-                           'Graham Potter','Fabio Cannavaro','Dick Advocaat','Vincenzo Montella',
-                           'Hugo Broos','Jesse Marsch'}
-            hc = r['home_coach']
-            ac = r['away_coach']
-            if hc in known_coaches and ac not in known_coaches:
-                insights.append(f'{hc}经验远胜对手')
-            elif ac in known_coaches and hc not in known_coaches:
-                insights.append(f'{ac}经验远胜对手')
-        
-        if insights:
-            print(f'   📊 {" | ".join(insights)}')
+        # 对比分析（评分侧面的阵容洞察）
+        insights_display = []
+        if r.get('reasons'):
+            for reason in r['reasons']:
+                if '教练' in reason or '均龄' in reason:
+                    insights_display.append(reason)
+        if insights_display:
+            print(f'   📊 {" | ".join(insights_display)}')
     
     print(f'\n📊 全部推荐（正EV {len(pos_ev_matches)}场）:')
     for r in recommends[:6]:

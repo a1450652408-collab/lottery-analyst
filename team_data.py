@@ -205,7 +205,7 @@ def fetch_team_squad(team_id, team_name):
             'name': name,
             'pos': pos_short,
             'age': age or 0,
-            'dob': dob_str[:10],
+            'dob': (dob_str or '')[:10],
         })
     
     avg_age = round(sum(ages) / len(ages), 1) if ages else 0

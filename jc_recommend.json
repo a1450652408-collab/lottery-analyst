@@ -1,6 +1,6 @@
 {
   "date": "2026-06-11",
-  "updateTime": "15:01",
+  "updateTime": "16:37",
   "totalMatches": 20,
   "topRecommend": {
     "matchId": 2040181,
@@ -190,13 +190,13 @@
       "matchDate": "2026-06-12",
       "matchTime": "10:00",
       "status": "Selling",
-      "had_h": 2.45,
+      "had_h": 2.4,
       "had_d": 2.86,
-      "had_a": 2.69,
+      "had_a": 2.76,
       "hhad_goalLine": -1.0,
-      "hhad_h": 5.95,
-      "hhad_d": 4.05,
-      "hhad_a": 1.4,
+      "hhad_h": 5.7,
+      "hhad_d": 4.0,
+      "hhad_a": 1.42,
       "home_strength": 50,
       "away_strength": 50,
       "strength_diff": 0,
@@ -257,10 +257,10 @@
         "DF David Zima(25)"
       ],
       "recommend": "客胜",
-      "best_odds": 2.69,
+      "best_odds": 2.76,
       "best_value": 1.5,
-      "score": 17.9,
-      "ev": -11.5,
+      "score": 17.8,
+      "ev": -11.4,
       "confidence": "★★★★",
       "kelly_advice": {
         "suggest_stake": 0,
@@ -269,35 +269,35 @@
         "note": "无正EV，不建议投注"
       },
       "reasons": [
-        "让球客63%"
+        "让球客62%"
       ],
       "all_options": [
         {
           "label": "客胜",
-          "odds": 2.69,
+          "odds": 2.76,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 17.9,
+          "ev": -11.4,
+          "score": 17.8,
           "reasons": [
-            "让球客63%"
+            "让球客62%"
           ]
         },
         {
           "label": "平局",
           "odds": 2.86,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 11.4,
+          "ev": -11.4,
+          "score": 11.5,
           "reasons": []
         },
         {
           "label": "主胜",
-          "odds": 2.45,
+          "odds": 2.4,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 7.2,
+          "ev": -11.4,
+          "score": 7.4,
           "reasons": [
-            "让球15%"
+            "让球16%"
           ]
         }
       ],
@@ -341,6 +341,44 @@
         "form": null,
         "has_data": false
       },
+      "home_coach": "Emerse Faé",
+      "home_player_count": 26,
+      "home_avg_age": 25.3,
+      "home_pos_dist": {
+        "GK": 3,
+        "DF": 8,
+        "MF": 7,
+        "FW": 8
+      },
+      "home_players": [
+        "GK Yahia Fofana(25)",
+        "GK Alban Lafont(27)",
+        "GK Mohamed Kone(24)",
+        "DF Evan N'Dicka(26)",
+        "DF Christopher Operi(29)",
+        "DF Ghislain Konan(30)",
+        "DF Wilfried Singo(25)",
+        "DF Guela Doué(23)"
+      ],
+      "away_coach": "Sebastián Beccacece",
+      "away_player_count": 26,
+      "away_avg_age": 25.6,
+      "away_pos_dist": {
+        "GK": 3,
+        "DF": 8,
+        "MF": 8,
+        "FW": 7
+      },
+      "away_players": [
+        "GK Hernán Galíndez(39)",
+        "GK Gonzalo Valle(30)",
+        "GK Moisés Ramírez(25)",
+        "DF Ángelo Preciado(28)",
+        "DF Félix Torres(29)",
+        "DF Pervis Estupiñán(28)",
+        "DF William Pacho(24)",
+        "DF Jackson Porozo(25)"
+      ],
       "recommend": "主胜",
       "best_odds": 3.36,
       "best_value": 1.5,
@@ -391,6 +429,135 @@
       ],
       "home_group": "Group E",
       "away_group": "Group E"
+    },
+    {
+      "matchId": 2040178,
+      "matchNum": "周二017",
+      "league": "世界杯",
+      "homeTeam": "法国",
+      "awayTeam": "塞内加尔",
+      "matchDate": "2026-06-17",
+      "matchTime": "03:00",
+      "status": "Selling",
+      "had_h": 1.38,
+      "had_d": 3.9,
+      "had_a": 6.75,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 2.35,
+      "hhad_d": 3.2,
+      "hhad_a": 2.56,
+      "home_strength": 50,
+      "away_strength": 50,
+      "strength_diff": 0,
+      "home_detail": {
+        "eng_name": "France",
+        "position": 2,
+        "group": "Group I",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "away_detail": {
+        "eng_name": "Senegal",
+        "position": 3,
+        "group": "Group I",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "home_coach": "Didier Deschamps",
+      "home_player_count": 26,
+      "home_avg_age": 26.6,
+      "home_pos_dist": {
+        "GK": 3,
+        "DF": 9,
+        "MF": 8,
+        "FW": 6
+      },
+      "home_players": [
+        "GK Brice Samba(32)",
+        "GK Mike Maignan(30)",
+        "GK Robin Risser(21)",
+        "DF Theo Hernández(28)",
+        "DF Lucas Digne(32)",
+        "DF Lucas Hernández(30)",
+        "DF Jules Koundé(27)",
+        "DF Dayot Upamecano(27)"
+      ],
+      "away_coach": null,
+      "away_player_count": 27,
+      "away_avg_age": 27.3,
+      "away_pos_dist": {
+        "GK": 3,
+        "DF": 7,
+        "MF": 10,
+        "FW": 6
+      },
+      "away_players": [
+        "GK Edouard Mendy(34)",
+        "GK Yehvann Diouf(26)",
+        "GK Mory Diaw(32)",
+        "DF Ismail Jakobs(26)",
+        "DF Kalidou Koulibaly(34)",
+        "DF Moussa Niakhaté(30)",
+        "DF Abdoulaye Seck(34)",
+        "DF Antoine Mendy(22)"
+      ],
+      "recommend": "主胜",
+      "best_odds": 1.38,
+      "best_value": 1.5,
+      "score": 16.3,
+      "ev": -11.4,
+      "confidence": "★★★★",
+      "kelly_advice": {
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "bankroll_ref": 100000,
+        "note": "无正EV，不建议投注"
+      },
+      "reasons": [
+        "让球38%",
+        "主胜低赔",
+        "教练Didier Deschamps"
+      ],
+      "all_options": [
+        {
+          "label": "主胜",
+          "odds": 1.38,
+          "value_pct": 1.5,
+          "ev": -11.4,
+          "score": 16.3,
+          "reasons": [
+            "让球38%",
+            "主胜低赔",
+            "教练Didier Deschamps"
+          ]
+        },
+        {
+          "label": "平局",
+          "odds": 3.9,
+          "value_pct": 1.5,
+          "ev": -11.4,
+          "score": 14.5,
+          "reasons": [
+            "让球均衡"
+          ]
+        },
+        {
+          "label": "客胜",
+          "odds": 6.75,
+          "value_pct": 1.5,
+          "ev": -11.4,
+          "score": 8.8,
+          "reasons": [
+            "让球客35%"
+          ]
+        }
+      ],
+      "home_group": "Group I",
+      "away_group": "Group I"
     },
     {
       "matchId": 2040184,
@@ -508,9 +675,10 @@
           "odds": 1.93,
           "value_pct": 1.5,
           "ev": -11.4,
-          "score": 8.3,
+          "score": 11.3,
           "reasons": [
-            "让球21%"
+            "让球21%",
+            "均龄30.0岁"
           ]
         }
       ],
@@ -518,210 +686,84 @@
       "away_group": "Group L"
     },
     {
-      "matchId": 2040167,
-      "matchNum": "周六006",
+      "matchId": 2040176,
+      "matchNum": "周一015",
       "league": "世界杯",
-      "homeTeam": "巴西",
-      "awayTeam": "摩洛哥",
-      "matchDate": "2026-06-14",
+      "homeTeam": "沙特",
+      "awayTeam": "乌拉圭",
+      "matchDate": "2026-06-16",
       "matchTime": "06:00",
       "status": "Selling",
-      "had_h": 1.53,
-      "had_d": 3.5,
-      "had_a": 5.25,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 2.75,
-      "hhad_d": 3.26,
-      "hhad_a": 2.18,
+      "had_h": 8.45,
+      "had_d": 4.35,
+      "had_a": 1.28,
+      "hhad_goalLine": 1.0,
+      "hhad_h": 2.95,
+      "hhad_d": 3.3,
+      "hhad_a": 2.05,
       "home_strength": 50,
       "away_strength": 50,
       "strength_diff": 0,
       "home_detail": {
-        "eng_name": "Brazil",
-        "position": 1,
-        "group": "Group C",
+        "eng_name": "Saudi Arabia",
+        "position": 3,
+        "group": "Group H",
         "points": 0,
         "played": 0,
         "form": null,
         "has_data": false
       },
       "away_detail": {
-        "eng_name": "Morocco",
-        "position": 2,
-        "group": "Group C",
+        "eng_name": "Uruguay",
+        "position": 4,
+        "group": "Group H",
         "points": 0,
         "played": 0,
         "form": null,
         "has_data": false
       },
-      "home_coach": "Carlo Ancelotti",
+      "home_coach": "Giorgios Donis",
       "home_player_count": 26,
-      "home_avg_age": 28.7,
+      "home_avg_age": 28.0,
       "home_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 5,
-        "FW": 9
-      },
-      "home_players": [
-        "GK Weverton(38)",
-        "GK Alisson Becker(33)",
-        "GK Ederson(32)",
-        "DF Roger Ibañez(27)",
-        "DF Bremer(29)",
-        "DF Alex Sandro(35)",
-        "DF Marquinhos(32)",
-        "DF Douglas Santos(32)"
-      ],
-      "away_coach": "Mohamed Ouahbi",
-      "away_player_count": 26,
-      "away_avg_age": 25.9,
-      "away_pos_dist": {
         "GK": 3,
         "DF": 9,
         "MF": 9,
         "FW": 5
       },
-      "away_players": [
-        "GK Munir Mohamedi(37)",
-        "GK Yassine Bounou(35)",
-        "GK Ahmed Reda Tagnaouti(30)",
-        "DF Achraf Hakimi(27)",
-        "DF Noussair Mazraoui(28)",
-        "DF Issa Diop(29)",
-        "DF Nayef Aguerd(30)",
-        "DF Anass Salah-Eddine(24)"
-      ],
-      "recommend": "平局",
-      "best_odds": 3.5,
-      "best_value": 1.5,
-      "score": 15.5,
-      "ev": -11.5,
-      "confidence": "★★★",
-      "kelly_advice": {
-        "suggest_stake": 0,
-        "kelly_pct": 0,
-        "bankroll_ref": 100000,
-        "note": "无正EV，不建议投注"
-      },
-      "reasons": [
-        "让球均衡"
-      ],
-      "all_options": [
-        {
-          "label": "平局",
-          "odds": 3.5,
-          "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 15.5,
-          "reasons": [
-            "让球均衡"
-          ]
-        },
-        {
-          "label": "主胜",
-          "odds": 1.53,
-          "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 12.3,
-          "reasons": [
-            "让球32%",
-            "主胜低赔"
-          ]
-        },
-        {
-          "label": "客胜",
-          "odds": 5.25,
-          "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 9.8,
-          "reasons": [
-            "让球客41%"
-          ]
-        }
-      ],
-      "home_group": "Group C",
-      "away_group": "Group C"
-    },
-    {
-      "matchId": 2040162,
-      "matchNum": "周四001",
-      "league": "世界杯",
-      "homeTeam": "墨西哥",
-      "awayTeam": "南非",
-      "matchDate": "2026-06-12",
-      "matchTime": "03:00",
-      "status": "Selling",
-      "had_h": 1.26,
-      "had_d": 4.45,
-      "had_a": 9.0,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 2.0,
-      "hhad_d": 3.25,
-      "hhad_a": 3.11,
-      "home_strength": 50,
-      "away_strength": 50,
-      "strength_diff": 0,
-      "home_detail": {
-        "eng_name": "Mexico",
-        "position": 2,
-        "group": "Group A",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "away_detail": {
-        "eng_name": "South Africa",
-        "position": 3,
-        "group": "Group A",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "home_coach": "Javier Aguirre",
-      "home_player_count": 26,
-      "home_avg_age": 27.5,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 6,
-        "MF": 9,
-        "FW": 8
-      },
       "home_players": [
-        "GK Guillermo Ochoa(40)",
-        "GK Carlos Acevedo(30)",
-        "GK José Rangel(26)",
-        "DF Jesús Gallardo(31)",
-        "DF César Montes(29)",
-        "DF Johan Vásquez(27)",
-        "DF Jorge Sánchez(28)",
-        "DF Israel Reyes(26)"
+        "GK Mohammed Al Owais(34)",
+        "GK Nawaf Al Aqidi(26)",
+        "GK Ahmed Al Kassar(35)",
+        "DF Abdulelah Al Amri(29)",
+        "DF Saud Abdulhamid(26)",
+        "DF Ali Lajami(30)",
+        "DF Hassan Al Tambakti(27)",
+        "DF Hassan Kadesh(33)"
       ],
-      "away_coach": "Hugo Broos",
+      "away_coach": "Marcelo Bielsa",
       "away_player_count": 26,
-      "away_avg_age": 26.3,
+      "away_avg_age": 28.2,
       "away_pos_dist": {
         "GK": 3,
-        "DF": 10,
-        "MF": 7,
-        "FW": 6
+        "DF": 9,
+        "MF": 10,
+        "FW": 4
       },
       "away_players": [
-        "GK Ronwen Williams(34)",
-        "GK Sipho Chaine(29)",
-        "GK Ricardo Goss(32)",
-        "DF Aubrey Modiba(30)",
-        "DF Nkosinathi Sibisi(30)",
-        "DF Khuliso Mudau(31)",
-        "DF Olwethu Makhanya(22)",
-        "DF Bradley Cross(25)"
+        "GK Fernando Muslera(39)",
+        "GK Santiago Mele(28)",
+        "GK Sergio Rochet(33)",
+        "DF Guillermo Varela(33)",
+        "DF Ronald Araújo(27)",
+        "DF Sebastían Cáceres(26)",
+        "DF Matías Viña(28)",
+        "DF Joaquín Piquerez(27)"
       ],
-      "recommend": "主胜",
-      "best_odds": 1.26,
+      "recommend": "客胜",
+      "best_odds": 1.28,
       "best_value": 1.5,
-      "score": 15.5,
+      "score": 15.8,
       "ev": -11.5,
       "confidence": "★★★",
       "kelly_advice": {
@@ -731,54 +773,56 @@
         "note": "无正EV，不建议投注"
       },
       "reasons": [
-        "让球44%",
-        "主胜极低赔"
+        "让球客43%",
+        "客胜低赔",
+        "教练Marcelo Bielsa"
       ],
       "all_options": [
         {
-          "label": "主胜",
-          "odds": 1.26,
+          "label": "客胜",
+          "odds": 1.28,
           "value_pct": 1.5,
           "ev": -11.5,
-          "score": 15.5,
+          "score": 15.8,
           "reasons": [
-            "让球44%",
-            "主胜极低赔"
+            "让球客43%",
+            "客胜低赔",
+            "教练Marcelo Bielsa"
           ]
         },
         {
           "label": "平局",
-          "odds": 4.45,
+          "odds": 4.35,
           "value_pct": 1.5,
           "ev": -11.5,
-          "score": 12.0,
+          "score": 12.5,
           "reasons": [
             "让球均衡"
           ]
         },
         {
-          "label": "客胜",
-          "odds": 9.0,
+          "label": "主胜",
+          "odds": 8.45,
           "value_pct": 1.5,
           "ev": -11.5,
-          "score": 7.7,
+          "score": 7.9,
           "reasons": [
-            "让球客28%"
+            "让球30%"
           ]
         }
       ],
-      "home_group": "Group A",
-      "away_group": "Group A"
+      "home_group": "Group H",
+      "away_group": "Group H"
     }
   ],
   "s2recommend": {
     "match1": "韩国 vs 捷克",
-    "match1_rec": "客胜 @2.69",
-    "match1_ev": "-11.5%",
+    "match1_rec": "客胜 @2.76",
+    "match1_ev": "-11.4%",
     "match2": "科特迪瓦 vs 厄瓜多尔",
     "match2_rec": "主胜 @3.36",
     "match2_ev": "-11.5%",
-    "combined_odds": 9.04,
+    "combined_odds": 9.27,
     "note": "两场全中才中奖，风险较高"
   },
   "bigOddsParlays": [],
