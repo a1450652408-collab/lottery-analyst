@@ -3866,44 +3866,104 @@ function renderRecommend(type, data) {
     }
   }
 
-  /* ===== 数字彩 包号推荐（福彩3D/排列三/七星彩/排列五） ===== */
+  /* ===== 数字彩 包号推荐 V2（六因子优化） ===== */
   if (cfg.type === "digit" && type !== "pl5") {
     var _rePosCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
-    var _rePosKeep = type === "pl5" ? 5 : type === "qxc" ? 4 : 5;
+    var _rePosKeep = type === "pl5" ? 5 : type === "qxc" ? 4 : 4; // V2: 改为4个/位（64注128元）
     var _reAllCands = [];
+    /* V2新增：今日精选1注（最优直选） */
+    var _reBestDirect = [];
+    
     for (var _repos = 0; _repos < _rePosCount; _repos++) {
       var _rePosScores = {};
+      /* V2: 冷号专用评分 */
+      var _reColdScores = {};
+      
       for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
-        var _pf = 0, _pm = 0, _pr = 0;
+        /* V2 六因子评分 */
+        var _pf = 0, _pr10 = 0, _pr5 = 0, _pp5 = 0;
+        var _ema = 0.0; /* EMA指数衰减 α=0.3 */
+        var _lastSeen = _reUseData.length;
+        
         for (var _rej = 0; _rej < _reUseData.length; _rej++) {
           var _rens2 = getNums(_reUseData[_rej]);
           if (_rens2.length <= _repos) continue;
-          if (_rens2[_repos] === _red) { _pf++; }
-          if (_pm === 0 && _rens2[_repos] === _red) _pm = _rej;
+          var _hit = _rens2[_repos] === _red ? 1.0 : 0.0;
+          _ema = 0.3 * _hit + 0.7 * _ema;
+          if (_hit) {
+            _pf++;
+            if (_rej < _lastSeen) _lastSeen = _rej;
+          }
         }
-        if (_pm === 0) _pm = _reUseData.length;
-        for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+        
+        /* 近10期 vs 前5期动量 */
+        for (var _rri = 0; _rri < Math.min(5, _reUseData.length); _rri++) {
           var _rrn = getNums(_reUseData[_rri]);
-          if (_rrn.length > _repos && _rrn[_repos] === _red) _pr++;
+          if (_rrn.length > _repos && _rrn[_repos] === _red) _pr5++;
         }
-        _rePosScores[_red] = _pf * 0.5 + _pm * 0.2 + _pr * 3.0;
+        for (var _rri = 5; _rri < Math.min(10, _reUseData.length); _rri++) {
+          var _rpn = getNums(_reUseData[_rri]);
+          if (_rpn.length > _repos && _rpn[_repos] === _red) _pp5++;
+        }
+        /* V1: 继续保留原有3因子作为基准 */
+        var _pm = _lastSeen === _reUseData.length ? _reUseData.length : _lastSeen;
+        for (var _rri = 0; _rri < Math.min(10, _reUseData.length); _rri++) {
+          var _rrn2 = getNums(_reUseData[_rri]);
+          if (_rrn2.length > _repos && _rrn2[_repos] === _red) _pr10++;
+        }
+        
+        var _midFreq = _pf / _reUseData.length;
+        var _momentum = Math.max(-3, Math.min(3, (_pr5 - _pp5) * 1.0));
+        
+        /* 遗漏回归：期望间隔 = 10/(频率占比*10+0.5) */
+        var _expectedGap = 10 / (_midFreq * 10 + 0.5);
+        var _missBonus = Math.max(0, (_lastSeen - _expectedGap) * 0.3);
+        
+        /* V2综合评分 = EMA×5 + 中频×2 + 动量×1.5 + 遗漏回补×0.5 + V1基准×0.2 */
+        _rePosScores[_red] = _ema * 5.0 + _midFreq * 2.0 + _momentum * 1.5 + _missBonus * 0.5 + (_pf * 0.5 + _pm * 0.2 + _pr10 * 3.0) * 0.2;
+        _reColdScores[_red] = _lastSeen + _pf * 0.3; /* 遗漏回补评分 */
       }
+      
       var _reRanked = [];
       for (var _red = _reNumMin; _red <= _reNumMax; _red++) _reRanked.push({ n: _red, s: _rePosScores[_red] || 0 });
       _reRanked.sort(function(a, b) { return b.s - a.s; });
-      var _reTop = _reRanked.slice(0, _rePosKeep).map(function(x) { return x.n; }).sort(function(a, b) { return a - b; });
+      
+      /* V2: 热号3 + 冷号1 = 4个 */
+      var _reHotPicks = _reRanked.slice(0, 3).map(function(x) { return x.n; });
+      /* 冷号：排除热号后选遗漏最长的 */
+      var _reColdCandidates = [];
+      for (var _red = _reNumMin; _red <= _reNumMax; _red++) {
+        if (_reHotPicks.indexOf(_red) < 0) _reColdCandidates.push({ n: _red, s: _reColdScores[_red] || 0 });
+      }
+      _reColdCandidates.sort(function(a, b) { return b.s - a.s; });
+      var _reColdPicks = _reColdCandidates.slice(0, 1).map(function(x) { return x.n; });
+      
+      var _reTop = _reHotPicks.concat(_reColdPicks).sort(function(a, b) { return a - b; });
       _reAllCands.push(_reTop);
+      
+      /* V2: 今日精选1注（最优直选） */
+      _reBestDirect.push(_reRanked[0].n);
     }
+    
     var _reTotalCombos = 1;
     _reAllCands.forEach(function(c) { _reTotalCombos *= c.length; });
     var _reBagCost = _reTotalCombos * 2;
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🎯 包号推荐（每位置Top' + _rePosKeep + '码）</div>';
+    
+    /* 包号推荐卡片 */
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722;background:linear-gradient(135deg,#fff8e1,#fff3e0)"><div class="rec-header">🎯 包号推荐（每位置Top' + _rePosKeep + '码·六因子V2）</div>';
     for (var _repos = 0; _repos < _rePosCount; _repos++) {
       _reHtml += '<div style="margin:3px 0"><span style="font-size:10px;color:#999;margin-right:4px">位' + (_repos+1) + '</span>';
       _reAllCands[_repos].forEach(function(n) { _reHtml += '<span class="ball r" style="margin:1px">' + n + '</span>'; });
       _reHtml += '</div>';
     }
-    _reHtml += '<div class="rec-reason"><b>' + _reTotalCombos + '注</b> | <b>' + _reBagCost + '元</b> | 频率+遗漏+近期热度</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '<div class="rec-reason"><b>' + _reTotalCombos + '注</b> | <b>' + _reBagCost + '元</b> | EMA热度+中频+动量+遗漏回补+位置特异 | 热3+冷1</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    
+    /* V2新加：今日精选1注直选 */
+    if (_reBestDirect.length === _rePosCount) {
+      _reHtml += '<div class="rec-card" style="border-left-color:#4caf50;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);margin-top:2px"><div class="rec-header">🎯 今日精选直选（1注·2元）</div><div class="rec-balls">';
+      _reBestDirect.forEach(function(n) { _reHtml += '<span class="ball r">' + n + '</span>'; });
+      _reHtml += '</div><div class="rec-reason">六因子评分最优组合 | 每期2元</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    }
   }
 
   /* ===== 排列五 五不同+二同 全约束综合法 ===== */
