@@ -164,6 +164,49 @@ def evaluate_three_outcomes(match):
 
     squad_net = round(squad_home_score - squad_away_score, 1)
 
+    # ===== 球队状态评分（近期战绩「WWDLW」格式）=====
+    form_home_str = match.get('home_detail', {}).get('form', '')
+    form_away_str = match.get('away_detail', {}).get('form', '')
+    form_home_score = 0
+    form_away_score = 0
+    form_notes = []
+
+    if form_home_str and form_away_str:
+        def _form_streak(fs):
+            """解析「WWDLW」→ 连胜/连败计数"""
+            w_streak, l_streak = 0, 0
+            for ch in reversed(fs):
+                if ch == 'W': w_streak += 1; l_streak = 0
+                elif ch == 'L': l_streak += 1; w_streak = 0
+                else: break
+            return w_streak, l_streak
+
+        hw, hl = _form_streak(form_home_str)
+        aw, al = _form_streak(form_away_str)
+
+        if hw >= 3: form_home_score += 2; form_notes.append(f'{match["homeTeam"]}{hw}连胜')
+        elif hw >= 2: form_home_score += 1
+        if hl >= 3: form_home_score -= 2; form_notes.append(f'{match["homeTeam"]}{hl}连败')
+        if aw >= 3: form_away_score += 2; form_notes.append(f'{match["awayTeam"]}{aw}连胜')
+        elif aw >= 2: form_away_score += 1
+        if al >= 3: form_away_score -= 2; form_notes.append(f'{match["awayTeam"]}{al}连败')
+
+    form_net = round(form_home_score - form_away_score, 1)
+
+    # ===== 价值投注重叠分析 =====
+    # 计算每个选项的"市场赔率隐含概率 vs 模型公平概率"差距
+    value_overlay = []
+    for i in range(3):
+        market_implied = 1 / odds[i] if odds[i] > 0 else 0
+        fair_p = fair_probs[i]
+        gap = fair_p - market_implied  # 正 = 模型认为比市场更可能
+        value_overlay.append({
+            'label': labels[i],
+            'market_prob': round(market_implied * 100, 1),
+            'fair_prob': round(fair_p * 100, 1),
+            'gap': round(gap * 100, 1)
+        })
+
     # ===== 三选项评分 =====
     options = []
     for i in range(3):
@@ -278,6 +321,27 @@ def evaluate_three_outcomes(match):
             elif labels[i] == '平局' and abs(squad_net) < 1:
                 score += 1  # 实力接近
 
+        # 5. 球队状态（近期战绩连胜/连败）
+        if form_net != 0:
+            if labels[i] == '主胜' and form_net > 0:
+                bonus = min(3, form_net * 1.5)
+                score += bonus
+                if form_notes:
+                    reasons.extend(form_notes[:1])
+            elif labels[i] == '客胜' and form_net < 0:
+                bonus = min(3, abs(form_net) * 1.5)
+                score += bonus
+                if form_notes:
+                    reasons.extend(form_notes[:1])
+
+        # 6. 价值重叠加分：模型公平概率 > 市场隐含概率 的选项加分
+        fair_vs_market = value_overlay[i]['gap']
+        if fair_vs_market > 5:
+            score += min(4, fair_vs_market * 0.4)
+            reasons.append(f'价值+{fair_vs_market:.0f}%')
+        elif fair_vs_market > 2:
+            score += min(2, fair_vs_market * 0.3)
+
         options.append({
             'label': labels[i],
             'odds': o,
@@ -285,6 +349,9 @@ def evaluate_three_outcomes(match):
             'ev': round(ev * 100, 1),
             'score': round(score, 1),
             'reasons': reasons,
+            'market_prob': value_overlay[i]['market_prob'],
+            'fair_prob': value_overlay[i]['fair_prob'],
+            'value_gap': value_overlay[i]['gap'],
         })
 
     if not options:
@@ -483,6 +550,10 @@ def main():
             m['away_strength'] = m.get('away_strength')
             m['home_group'] = m.get('home_detail', {}).get('group')
             m['away_group'] = m.get('away_detail', {}).get('group')
+            # 价值重叠分析 + 球队状态数据
+            m['value_overlay'] = [{'label':o['label'],'market_prob':o.get('market_prob'),'fair_prob':o.get('fair_prob'),'value_gap':o.get('value_gap')} for o in options[:3]]
+            m['home_form'] = (m.get('home_detail') or {}).get('form')
+            m['away_form'] = (m.get('away_detail') or {}).get('form')
             scored.append(m)
     
     print(f'📊 有效评分 {len(scored)} 场')
@@ -560,6 +631,121 @@ def main():
             'note': '正EV组合，长线正期望'
         })
     
+    # ===== 让球盘双关2串1（基于s2recommend的两场比赛）=====
+    s2hhad = None
+    if s2rec:
+        m1_obj = None
+        m2_obj = None
+        for r in recommends:
+            if f'{r["homeTeam"]} vs {r["awayTeam"]}' == s2rec['match1']:
+                m1_obj = r
+            if f'{r["homeTeam"]} vs {r["awayTeam"]}' == s2rec['match2']:
+                m2_obj = r
+        
+        if m1_obj and m2_obj:
+            def _hhad_info(match):
+                hhad_map = {'主胜': 'hhad_h', '平局': 'hhad_d', '客胜': 'hhad_a'}
+                label_map = {'主胜': '让球主胜', '平局': '让球平', '客胜': '让球客胜'}
+                rec = match.get('recommend', '')
+                key = hhad_map.get(rec, 'hhad_h')
+                label = label_map.get(rec, '让球主胜')
+                odds = match.get(key, 0)
+                hhad_odds = [match.get('hhad_h',0), match.get('hhad_d',0), match.get('hhad_a',0)]
+                _, hhad_fair, _ = calc_implied_prob(hhad_odds)
+                idx = ['hhad_h', 'hhad_d', 'hhad_a'].index(key)
+                fair_prob = hhad_fair[idx] if idx < len(hhad_fair) else 0
+                return {
+                    'team': f'{match["homeTeam"]} vs {match["awayTeam"]}',
+                    'rec': f'{label} @{odds}',
+                    'odds': odds,
+                    'prob': round(fair_prob * 100, 1)
+                }
+            
+            hi1 = _hhad_info(m1_obj)
+            hi2 = _hhad_info(m2_obj)
+            s2hhad = {
+                'match1': hi1['team'],
+                'match1_rec': hi1['rec'],
+                'match1_odds': hi1['odds'],
+                'match1_prob': hi1['prob'],
+                'match1_goalLine': m1_obj.get('hhad_goalLine', 0),
+                'match2': hi2['team'],
+                'match2_rec': hi2['rec'],
+                'match2_odds': hi2['odds'],
+                'match2_prob': hi2['prob'],
+                'match2_goalLine': m2_obj.get('hhad_goalLine', 0),
+                'combined_odds': round(hi1['odds'] * hi2['odds'], 2),
+                'combined_prob': round(hi1['prob'] * hi2['prob'] / 100, 1),
+                'note': f'两场全中概率{hi1["prob"]}%×{hi2["prob"]}%={round(hi1["prob"]*hi2["prob"]/100,1)}%'
+            }
+            # 打印到终端
+            gl1 = m1_obj.get('hhad_goalLine', 0)
+            gl2 = m2_obj.get('hhad_goalLine', 0)
+            print(f'\n🔒 让球盘双关2串1:')
+            print(f'  {hi1["team"]} (让球{gl1:+.0f}) → {hi1["rec"]} [概率{hi1["prob"]}%]')
+            print(f'  {hi2["team"]} (让球{gl2:+.0f}) → {hi2["rec"]} [概率{hi2["prob"]}%]')
+            print(f'  组合赔率: {s2hhad["combined_odds"]} | 全中概率: {s2hhad["combined_prob"]}%')
+    
+    # ===== 双选双关2串1（每场选2个让球结果，提升中奖率）=====
+    s2hhad_double = None
+    if m1_obj and m2_obj:
+        def _hhad_double_info(match):
+            """返回该比赛让球盘概率最高的2个选项"""
+            hhad_odds_labels = [
+                ('让球主胜', match.get('hhad_h', 0)),
+                ('让球平', match.get('hhad_d', 0)),
+                ('让球客胜', match.get('hhad_a', 0)),
+            ]
+            hhad_odds = [match.get('hhad_h',0), match.get('hhad_d',0), match.get('hhad_a',0)]
+            _, hhad_fair, _ = calc_implied_prob(hhad_odds)
+            # 找概率最高的2个
+            indexed = list(enumerate(zip([l for l,o in hhad_odds_labels], hhad_odds, hhad_fair)))
+            indexed.sort(key=lambda x: -x[1][2])  # 按公平概率降序
+            picks = [(idx, label, odds, float(prob)) for idx, (label, odds, prob) in indexed[:2]]
+            total_prob = sum(p[3] for p in picks)
+            combo_odds = None
+            combo_note = ''
+            if len(picks) == 2:
+                # 双选组合赔率 ≈ 调和平均值（合理近似）
+                o1, o2 = picks[0][2], picks[1][2]
+                combo_odds = round(2 / (1/o1 + 1/o2), 2)
+                combo_note = f'{picks[0][1]}@{o1} + {picks[1][1]}@{o2}'
+            return {
+                'team': f'{match["homeTeam"]} vs {match["awayTeam"]}',
+                'pick1': f'{picks[0][1]} @{picks[0][2]}',
+                'pick1_odds': picks[0][2],
+                'pick1_prob': round(picks[0][3] * 100, 1),
+                'pick2': f'{picks[1][1]} @{picks[1][2]}',
+                'pick2_odds': picks[1][2],
+                'pick2_prob': round(picks[1][3] * 100, 1),
+                'total_prob': round(total_prob * 100, 1),
+                'combo_odds': combo_odds,
+                'combo_note': combo_note,
+                'goalLine': match.get('hhad_goalLine', 0),
+            }
+        
+        di1 = _hhad_double_info(m1_obj)
+        di2 = _hhad_double_info(m2_obj)
+        # 双选双关2串1的概率 = 两场各自双选概率的乘积
+        s2hhad_double = {
+            'match1': di1['team'],
+            'match1_detail': di1['combo_note'],
+            'match1_prob': di1['total_prob'],
+            'match1_combo_odds': di1['combo_odds'],
+            'match1_goalLine': di1['goalLine'],
+            'match2': di2['team'],
+            'match2_detail': di2['combo_note'],
+            'match2_prob': di2['total_prob'],
+            'match2_combo_odds': di2['combo_odds'],
+            'match2_goalLine': di2['goalLine'],
+            'combined_prob': round(di1['total_prob'] * di2['total_prob'] / 100, 1),
+            'note': f'各场选2个让球结果，中奖率{di1["total_prob"]}%×{di2["total_prob"]}%={round(di1["total_prob"]*di2["total_prob"]/100,1)}%（约每{round(100/(di1["total_prob"]*di2["total_prob"]/100))}次中1次）'
+        }
+        print(f'\n🔒🔒 双选双关2串1（每场双选）:')
+        print(f'  {di1["team"]}: {di1["combo_note"]} [概率{di1["total_prob"]}%]')
+        print(f'  {di2["team"]}: {di2["combo_note"]} [概率{di2["total_prob"]}%]')
+        print(f'  全中概率: {s2hhad_double["combined_prob"]}%')
+    
     # ===== 第6步：输出 =====
     output = {
         'date': datetime.now().strftime('%Y-%m-%d'),
@@ -568,6 +754,8 @@ def main():
         'topRecommend': recommends[0] if recommends else None,
         'recommendations': recommends[:6],
         's2recommend': s2rec,
+        's2hhad': s2hhad,
+        's2hhad_double': s2hhad_double,
         'bigOddsParlays': big_odds_parlays,
         'posEvCount': len(pos_ev_matches),
         'dataSource': {
