@@ -96,6 +96,14 @@ function getRecent(data, n) {
   if (!data || !data.length) return [];
   return data.slice(0, n);
 }
+/* getNums/getBlues — 统一号码提取（lotto-main.js 也定义了，提前暴露避免引用顺序问题） */
+function getNums(item) {
+  if (item.n) return item.n;
+  return item.r || [];
+}
+function getBlues(item) {
+  return item.b || [];
+}
 
 /* 统计号码频率（通用） */
 function countFreq(data, numGetter, numMin, numMax) {
