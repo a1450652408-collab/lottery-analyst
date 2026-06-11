@@ -90,137 +90,178 @@ def calc_implied_prob(odds):
 
 def evaluate_three_outcomes(match):
     """
-    V4: 对主胜/平局/客胜分别计算价值分，无偏见平等评估
-    返回每个选项的: {label, odds, fair_prob, value_pct, score, reasons}
+    V5 优化版: 让球盘连续评分 + 平局检测 + 赔率区间细分
+
+    核心改进:
+    1. 让球盘连续分（非二元阈值）— HHAD概率×权重
+    2. 平局均衡检测 — HHAD三态接近时提升平局
+    3. 赔率区间细分 — 1.10-1.30/1.30-1.60/1.60-1.80 不同权重
+    4. 剔除伪价值信号
+    5. 不偏袒任意方向
     """
     had = [match['had_h'], match['had_d'], match['had_a']]
     _, fair_probs, juice = calc_implied_prob(had)
-    
+
     if not any(had) or juice > 15:
         return None
-    
+
     labels = ['主胜', '平局', '客胜']
     odds = [match['had_h'], match['had_d'], match['had_a']]
-    
+
+    # ===== 让球盘分析 —— 连续信号 =====
+    hhad_fair = None   # [h, d, a] fair probs from HHAD
+    hhad_raw = None    # raw implied probs
+    hhad_juice = 0
+    hhad_home_ratio = 0.33  # HHAD_H占HHAD总概率的比例（≈1/3默认）
+    hhad_away_ratio = 0.33
+    hhad_draw_ratio = 0.33
+    hhad_balance = 0.0   # 让球盘均衡度 0~1, 1=完全均衡
+    hhad_home_margin = 0.0  # 主胜优势（正=主队强，负=客队强）
+
+    if match.get('hhad_h', 0) > 0 and match.get('hhad_a', 0) > 0:
+        hhad_raw, hhad_fair, hhad_juice = calc_implied_prob([
+            match['hhad_h'], match['hhad_d'], match['hhad_a']
+        ])
+        hhad_home_ratio = hhad_fair[0]
+        hhad_away_ratio = hhad_fair[2]
+        hhad_draw_ratio = hhad_fair[1]
+
+        # 主胜优势 = HHAD_H - HHAD_A（正值=主队+让球盘更强）
+        hhad_home_margin = hhad_home_ratio - hhad_away_ratio
+
+        # 均衡度: HHAD三个概率的均匀度
+        # 0=极度不均衡（一边倒），1=完全均衡（33%/33%/33%）
+        hhad_balance = 1.0 - (
+            abs(hhad_home_ratio - 1/3) +
+            abs(hhad_draw_ratio - 1/3) +
+            abs(hhad_away_ratio - 1/3)
+        ) / (4/3)  # 归一化到 0~1
+        hhad_balance = max(0, min(1, hhad_balance))
+
+    # ===== 三选项评分 =====
     options = []
     for i in range(3):
         o = odds[i]
         fp = fair_probs[i]
         if o <= 0 or fp <= 0:
             continue
-        
-        # 价值 = (赔率隐含概率 - 公平概率) / 公平概率 × 100
-        implied_p = 1 / o
-        value_pct = (implied_p - fp) / fp * 100
-        
-        # 期望价值 EV = 赔率 × 公平概率 - 1
+
         ev = o * fp - 1
-        
-        # 评分 = 价值分 + 抽水分 + 让球盘修正 + 队伍实力
-        score = 0
+
+        score = 0.0
         reasons = []
-        
-        # 1. 抽水质量：低抽水=高质量比赛
-        score += max(0, 15 - juice) * 1.5
-        
-        # 2. 价值信号
-        if value_pct > 5:
-            score += min(15, value_pct * 0.5)
-            reasons.append(f'价值+{value_pct:.0f}%')
-        elif value_pct > 2:
-            score += 5
-            reasons.append(f'微价值+{value_pct:.0f}%')
-        elif value_pct > 0:
-            score += 2
-        
-        # 3. 赔率区间偏置（基于历史分布）
+
+        # 1. 抽水质量（低抽水=可信度更高，上限3分）
+        score += max(0, 18 - juice) * 0.5  # juice≈13% → +2.5分
+
+        # 2. 让球盘连续评分（核心信号，上限15分）
+        if hhad_fair:
+            if labels[i] == '主胜':
+                # HHAD主队概率×20 + 对冲缓和×3
+                base = hhad_home_ratio * 18
+                if hhad_home_ratio > 0.45:
+                    base += 3  # 超过45%额外奖励
+                score += base
+                reasons.append(f'让球{hhad_home_ratio:.0%}')
+            elif labels[i] == '客胜':
+                base = hhad_away_ratio * 18
+                if hhad_away_ratio > 0.45:
+                    base += 3
+                score += base
+                reasons.append(f'让球客{hhad_away_ratio:.0%}')
+            elif labels[i] == '平局':
+                # 平局得分来自均衡度: 均衡时≈7分，不均衡时≈2分
+                draw_score = hhad_balance * 7 + 2
+                if hhad_home_margin > -0.20 and hhad_home_margin < 0.20:
+                    # 主客接近时额外加分
+                    draw_score += (1 - abs(hhad_home_margin) / 0.20) * 3
+                score += draw_score
+                if hhad_balance > 0.6:
+                    reasons.append('让球均衡')
+
+        # 3. 赔率区间细分（基于历史分布）
         if labels[i] == '主胜':
-            # 主胜历史准确率约46-52%，随赔率变化
-            if 1.30 <= o <= 1.80:
-                score += 8  # 低赔主胜可信度高
+            if 1.10 <= o < 1.30:
+                bonus = 5
+                reasons.append('主胜极低赔')
+            elif 1.30 <= o < 1.60:
+                bonus = 4
                 reasons.append('主胜低赔')
-            elif 1.80 < o <= 2.50:
-                score += 5  # 中赔主胜
-                reasons.append('主胜中赔')
-            elif 2.50 < o <= 4.00:
-                score += 1  # 高赔主胜可博
+            elif 1.60 <= o < 1.80:
+                bonus = 3
+                reasons.append('主胜中低赔')
+            elif 1.80 <= o < 2.50:
+                bonus = 2  # 中赔主胜，有一定风险
+            elif 2.50 <= o < 4.00:
+                bonus = 1  # 高赔主胜，可博
+            else:
+                bonus = 0
+            score += bonus
+
         elif labels[i] == '客胜':
-            if 1.80 <= o <= 3.00:
-                score += 4  # 客胜中赔
-                reasons.append('客胜可博')
-            elif o > 3.00 and value_pct > 10:
-                score += 6  # 冷门客胜有价值
-                reasons.append('客胜冷门')
+            if o < 1.60:
+                bonus = 4
+                reasons.append('客胜低赔')
+            elif 1.60 <= o < 2.50:
+                bonus = 3
+                reasons.append('客胜中赔')
+            elif 2.50 <= o < 4.00:
+                bonus = 1
+            else:
+                bonus = 0
+            score += bonus
+
         elif labels[i] == '平局':
             if 2.80 <= o <= 3.60:
-                # 平赔适中且有价值时
-                if value_pct > 5:
-                    score += 6
-                    reasons.append('平局价值')
-                else:
-                    score += 2
-            elif o > 3.60 and value_pct > 10:
-                score += 4
-                reasons.append('平局冷门')
-        
-        # 4. 让球盘(HHAD)方向修正
-        if match.get('hhad_h', 0) > 0 and match.get('hhad_a', 0) > 0:
-            hhad = [match['hhad_h'], match['hhad_d'], match['hhad_a']]
-            _, fair_hhad, _ = calc_implied_prob(hhad)
-            
-            # 让球盘隐含的主胜概率 vs 标准盘
-            had_h_fair = fair_probs[0]
-            hhad_h_fair = fair_hhad[0]
-            diff = hhad_h_fair - had_h_fair
-            
-            if diff > 0.08:  # 让球盘强烈支持主胜
-                if labels[i] == '主胜':
-                    score += 10
-                    reasons.append('让球盘支持')
-                elif labels[i] == '客胜':
-                    score -= 5  # 让球盘不支持客胜
-            elif diff < -0.08:  # 让球盘不支持主胜（客队可能更强）
-                if labels[i] == '客胜':
-                    score += 8
-                    reasons.append('让球盘支持客队')
-                elif labels[i] == '主胜':
-                    score -= 3
-                if labels[i] == '平局':
-                    score += 3  # 让球盘分歧=平局可能
-        
-        # 5. 均衡度信号
-        odds_range = max(odds) - min(odds)
-        if odds_range < 1.0 and labels[i] in ['主胜', '客胜']:
-            # 均衡比赛，两边都有机会
-            score += 3
-        elif odds_range > 3.0 and labels[i] == '客胜':
-            # 胜负悬殊，客胜冷门价值
-            score += 2
-        
-        # 6. 队伍实力（仅当有实际数据时）
+                bonus = 3
+            elif 3.60 < o <= 5.00:
+                bonus = 1
+            else:
+                bonus = 0
+            score += bonus
+
+        # 4. 队伍实力（当有真实数据时，上限8分）
         if match.get('home_detail', {}).get('has_data'):
             strength_diff = match.get('strength_diff', 0)
             if labels[i] == '主胜' and strength_diff > 0:
-                score += min(8, strength_diff * 0.2)
+                bonus = min(8, strength_diff * 0.15)
+                score += bonus
+                reasons.append(f'实力+{bonus:.0f}')
             elif labels[i] == '客胜' and strength_diff < 0:
-                score += min(8, abs(strength_diff) * 0.2)
+                bonus = min(8, abs(strength_diff) * 0.15)
+                score += bonus
+                reasons.append(f'实力+{bonus:.0f}')
             elif labels[i] == '平局' and abs(strength_diff) < 5:
-                score += 3  # 实力接近=平局可能
-        
+                bonus = 3
+                score += bonus
+                reasons.append('实力接近')
+
         options.append({
             'label': labels[i],
             'odds': o,
-            'value_pct': round(value_pct, 1),
-            'ev': round(ev * 100, 1),  # 期望收益率%
+            'value_pct': round(ev * 100 + juice, 1),
+            'ev': round(ev * 100, 1),
             'score': round(score, 1),
             'reasons': reasons,
         })
-    
+
     if not options:
         return None
-    
-    # 按评分排序
-    options.sort(key=lambda x: -x['score'])
+
+    # 评分降序，评分相同用让球盘优势幅度排序
+    def sort_key(x):
+        idx = labels.index(x['label'])
+        # 第二排序: 让球盘优势幅度匹配
+        if hhad_home_margin > 0.10 and x['label'] == '主胜':
+            second = 1.0
+        elif hhad_home_margin < -0.10 and x['label'] == '客胜':
+            second = 1.0
+        else:
+            second = 0.0
+        return (-x['score'], -second)
+
+    options.sort(key=sort_key)
+    return options
     return options
 
 
@@ -243,71 +284,78 @@ def kelly_fraction(odds, estimated_prob, bankroll_pct=0.25):
 
 def convert_to_confidence(options, match):
     """
-    V4: 5级信心度 + 凯利建议
-    基于期望价值(EV)和评分综合判断
+    V5 优化版: 基于评分 + 让球盘优势幅度 + 赔率区间
+    产生有区分度的5级信心
     """
     if not options:
         return None, None, None, None
-    
+
     best = options[0]
     label = best['label']
     odds = best['odds']
     score = best['score']
     ev = best['ev']
-    value_pct = best['value_pct']
-    
-    # 置信度评分
-    conf_score = 0
-    
-    # 评分越高越可信
-    if score >= 25:
-        conf_score += 3
-    elif score >= 18:
-        conf_score += 2
-    elif score >= 10:
-        conf_score += 1
-    
-    # 正EV才有意义
+
+    # 置信度评分 (0~9)
+    conf_score = 0.0
+
+    # 1. 评分：与让球盘优势幅度对应
+    if score >= 16:
+        conf_score += 3.0
+    elif score >= 12:
+        conf_score += 2.0
+    elif score >= 8:
+        conf_score += 1.0
+
+    # 2. 赔率可博弈性
+    if odds < 1.15:
+        conf_score -= 2.0  # 极度低赔无价值
+    elif odds < 1.25:
+        conf_score -= 1.0
+    elif odds <= 4.00:
+        conf_score += 0.5
+    elif odds > 8.00:
+        conf_score -= 1.0  # 超高赔博冷减信心
+
+    # 3. 正EV加分（冷门有正EV说明真有机会）
     if ev > 10:
-        conf_score += 2
+        conf_score += 2.0
     elif ev > 5:
-        conf_score += 1
-    elif ev <= 0:
-        conf_score -= 1
-    
-    # 价值信号
-    if value_pct > 10:
-        conf_score += 2
-    elif value_pct > 5:
-        conf_score += 1
-    
-    # 赔率范围可博弈
-    if 1.30 <= odds <= 4.00:
-        conf_score += 1
-    
-    # 5级信心
-    if conf_score >= 6:
+        conf_score += 1.5
+    elif ev > 0:
+        conf_score += 1.0
+    elif ev <= -10:
+        conf_score -= 0.5  # 高抽水比赛减一点信心
+
+    # 4. 标注是否正EV
+    has_pos_ev = ev > 0
+
+    # 5级信心映射（带小数支持区分）
+    if conf_score >= 4.5:
         confidence = '★★★★★'
-    elif conf_score >= 4:
+    elif conf_score >= 3.0:
         confidence = '★★★★'
-    elif conf_score >= 2:
+    elif conf_score >= 1.5:
         confidence = '★★★'
     elif conf_score >= 0:
         confidence = '★★'
     else:
         confidence = '★'
-    
-    # 凯利建议（基于1/4凯利，10万本金）
+
+    # 凯利建议（使用公平概率而非隐含概率）
     bankroll = 100000
-    fair_prob = 1 / odds  # 隐含概率（近似）
+    had = [match['had_h'], match['had_d'], match['had_a']]
+    _, fair_probs, _ = calc_implied_prob(had)
+    idx = ['主胜', '平局', '客胜'].index(label)
+    fair_prob = fair_probs[idx] if idx < len(fair_probs) else (1 / odds)
+
     kelly_pct = kelly_fraction(odds, fair_prob)
     suggest_stake = round(bankroll * kelly_pct)
-    
-    # 只对正EV推荐投注
+
     if ev <= 0:
         kelly_pct = 0
         suggest_stake = 0
-    
+
     kelly_advice = {
         'suggest_stake': suggest_stake,
         'kelly_pct': round(kelly_pct * 100, 1),
@@ -317,8 +365,8 @@ def convert_to_confidence(options, match):
     if suggest_stake > 0:
         kelly_advice['note'] = f'1/4凯利建议投{suggest_stake}元（{kelly_pct*100:.1f}%本金）'
     else:
-        kelly_advice['note'] = '无正EV，不建议投注或娱乐小额'
-    
+        kelly_advice['note'] = '无正EV，不建议投注'
+
     return confidence, kelly_advice, score, ev
 
 
@@ -328,12 +376,20 @@ def main():
     # ===== 第1步：获取队伍基本面数据（football-data.org）=====
     standings_data = None
     team_scores_data = None
+    team_squads_data = None
     if TEAM_DATA_AVAILABLE:
-        print('[球队数据] 获取football-data.org队伍排名...')
-        standings_data, team_scores_data = fetch_and_cache_all()
+        print('[球队数据] 获取football-data.org队伍排名+阵容...')
+        result = fetch_and_cache_all()
+        if len(result) == 3:
+            standings_data, team_scores_data, team_squads_data = result
+        else:
+            standings_data, team_scores_data = result
+            team_squads_data = None
+        
         if standings_data:
             played_teams = sum(1 for s in standings_data.values() if s['playedGames'] > 0)
-            print(f'[球队数据] ✅ 获取 {len(standings_data)} 队数据 ({played_teams}队有比赛数据)')
+            squad_count = len(team_squads_data) if team_squads_data else 0
+            print(f'[球队数据] ✅ {len(standings_data)}队排名 + {squad_count}队阵容 ({played_teams}队有比赛数据)')
             if played_teams == 0:
                 print('[球队数据] ℹ️ 世界杯6月11日开赛，比赛开始后自动生成实力评分')
         else:
@@ -355,7 +411,7 @@ def main():
         team_data_added = False
         if TEAM_DATA_AVAILABLE and standings_data and team_scores_data:
             try:
-                m_with_team = enrich_match_with_team_data(m, standings_data, team_scores_data)
+                m_with_team = enrich_match_with_team_data(m, standings_data, team_scores_data, team_squads_data)
                 enriched.append(m_with_team)
                 team_data_added = True
             except:
@@ -497,6 +553,59 @@ def main():
         print(f'   主胜{r["had_h"]}  平{r["had_d"]}  客胜{r["had_a"]}')
         if r.get('home_group'):
             print(f'   小组: {r["home_group"]}')
+        
+        # 深度阵容分析
+        home_age = r.get('home_avg_age', 0)
+        away_age = r.get('away_avg_age', 0)
+        home_pos = r.get('home_pos_dist', {})
+        away_pos = r.get('away_pos_dist', {})
+        
+        if r.get('home_players'):
+            h_players = ', '.join(r['home_players'][:5])
+            home_info = f'{r["homeTeam"]}:{r.get("home_player_count","?")}人'
+            if r.get('home_coach') and r['home_coach'] != '—':
+                home_info += f' 教练:{r["home_coach"]}'
+            if home_age:
+                home_info += f' 均龄{home_age}岁'
+            if home_pos:
+                home_info += f' {"|".join([f"{k}{v}" for k,v in sorted(home_pos.items()) if v>0])}'
+            print(f'   {home_info}')
+            print(f'   核心: {h_players}')
+        if r.get('away_players'):
+            a_players = ', '.join(r['away_players'][:5])
+            away_info = f'{r["awayTeam"]}:{r.get("away_player_count","?")}人'
+            if r.get('away_coach') and r['away_coach'] != '—':
+                away_info += f' 教练:{r["away_coach"]}'
+            if away_age:
+                away_info += f' 均龄{away_age}岁'
+            if away_pos:
+                away_info += f' {"|".join([f"{k}{v}" for k,v in sorted(away_pos.items()) if v>0])}'
+            print(f'   {away_info}')
+            print(f'   核心: {a_players}')
+        
+        # 对比分析
+        insights = []
+        if home_age and away_age:
+            age_diff = home_age - away_age
+            if abs(age_diff) > 1.5:
+                older = r["homeTeam"] if age_diff > 0 else r["awayTeam"]
+                younger = r["awayTeam"] if age_diff > 0 else r["homeTeam"]
+                insights.append(f'{older}经验丰富(+{abs(age_diff):.1f}岁均龄)')
+        
+        if r.get('home_coach') and r.get('away_coach'):
+            known_coaches = {'Lionel Scaloni','Carlo Ancelotti','Thomas Tuchel','Julian Nagelsmann',
+                           'Ronald Koeman','Mauricio Pochettino','Ralf Rangnick','Roberto Martínez',
+                           'Graham Potter','Fabio Cannavaro','Dick Advocaat','Vincenzo Montella',
+                           'Hugo Broos','Jesse Marsch'}
+            hc = r['home_coach']
+            ac = r['away_coach']
+            if hc in known_coaches and ac not in known_coaches:
+                insights.append(f'{hc}经验远胜对手')
+            elif ac in known_coaches and hc not in known_coaches:
+                insights.append(f'{ac}经验远胜对手')
+        
+        if insights:
+            print(f'   📊 {" | ".join(insights)}')
     
     print(f'\n📊 全部推荐（正EV {len(pos_ev_matches)}场）:')
     for r in recommends[:6]:
