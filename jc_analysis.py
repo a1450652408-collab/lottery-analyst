@@ -574,6 +574,18 @@ def main():
         s2pool_pos.sort(key=lambda x: -x['ev'])
         m1, m2 = s2pool_pos[0], s2pool_pos[1]
         s2odds = round(m1['best_odds'] * m2['best_odds'], 2)
+        # 计算2串1综合期望值
+        s2_fair_prob = 0
+        had_m1 = [m1['had_h'], m1['had_d'], m1['had_a']]
+        had_m2 = [m2['had_h'], m2['had_d'], m2['had_a']]
+        _, m1_fair, _ = calc_implied_prob(had_m1)
+        _, m2_fair, _ = calc_implied_prob(had_m2)
+        m1_idx = ['主胜', '平局', '客胜'].index(m1['recommend'])
+        m2_idx = ['主胜', '平局', '客胜'].index(m2['recommend'])
+        m1_fp = m1_fair[m1_idx] if m1_idx < len(m1_fair) else 0
+        m2_fp = m2_fair[m2_idx] if m2_idx < len(m2_fair) else 0
+        s2_comb_ev = round((s2odds * m1_fp * m2_fp - 1) * 100, 1)
+        
         s2rec = {
             'match1': f'{m1["homeTeam"]} vs {m1["awayTeam"]}',
             'match1_rec': f'{m1["recommend"]} @{m1["best_odds"]}',
@@ -582,13 +594,28 @@ def main():
             'match2_rec': f'{m2["recommend"]} @{m2["best_odds"]}',
             'match2_ev': f'{m2["ev"]}%',
             'combined_odds': s2odds,
-            'note': '两场均有正EV，均注可期'
+            'combined_ev': s2_comb_ev,
+            'note': '两场均有正EV，均注可期' if m1.get('ev',0) > 0 and m2.get('ev',0) > 0 else '两场全中才中奖，长期期望值为负'
         }
-        print(f'\n🔗 2串1推荐: {m1["homeTeam"]} {m1["recommend"]} @{m1["best_odds"]}(EV+{m1["ev"]}%) × {m2["homeTeam"]} {m2["recommend"]} @{m2["best_odds"]}(EV+{m2["ev"]}%) = {s2odds}')
+        if m1.get('ev',0) > 0 and m2.get('ev',0) > 0:
+            print(f'\n🔗 2串1推荐: {m1["homeTeam"]} {m1["recommend"]} @{m1["best_odds"]}(EV+{m1["ev"]}%) × {m2["homeTeam"]} {m2["recommend"]} @{m2["best_odds"]}(EV+{m2["ev"]}%) = {s2odds} (综合EV: {s2_comb_ev}%)')
+        else:
+            print(f'\n🔗 2串1推荐(备选): {m1["homeTeam"]} {m1["recommend"]} @{m1["best_odds"]} × {m2["homeTeam"]} {m2["recommend"]} @{m2["best_odds"]} = {s2odds} (EV: {s2_comb_ev}%)')
     elif len(s2pool_all) >= 2:
         s2pool_all.sort(key=lambda x: -x['score'])
         m1, m2 = s2pool_all[0], s2pool_all[1]
         s2odds = round(m1['best_odds'] * m2['best_odds'], 2)
+        # 计算综合EV
+        had_m1 = [m1['had_h'], m1['had_d'], m1['had_a']]
+        had_m2 = [m2['had_h'], m2['had_d'], m2['had_a']]
+        _, m1_fair, _ = calc_implied_prob(had_m1)
+        _, m2_fair, _ = calc_implied_prob(had_m2)
+        m1_idx = ['主胜', '平局', '客胜'].index(m1['recommend'])
+        m2_idx = ['主胜', '平局', '客胜'].index(m2['recommend'])
+        m1_fp = m1_fair[m1_idx] if m1_idx < len(m1_fair) else 0
+        m2_fp = m2_fair[m2_idx] if m2_idx < len(m2_fair) else 0
+        s2_comb_ev = round((s2odds * m1_fp * m2_fp - 1) * 100, 1)
+        
         s2rec = {
             'match1': f'{m1["homeTeam"]} vs {m1["awayTeam"]}',
             'match1_rec': f'{m1["recommend"]} @{m1["best_odds"]}',
@@ -597,9 +624,10 @@ def main():
             'match2_rec': f'{m2["recommend"]} @{m2["best_odds"]}',
             'match2_ev': f'{m2["ev"]}%',
             'combined_odds': s2odds,
-            'note': '两场全中才中奖，风险较高'
+            'combined_ev': s2_comb_ev,
+            'note': f'两场全中才中奖，综合期望值{s2_comb_ev}%，长期必亏'
         }
-        print(f'\n🔗 2串1推荐(备选): {m1["homeTeam"]} {m1["recommend"]} @{m1["best_odds"]} × {m2["homeTeam"]} {m2["recommend"]} @{m2["best_odds"]} = {s2odds}')
+        print(f'\n🔗 2串1推荐(备选): {m1["homeTeam"]} {m1["recommend"]} @{m1["best_odds"]} × {m2["homeTeam"]} {m2["recommend"]} @{m2["best_odds"]} = {s2odds} (综合EV: {s2_comb_ev}%)')
     
     # 串关推荐（基于正EV场次动态生成）
     big_odds_parlays = []
@@ -643,9 +671,10 @@ def main():
                 m2_obj = r
         
         if m1_obj and m2_obj:
+            hhad_map = {'主胜': 'hhad_h', '平局': 'hhad_d', '客胜': 'hhad_a'}
+            label_map = {'主胜': '让球主胜', '平局': '让球平', '客胜': '让球客胜'}
+            
             def _hhad_info(match):
-                hhad_map = {'主胜': 'hhad_h', '平局': 'hhad_d', '客胜': 'hhad_a'}
-                label_map = {'主胜': '让球主胜', '平局': '让球平', '客胜': '让球客胜'}
                 rec = match.get('recommend', '')
                 key = hhad_map.get(rec, 'hhad_h')
                 label = label_map.get(rec, '让球主胜')
@@ -658,11 +687,17 @@ def main():
                     'team': f'{match["homeTeam"]} vs {match["awayTeam"]}',
                     'rec': f'{label} @{odds}',
                     'odds': odds,
-                    'prob': round(fair_prob * 100, 1)
+                    'prob': round(fair_prob * 100, 1),
+                    'hhad_fair': hhad_fair,
+                    'hhad_idx': idx
                 }
             
             hi1 = _hhad_info(m1_obj)
             hi2 = _hhad_info(m2_obj)
+            
+            # 让球盘双关综合EV
+            hhad_comb_ev = round((hi1['odds'] * hi2['odds'] * hi1['hhad_fair'][hi1['hhad_idx']] * hi2['hhad_fair'][hi2['hhad_idx']] - 1) * 100, 1)
+            
             s2hhad = {
                 'match1': hi1['team'],
                 'match1_rec': hi1['rec'],
@@ -676,7 +711,8 @@ def main():
                 'match2_goalLine': m2_obj.get('hhad_goalLine', 0),
                 'combined_odds': round(hi1['odds'] * hi2['odds'], 2),
                 'combined_prob': round(hi1['prob'] * hi2['prob'] / 100, 1),
-                'note': f'两场全中概率{hi1["prob"]}%×{hi2["prob"]}%={round(hi1["prob"]*hi2["prob"]/100,1)}%'
+                'combined_ev': hhad_comb_ev,
+                'note': f'两场全中概率{hi1["prob"]}%×{hi2["prob"]}%={round(hi1["prob"]*hi2["prob"]/100,1)}%，期望值{hhad_comb_ev}%（负值表示长期亏损）'
             }
             # 打印到终端
             gl1 = m1_obj.get('hhad_goalLine', 0)
@@ -684,7 +720,7 @@ def main():
             print(f'\n🔒 让球盘双关2串1:')
             print(f'  {hi1["team"]} (让球{gl1:+.0f}) → {hi1["rec"]} [概率{hi1["prob"]}%]')
             print(f'  {hi2["team"]} (让球{gl2:+.0f}) → {hi2["rec"]} [概率{hi2["prob"]}%]')
-            print(f'  组合赔率: {s2hhad["combined_odds"]} | 全中概率: {s2hhad["combined_prob"]}%')
+            print(f'  组合赔率: {s2hhad["combined_odds"]} | 全中概率: {s2hhad["combined_prob"]}% | 综合EV: {hhad_comb_ev}%')
     
     # ===== 双选双关2串1（每场选2个让球结果，提升中奖率）=====
     s2hhad_double = None
@@ -746,6 +782,40 @@ def main():
         print(f'  {di2["team"]}: {di2["combo_note"]} [概率{di2["total_prob"]}%]')
         print(f'  全中概率: {s2hhad_double["combined_prob"]}%')
     
+    # ===== 价值投注分析（只输出独立模型的EV为正的选项）=====
+    value_bets = []
+    for m in scored:
+        options = evaluate_three_outcomes(m)
+        if not options:
+            continue
+        best = options[0]
+        if best.get('ev', -100) > 0:
+            # 正EV → 入选价值投注
+            value_bets.append({
+                'league': m.get('league', ''),
+                'matchNum': m.get('matchNum', ''),
+                'homeTeam': m['homeTeam'],
+                'awayTeam': m['awayTeam'],
+                'recommend': best['label'],
+                'odds': best['odds'],
+                'ev': best['ev'],
+                'market_prob': best.get('market_prob'),
+                'fair_prob': best.get('fair_prob'),
+                'value_gap': best.get('value_gap'),
+                'reasons': best.get('reasons', []),
+                'kelly_advice': m.get('kelly_advice', {}),
+            })
+    
+    # 按EV排序
+    value_bets.sort(key=lambda x: -x['ev'])
+    
+    if value_bets:
+        print(f'\n💰 价值投注: {len(value_bets)} 场正EV')
+        for vb in value_bets:
+            print(f'   {vb["homeTeam"]} vs {vb["awayTeam"]}: {vb["recommend"]} @{vb["odds"]} (EV+{vb["ev"]}%)')
+    else:
+        print('\n💰 价值投注: 今日无正EV选项（世界杯开赛后会有更多数据支持）')
+    
     # ===== 第6步：输出 =====
     output = {
         'date': datetime.now().strftime('%Y-%m-%d'),
@@ -757,7 +827,9 @@ def main():
         's2hhad': s2hhad,
         's2hhad_double': s2hhad_double,
         'bigOddsParlays': big_odds_parlays,
+        'valueBets': value_bets,
         'posEvCount': len(pos_ev_matches),
+        'valueBetCount': len(value_bets),
         'dataSource': {
             'odds': 'webapi.sporttery.cn (竞彩网)',
             'teamData': 'api.football-data.org' if (standings_data and team_scores_data) else '未加载',

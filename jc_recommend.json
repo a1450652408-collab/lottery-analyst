@@ -1,6 +1,6 @@
 {
   "date": "2026-06-11",
-  "updateTime": "19:38",
+  "updateTime": "20:58",
   "totalMatches": 20,
   "topRecommend": {
     "matchId": 2040181,
@@ -463,13 +463,13 @@
       "matchDate": "2026-06-12",
       "matchTime": "10:00",
       "status": "Selling",
-      "had_h": 2.4,
-      "had_d": 2.81,
-      "had_a": 2.8,
+      "had_h": 2.49,
+      "had_d": 2.75,
+      "had_a": 2.75,
       "hhad_goalLine": -1.0,
-      "hhad_h": 5.7,
+      "hhad_h": 6.25,
       "hhad_d": 4.0,
-      "hhad_a": 1.42,
+      "hhad_a": 1.39,
       "home_strength": 50,
       "away_strength": 50,
       "strength_diff": 0,
@@ -530,10 +530,10 @@
         "DF David Zima(25)"
       ],
       "recommend": "客胜",
-      "best_odds": 2.8,
+      "best_odds": 2.75,
       "best_value": 1.5,
-      "score": 17.7,
-      "ev": -11.5,
+      "score": 18.0,
+      "ev": -11.4,
       "confidence": "★★★★",
       "kelly_advice": {
         "suggest_stake": 0,
@@ -542,45 +542,45 @@
         "note": "无正EV，不建议投注"
       },
       "reasons": [
-        "让球客62%"
+        "让球客64%"
       ],
       "all_options": [
         {
           "label": "客胜",
-          "odds": 2.8,
+          "odds": 2.75,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 17.7,
+          "ev": -11.4,
+          "score": 18.0,
           "reasons": [
-            "让球客62%"
+            "让球客64%"
           ],
-          "market_prob": 35.7,
-          "fair_prob": 31.6,
-          "value_gap": -4.1
+          "market_prob": 36.4,
+          "fair_prob": 32.2,
+          "value_gap": -4.2
         },
         {
           "label": "平局",
-          "odds": 2.81,
+          "odds": 2.75,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 11.5,
+          "ev": -11.4,
+          "score": 8.4,
           "reasons": [],
-          "market_prob": 35.6,
-          "fair_prob": 31.5,
-          "value_gap": -4.1
+          "market_prob": 36.4,
+          "fair_prob": 32.2,
+          "value_gap": -4.2
         },
         {
           "label": "主胜",
-          "odds": 2.4,
+          "odds": 2.49,
           "value_pct": 1.5,
-          "ev": -11.5,
-          "score": 7.3,
+          "ev": -11.4,
+          "score": 7.1,
           "reasons": [
-            "让球16%"
+            "让球14%"
           ],
-          "market_prob": 41.7,
-          "fair_prob": 36.9,
-          "value_gap": -4.8
+          "market_prob": 40.2,
+          "fair_prob": 35.6,
+          "value_gap": -4.6
         }
       ],
       "home_group": "Group A",
@@ -588,21 +588,21 @@
       "value_overlay": [
         {
           "label": "客胜",
-          "market_prob": 35.7,
-          "fair_prob": 31.6,
-          "value_gap": -4.1
+          "market_prob": 36.4,
+          "fair_prob": 32.2,
+          "value_gap": -4.2
         },
         {
           "label": "平局",
-          "market_prob": 35.6,
-          "fair_prob": 31.5,
-          "value_gap": -4.1
+          "market_prob": 36.4,
+          "fair_prob": 32.2,
+          "value_gap": -4.2
         },
         {
           "label": "主胜",
-          "market_prob": 41.7,
-          "fair_prob": 36.9,
-          "value_gap": -4.8
+          "market_prob": 40.2,
+          "fair_prob": 35.6,
+          "value_gap": -4.6
         }
       ],
       "home_form": null,
@@ -1085,45 +1085,49 @@
   ],
   "s2recommend": {
     "match1": "韩国 vs 捷克",
-    "match1_rec": "客胜 @2.8",
-    "match1_ev": "-11.5%",
+    "match1_rec": "客胜 @2.75",
+    "match1_ev": "-11.4%",
     "match2": "科特迪瓦 vs 厄瓜多尔",
     "match2_rec": "主胜 @3.36",
     "match2_ev": "-11.5%",
-    "combined_odds": 9.41,
-    "note": "两场全中才中奖，风险较高"
+    "combined_odds": 9.24,
+    "combined_ev": -21.6,
+    "note": "两场全中才中奖，综合期望值-21.6%，长期必亏"
   },
   "s2hhad": {
     "match1": "韩国 vs 捷克",
-    "match1_rec": "让球客胜 @1.42",
-    "match1_odds": 1.42,
-    "match1_prob": 62.3,
+    "match1_rec": "让球客胜 @1.39",
+    "match1_odds": 1.39,
+    "match1_prob": 63.7,
     "match1_goalLine": -1.0,
     "match2": "科特迪瓦 vs 厄瓜多尔",
     "match2_rec": "让球主胜 @1.51",
     "match2_odds": 1.51,
     "match2_prob": 58.7,
     "match2_goalLine": 1.0,
-    "combined_odds": 2.14,
-    "combined_prob": 36.6,
-    "note": "两场全中概率62.3%×58.7%=36.6%"
+    "combined_odds": 2.1,
+    "combined_prob": 37.4,
+    "combined_ev": -21.6,
+    "note": "两场全中概率63.7%×58.7%=37.4%，期望值-21.6%（负值表示长期亏损）"
   },
   "s2hhad_double": {
     "match1": "韩国 vs 捷克",
-    "match1_detail": "让球客胜@1.42 + 让球平@4.0",
-    "match1_prob": 84.5,
-    "match1_combo_odds": 2.1,
+    "match1_detail": "让球客胜@1.39 + 让球平@4.0",
+    "match1_prob": 85.8,
+    "match1_combo_odds": 2.06,
     "match1_goalLine": -1.0,
     "match2": "科特迪瓦 vs 厄瓜多尔",
     "match2_detail": "让球主胜@1.51 + 让球平@3.6",
     "match2_prob": 83.3,
     "match2_combo_odds": 2.13,
     "match2_goalLine": 1.0,
-    "combined_prob": 70.4,
-    "note": "各场选2个让球结果，中奖率84.5%×83.3%=70.4%（约每1次中1次）"
+    "combined_prob": 71.5,
+    "note": "各场选2个让球结果，中奖率85.8%×83.3%=71.5%（约每1次中1次）"
   },
   "bigOddsParlays": [],
+  "valueBets": [],
   "posEvCount": 0,
+  "valueBetCount": 0,
   "dataSource": {
     "odds": "webapi.sporttery.cn (竞彩网)",
     "teamData": "api.football-data.org",
