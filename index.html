@@ -3504,8 +3504,8 @@ function renderRecommend(type, data) {
       // 每组折叠显示
       _ztGroups.forEach(function(g, gi) {
         var _ztKey = 'ztg' + gi;
-        // 组头
-        _reHtml += '<div onclick="var d=document.getElementById(\\'_' + _ztKey + '\\');d.style.display=d.style.display===\\'none\\'?\\'block\\':\\'none\\';this.querySelector(\\'.zt-arrow\\').textContent=d.style.display===\\'block\\'?\\'▼\\':\\'▶\\'" style="cursor:pointer;background:' + g.badge + ';border-radius:8px;padding:6px 8px;margin:4px 0">';
+        // 组头 - 用数据属性和全局函数避免onclick转义问题
+        _reHtml += '<div class="zt-group-head" data-target="' + _ztKey + '" style="cursor:pointer;background:' + g.badge + ';border-radius:8px;padding:6px 8px;margin:4px 0">';
         _reHtml += '<div style="display:flex;justify-content:space-between;align-items:center">';
         _reHtml += '<div><span style="display:inline-block;width:20px;height:20px;background:' + g.color + ';color:#fff;border-radius:50%;text-align:center;line-height:20px;font-size:11px;font-weight:700;margin-right:6px">' + (gi+1) + '</span>';
         _reHtml += '<span style="font-weight:600;font-size:13px;color:' + g.color + '">' + g.name + '</span>';
@@ -4803,6 +4803,20 @@ function init() {
   var aiInput = document.getElementById("aiChatInput");
   if (aiInput) aiInput.addEventListener("keydown", function(e) {
     if (e.key === "Enter") sendAiChat();
+  });
+  // 1-15区间折叠事件委托
+  document.addEventListener("click", function(e) {
+    var t = e.target;
+    while (t && !t.classList.contains("zt-group-head")) t = t.parentElement;
+    if (!t) return;
+    var targetId = t.getAttribute("data-target");
+    if (!targetId) return;
+    var d = document.getElementById("_" + targetId);
+    if (!d) return;
+    var isHidden = d.style.display === "none";
+    d.style.display = isHidden ? "block" : "none";
+    var arrow = t.querySelector(".zt-arrow");
+    if (arrow) arrow.textContent = isHidden ? "▼" : "▶";
   });
   // 优先走快速渲染（数据已内嵌），失败才走 loadAll
   if (!fastLoad()) loadAll("ssq");
