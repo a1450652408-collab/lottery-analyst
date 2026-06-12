@@ -336,7 +336,20 @@ def predict_sh15x5(data):
         "confidence": "★★★"
     })
     
-    # ===== 策略6: 胆拖推荐 =====
+    # ===== 策略6: 10码复式推荐(追热) =====
+    hot10 = [n for n, _ in freq30.most_common(10)]
+    cost10 = comb(10, 5) * 2
+    p10_any = (comb(10,5) + comb(10,4)*comb(5,1)) / comb(15,5)
+    pred["strategies"].append({
+        "name": "10码复式(追热)",
+        "desc": f"近30期最热10个号, {comb(10,5)}注{cost10}元, 任意奖概率{p10_any*100:.1f}%",
+        "nums": sorted(hot10),
+        "method": "fushi_10",
+        "cost": cost10,
+        "confidence": "★★★★"
+    })
+
+    # ===== 策略7: 胆拖推荐 =====
     dan = top5[:2]  # 用2个EMA最高分做胆
     tuo_candidates = [n for n in es["ranked"][2:9] if n not in dan]
     cost_dt = comb(len(tuo_candidates), 3) * 2
