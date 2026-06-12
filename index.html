@@ -3363,22 +3363,20 @@ function renderRecommend(type, data) {
       }
     })();
 
-    /* ===== 快乐8 1-15区间·选五3胆7拖推荐 ===== */
+    /* ===== 快乐8 1-15区间·选五3胆7拖（4组策略） ===== */
     (function() {
       if (cfg.type !== "keno") return;
       
       // 只用1-15的号码
       var _ztZ15 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-      var _ztWin = 50;  // 窗口30期
+      var _ztWin = 50;
       var _ztData = data.slice(0, Math.min(_ztWin, data.length)).reverse();
       
       // EMA评分
       var _ztEma = {};
       _ztZ15.forEach(function(n) {
         var seq = [];
-        for (var i = 0; i < _ztData.length; i++) {
-          seq.push(getNums(_ztData[i]).indexOf(n) >= 0 ? 1 : 0);
-        }
+        for (var i = 0; i < _ztData.length; i++) seq.push(getNums(_ztData[i]).indexOf(n) >= 0 ? 1 : 0);
         if (seq.length === 0) { _ztEma[n] = 0; return; }
         var e = seq[0];
         for (var i = 1; i < seq.length; i++) e = 0.5 * seq[i] + 0.5 * e;
@@ -3388,9 +3386,7 @@ function renderRecommend(type, data) {
       // 频率
       var _ztFreq = {};
       _ztZ15.forEach(function(n) { _ztFreq[n] = 0; });
-      _ztData.forEach(function(d) {
-        getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq[x]++; });
-      });
+      _ztData.forEach(function(d) { getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq[x]++; }); });
       var _ztMaxFreq = Math.max.apply(null, Object.values(_ztFreq)) || 1;
       
       // 动量
@@ -3404,49 +3400,101 @@ function renderRecommend(type, data) {
       
       // 综合评分
       var _ztScores = {};
-      _ztZ15.forEach(function(n) {
-        _ztScores[n] = (_ztEma[n] || 0) * 5.0 + (_ztFreq[n] / _ztMaxFreq) * 3.0 + (_ztMom[n] || 0) * 2.0;
-      });
-      
+      _ztZ15.forEach(function(n) { _ztScores[n] = (_ztEma[n] || 0) * 5.0 + (_ztFreq[n] / _ztMaxFreq) * 3.0 + (_ztMom[n] || 0) * 2.0; });
       var _ztRanked = _ztZ15.slice().sort(function(a, b) { return (_ztScores[b] || 0) - (_ztScores[a] || 0); });
-      var _ztDan = _ztRanked.slice(0, 3).sort(function(a,b){return a-b;});
-      var _ztTuo = _ztRanked.slice(3, 10).sort(function(a,b){return a-b;});
       
-      // 计算中5理论概率
-      var _ztP5 = 0.0086;  // 单注选五中5 ≈ 0.86%
-      var _ztNote = '3胆全中+拖中2=中5(1000元) | 回测273天:中5=6天/21注 | ROI 212.3% | 净+12,882元';
+      // 遗漏：从最近一期往前找
+      var _ztMiss = {};
+      _ztZ15.forEach(function(n) {
+        var m = 0;
+        for (var i = 0; i < _ztData.length; i++) { if (getNums(_ztData[i]).indexOf(n) >= 0) break; m++; }
+        _ztMiss[n] = m;
+      });
+      var _ztByMiss = _ztZ15.slice().sort(function(a, b) { return (_ztMiss[b] || 0) - (_ztMiss[a] || 0); });
       
+      // 构建4个策略
+      var _ztGroups = [];
+      
+      // 策略1: 热号胆拖 - Top3做胆, 4-10做拖
+      _ztGroups.push({
+        name: '热号胆拖',
+        dan: _ztRanked.slice(0, 3).sort(function(a,b){return a-b;}),
+        tuo: _ztRanked.slice(3, 10).sort(function(a,b){return a-b;}),
+        color: '#1b5e20',
+        badge: '#e8f5e9',
+        note: 'EMA高分做胆'
+      });
+      
+      // 策略2: 胆拖互换 - 4-6做胆, 1-3+7-11做拖
+      var _ztSwapDan = _ztRanked.slice(3, 6).sort(function(a,b){return a-b;});
+      var _ztSwapTuo = _ztZ15.filter(function(n) { return _ztSwapDan.indexOf(n) < 0; })
+                          .sort(function(a,b){ return (_ztScores[b]||0) - (_ztScores[a]||0); }).slice(0, 7).sort(function(a,b){return a-b;});
+      _ztGroups.push({
+        name: '胆拖互换',
+        dan: _ztSwapDan,
+        tuo: _ztSwapTuo,
+        color: '#e65100',
+        badge: '#fff3e0',
+        note: '中等评分做胆+高分热号做拖'
+      });
+      
+      // 策略3: 追冷胆拖 - 遗漏最大的3个做胆, 剩余高分做拖
+      var _ztColdDan = _ztByMiss.slice(0, 3).sort(function(a,b){return a-b;});
+      var _ztColdTuo = _ztZ15.filter(function(n) { return _ztColdDan.indexOf(n) < 0; })
+                             .sort(function(a,b){ return (_ztScores[b]||0) - (_ztScores[a]||0); }).slice(0, 7).sort(function(a,b){return a-b;});
+      _ztGroups.push({
+        name: '追冷胆拖',
+        dan: _ztColdDan,
+        tuo: _ztColdTuo,
+        color: '#c62828',
+        badge: '#ffebee',
+        note: '遗漏最大做胆+高分号做拖'
+      });
+      
+      // 策略4: 冷胆热拖（胆拖互换的逆向）- 排名靠后3个做胆, 前面做拖
+      var _ztColdDan2 = _ztRanked.slice(11, 14).sort(function(a,b){return a-b;});
+      if (_ztColdDan2.length < 3) _ztColdDan2 = _ztRanked.slice(9, 12).sort(function(a,b){return a-b;});
+      var _ztColdTuo2 = _ztZ15.filter(function(n) { return _ztColdDan2.indexOf(n) < 0; })
+                              .sort(function(a,b){ return (_ztScores[b]||0) - (_ztScores[a]||0); }).slice(0, 7).sort(function(a,b){return a-b;});
+      _ztGroups.push({
+        name: '冷胆热拖',
+        dan: _ztColdDan2,
+        tuo: _ztColdTuo2,
+        color: '#1565c0',
+        badge: '#e3f2fd',
+        note: '冷号做胆+高分热号做拖'
+      });
+      
+      // 渲染卡片
+      var _ztTotalCost = 21 * 2 * 4;  // 21注×2元×4组
       _reHtml += '<div class="rec-card" style="border-left-color:#1b5e20;background:linear-gradient(135deg,#e8f5e9,#f1f8e9)">';
-      _reHtml += '<div class="rec-header">🌲 1-15区间·选五3胆7拖（EMA多因子）</div>';
+      _reHtml += '<div class="rec-header">🌲 1-15区间·选五3胆7拖（4组策略）</div>';
+      _reHtml += '<div style="font-size:10px;color:#888;margin-bottom:6px">每组C(7,2)=21注=42元 | 4组合计' + _ztTotalCost + '元/期 | 回测ROI 212%·净+12,882元</div>';
       
-      // 显示胆码
-      _reHtml += '<div style="margin:4px 0"><span style="font-size:10px;color:#666;margin-right:6px">胆码(3个)</span>';
-      _ztDan.forEach(function(n) {
-        _reHtml += '<span style="display:inline-block;background:#1b5e20;color:#fff;width:32px;height:32px;line-height:32px;border-radius:50%;text-align:center;font-weight:700;font-size:15px;margin:0 2px">' + String(n).padStart(2,"0") + '</span>';
+      // 每组折叠显示
+      _ztGroups.forEach(function(g, gi) {
+        var _ztKey = 'ztg' + gi;
+        // 组头
+        _reHtml += '<div onclick="var d=document.getElementById(\\'_' + _ztKey + '\\');d.style.display=d.style.display===\\'none\\'?\\'block\\':\\'none\\';this.querySelector(\\'.zt-arrow\\').textContent=d.style.display===\\'block\\'?\\'▼\\':\\'▶\\'" style="cursor:pointer;background:' + g.badge + ';border-radius:8px;padding:6px 8px;margin:4px 0">';
+        _reHtml += '<div style="display:flex;justify-content:space-between;align-items:center">';
+        _reHtml += '<div><span style="display:inline-block;width:20px;height:20px;background:' + g.color + ';color:#fff;border-radius:50%;text-align:center;line-height:20px;font-size:11px;font-weight:700;margin-right:6px">' + (gi+1) + '</span>';
+        _reHtml += '<span style="font-weight:600;font-size:13px;color:' + g.color + '">' + g.name + '</span>';
+        _reHtml += '<span style="font-size:10px;color:#888;margin-left:6px">' + g.note + '</span></div>';
+        _reHtml += '<span class="zt-arrow" style="font-size:10px;color:#999">▼</span></div>';
+        _reHtml += '<div style="margin-top:4px">';
+        _reHtml += '<span style="font-size:10px;color:#666">胆码</span> ';
+        g.dan.forEach(function(n) { _reHtml += '<span style="display:inline-block;background:' + g.color + ';color:#fff;width:28px;height:28px;line-height:28px;border-radius:50%;text-align:center;font-weight:700;font-size:13px;margin:0 1px">' + String(n).padStart(2,"0") + '</span>'; });
+        _reHtml += ' <span style="font-size:10px;color:#666;margin-left:4px">拖码</span> ';
+        g.tuo.forEach(function(n) { _reHtml += '<span style="display:inline-block;background:' + g.color + '22;color:' + g.color + ';width:24px;height:24px;line-height:24px;border-radius:50%;text-align:center;font-weight:600;font-size:11px;margin:0 1px">' + String(n).padStart(2,"0") + '</span>'; });
+        _reHtml += '</div>';
+        // 折叠内容: 完整说明
+        _reHtml += '<div id="_' + _ztKey + '" style="margin-top:4px;padding:4px 6px;background:#fff;border-radius:4px;font-size:10px;color:#666;display:block">';
+        _reHtml += '胆码:' + g.dan.join(',') + '<br>拖码:' + g.tuo.join(',') + '<br>C(7,2)=21注=42元';
+        _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\\'胆码:' + g.dan.join(',') + ' | 拖码:' + g.tuo.join(',') + '\\')" style="display:inline-block;margin-left:8px">📋复制</span>';
+        _reHtml += '</div></div>';
       });
-      _reHtml += '</div>';
       
-      // 显示拖码
-      _reHtml += '<div style="margin:4px 0"><span style="font-size:10px;color:#666;margin-right:6px">拖码(7个)</span>';
-      _ztTuo.forEach(function(n) {
-        _reHtml += '<span style="display:inline-block;background:#c8e6c9;color:#1b5e20;width:28px;height:28px;line-height:28px;border-radius:50%;text-align:center;font-weight:600;font-size:13px;margin:0 2px">' + String(n).padStart(2,"0") + '</span>';
-      });
-      _reHtml += '</div>';
-      
-      // 注数和成本
-      var _ztBetCount = 21; // C(7,2)=21
-      var _ztCost = _ztBetCount * 2;
-      _reHtml += '<div style="font-size:11px;color:#888;margin:4px 0">C(7,2)=' + _ztBetCount + '注 | <b>' + _ztCost + '元/期</b> | 选五·3胆7拖 | 回测间隔~45天/次中5</div>';
-      
-      // 说明
-      _reHtml += '<div style="font-size:10px;color:#666;padding:4px 6px;background:#f1f8e9;border-radius:4px;line-height:1.5">';
-      _reHtml += '💡 ' + _ztNote;
-      _reHtml += '</div>';
-      
-      // 复制功能
-      var _ztCopyStr = '胆码:' + _ztDan.join(',') + ' | 拖码:' + _ztTuo.join(',') + ' | C(7,2)=21注=' + _ztCost + '元';
-      _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _ztCopyStr + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
-      _reHtml += '<div class="rec-reason">EMA×5 + 频率×3 + 动量×2 | 1-15区间专用 | 窗口30期</div></div>';
+      _reHtml += '<div class="rec-reason">EMA×5+频率×3+动量×2 | 1-15区间专用 | 4策略滚动覆盖 | 窗口30期</div></div>';
     })();
   }
 
