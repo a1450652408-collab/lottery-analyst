@@ -3411,6 +3411,12 @@ function renderRecommend(type, data) {
       _ztData.forEach(function(d) { getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq[x]++; }); });
       var _ztMaxFreq = Math.max.apply(null, Object.values(_ztFreq)) || 1;
       
+      // 近10期频率（用于策略4）
+      var _ztFreq10 = {};
+      _ztZ15.forEach(function(n) { _ztFreq10[n] = 0; });
+      _ztData.slice(0, 10).forEach(function(d) { getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq10[x]++; }); });
+      var _ztByFreq10 = _ztZ15.slice().sort(function(a, b) { return (_ztFreq10[b] || 0) - (_ztFreq10[a] || 0); });
+      
       // 动量
       var _ztMom = {};
       _ztZ15.forEach(function(n) {
@@ -3476,18 +3482,17 @@ function renderRecommend(type, data) {
         note: '遗漏最大做胆+高分号做拖'
       });
       
-      // 策略4: 冷胆热拖（胆拖互换的逆向）- 排名靠后3个做胆, 前面做拖
-      var _ztColdDan2 = _ztRanked.slice(11, 14).sort(function(a,b){return a-b;});
-      if (_ztColdDan2.length < 3) _ztColdDan2 = _ztRanked.slice(9, 12).sort(function(a,b){return a-b;});
-      var _ztColdTuo2 = _ztZ15.filter(function(n) { return _ztColdDan2.indexOf(n) < 0; })
+      // 策略4: 近10期最热做胆
+      var _ztFreq10Dan = _ztByFreq10.slice(0, 3).sort(function(a,b){return a-b;});
+      var _ztFreq10Tuo = _ztZ15.filter(function(n) { return _ztFreq10Dan.indexOf(n) < 0; })
                               .sort(function(a,b){ return (_ztScores[b]||0) - (_ztScores[a]||0); }).slice(0, 7).sort(function(a,b){return a-b;});
       _ztGroups.push({
-        name: '冷胆热拖',
-        dan: _ztColdDan2,
-        tuo: _ztColdTuo2,
+        name: '近10期最热',
+        dan: _ztFreq10Dan,
+        tuo: _ztFreq10Tuo,
         color: '#1565c0',
         badge: '#e3f2fd',
-        note: '冷号做胆+高分热号做拖'
+        note: '近10期最热做胆(回测27次中5)'
       });
       
       // 渲染卡片
@@ -3519,7 +3524,7 @@ function renderRecommend(type, data) {
         _reHtml += '</div></div>';
       });
       
-      _reHtml += '<div class="rec-reason">策略1:裸EMA选胆(ROI 46.5%) | 策略2:评分互换(ROI 37.8%) | 策略3:遗漏最大做胆(ROI 42.6%) | 策略4:冷号做胆(ROI 17.3%) | 窗口30期</div></div>';
+      _reHtml += '<div class="rec-reason">策略1:裸EMA选胆(ROI 46.5%) | 策略2:评分互换(ROI 37.8%) | 策略3:遗漏最大做胆(ROI 42.6%) | 策略4:近10期最热(ROI 27.6%) | 窗口30期</div></div>';
     })();
   }
 
