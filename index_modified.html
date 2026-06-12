@@ -3544,29 +3544,29 @@ function renderRecommend(type, data) {
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s8Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
       
-      // 选九10码复式（20元/天）
+      // 选九10码复式·全1-80搜索（20元/天）
       (function() {
-        var _s9 = [3,4,5,7,12,62,63,64,71,78];
+        var _s9 = [5,6,7,15,16,31,32,70,71,72];
         var _s9Str = _s9.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">💰 30万</span>选九10码复式·短连号拼接（20元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:三连03-05+热补 | 60-80:三连62-64+热补 | 10注=20元 | 中9=30万·中8=2000</div>';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">💰 30万</span>选九10码复式·连号拼接（20元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">全1-80:三连05-07+二连15-16+二连31-32+三连70-72 | 10注=20元 | 中9=30万·中8=2000</div>';
         _reHtml += '<div class="rec-balls">';
         _s9.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+265,038·中9一次·ROI 772%</div>';
+        _reHtml += '</div><div class="rec-reason">📊 全1-80连号搜索 | 回测1971期净+565,048·中9二次·中8三次·ROI 1533%</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s9Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
       
-      // 选十11码复式（22元/天）
+      // 选十11码复式·全1-80搜索（22元/天）
       (function() {
-        var _s10 = [2,3,4,7,12,63,71,74,75,76,77];
+        var _s10 = [5,6,7,9,10,11,14,15,41,42,43];
         var _s10Str = _s10.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#d50000;background:linear-gradient(135deg,#ffebee,#ffcdd2)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#d50000;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🏆 500万</span>选十11码复式·短连号拼接（22元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:三连02-04+热补 | 60-80:三连74-76+热补 | C(11,10)=11注=22元 | 中10=500万·中9=8000</div>';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#d50000;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🏆 500万</span>选十11码复式·连号拼接（22元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">全1-80:三连05-07+三连09-11+二连14-15+三连41-43 | C(11,10)=11注=22元 | 中10=500万·中9=8000</div>';
         _reHtml += '<div class="rec-balls">';
         _s10.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+4,974,777·中10一次(500万)·中8一次(5万) | 三组合计60元/天</div>';
+        _reHtml += '</div><div class="rec-reason">📊 全1-80连号搜索 | 回测1971期净+4,967,389·中10一次(500万)·中8四次 | 三组合计60元/天</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
     })();
