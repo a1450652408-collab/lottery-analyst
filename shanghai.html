@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>上海地方彩票 · 分析</title>
+<style>
+:root{--red:#e53935;--blue:#1565c0;--gold:#ff8f00;--green:#43a047;--bg:#f0f2f5;--card:#fff;--text:#333;--sub:#888}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+.header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(21,101,192,.3)}
+.header h1{font-size:20px;font-weight:700}
+.header .sub{font-size:12px;margin-top:4px;color:rgba(255,255,255,.7)}
+.type-bar{display:flex;gap:6px;padding:10px 12px;overflow-x:auto}
+.type-btn{padding:6px 16px;border-radius:20px;background:var(--card);border:1.5px solid #e0e0e0;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:all .2s}
+.type-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.page{display:none;padding:0 12px 20px 12px}
+.page.active{display:block;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}}
+.card{background:var(--card);border-radius:12px;padding:14px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:14px;font-weight:700;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #f0f0f0}
+.card-title .icon{display:inline-block;width:4px;height:14px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.num-box{padding:8px 2px;border-radius:8px;background:#fafafa}
+.num-box .num{font-size:18px;font-weight:700;color:var(--blue)}
+.num-box .pct{font-size:11px;color:var(--sub);margin-top:2px}
+.num-box .bar{height:3px;border-radius:2px;margin-top:4px;background:#e3f2fd}
+.num-box .bar-fill{height:100%;border-radius:2px;background:var(--blue)}
+.num-box.cold .num{color:#e53935}
+.num-box.cold .bar-fill{background:#ffcdd2}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px}
+.tag-hot{background:#e3f2fd;color:#1565c0}
+.tag-cold{background:#fce4ec;color:#c62828}
+.tag-rec{background:#fff3e0;color:#e65100}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{padding:6px 4px;text-align:center;border-bottom:1px solid #f0f0f0}
+th{color:var(--sub);font-weight:600}
+tr:last-child td{border:none}
+.pairs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pair-item{display:flex;justify-content:space-between;padding:4px 8px;background:#fafafa;border-radius:6px;font-size:12px}
+.ev-table td{font-size:11px}
+.loading{text-align:center;padding:60px 0;color:#999}
+.loading .spinner{width:24px;height:24px;border:3px solid #f0f0f0;border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:#999;font-size:14px}
+.footer{position:fixed;bottom:0;width:100%;max-width:480px;background:var(--card);border-top:1px solid #eee;display:flex;z-index:100}
+.footer a{flex:1;padding:10px;text-align:center;font-size:13px;color:var(--sub);text-decoration:none}
+.footer a.active{color:var(--blue);font-weight:700}
+.insight{background:#fff8e1;border-left:3px solid #ff8f00;padding:10px;border-radius:6px;font-size:12px;margin:8px 0;color:#795548;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 上海地方彩票</h1>
+  <div class="sub">15选5 · 天天彩选4 · 数据化分析</div>
+</div>
+
+<div class="type-bar">
+  <span class="type-btn active" onclick="switchTab('sh15x5')">🎲 15选5</span>
+  <span class="type-btn" onclick="switchTab('ttcx4')">🎱 天天彩选4</span>
+</div>
+
+<!-- 15选5 -->
+<div class="page active" id="page-sh15x5">
+  <div class="loading" id="load-sh15x5">
+    <div class="spinner"></div>
+    <div>加载15选5数据...</div>
+  </div>
+</div>
+
+<!-- 天天彩选4 -->
+<div class="page" id="page-ttcx4">
+  <div class="loading" id="load-ttcx4">
+    <div class="spinner"></div>
+    <div>加载天天彩选4数据...</div>
+  </div>
+</div>
+
+<div class="footer">
+  <a class="active" href="shanghai.html">上海彩票</a>
+  <a href="index.html">数字彩分析</a>
+  <a href="jc.html">竞彩足球</a>
+</div>
+
+<script>
+var DATA = {};
+var NOW = new Date();
+
+function switchTab(tab) {
+  document.querySelectorAll('.type-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.type-btn[data-type=' + tab + ']').forEach(function(b) { b.classList.add('active'); });
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + tab).classList.add('active');
+}
+
+// 直接嵌入分析数据（由后端生成）
+var DATA_URLS = {
+  sh15x5: 'data/sh15x5_analysis.json',
+  ttcx4: 'data/ttcx4_analysis.json'
+};
+
+function init() {
+  loadData('sh15x5');
+  loadData('ttcx4');
+}
+
+function loadData(type) {
+  var url = DATA_URLS[type];
+  fetch(url + '?_t=' + Date.now()).then(function(r) {
+    if (!r.ok) throw new Error('数据不可用');
+    return r.json();
+  }).then(function(d) {
+    DATA[type] = d;
+    render(type);
+  }).catch(function(e) {
+    document.getElementById('load-' + type).innerHTML = '<div class="empty">⚠️ ' + e.message + '</div>';
+  });
+}
+
+function render(type) {
+  var d = DATA[type];
+  if (!d) return;
+  var container = document.getElementById('load-' + type);
+  if (!d.analysis) { container.innerHTML = '<div class="empty">暂无分析数据</div>'; return; }
+
+  var a = d.analysis;
+  var html = '';
+
+  if (type === 'sh15x5') {
+    html = renderSH15(d, a);
+  } else {
+    html = renderTTCX4(d, a);
+  }
+  container.innerHTML = html;
+}
+
+function renderSH15(d, a) {
+  var h = '';
+  // 最新开奖
+  var last = d.data && d.data[0];
+  if (last) {
+    h += '<div class="card"><div class="card-title"><span class="icon" style="background:#1565c0"></span>最新开奖</div>';
+    h += '<div style="text-align:center;padding:8px 0">';
+    h += '<div style="font-size:12px;color:#888">第' + last.p + '期 · ' + last.d + '</div>';
+    h += '<div style="font-size:24px;font-weight:700;margin:8px 0;color:var(--red)">';
+    h += last.n.join('  ');
+    h += '</div></div></div>';
+  }
+
+  // 冷热号
+  h += '<div class="card"><div class="card-title"><span class="icon" style="background:#ff8f00"></span>冷热号分析 (近' + a.total + '期)</div>';
+  h += '<div style="margin-bottom:8px;font-size:12px;color:#888">热号（出现最多）</div>';
+  h += '<div class="grid-5">';
+  a.hot.forEach(function(item) {
+    var pct = item.pct;
+    var barW = Math.min(100, pct * 2);
+    h += '<div class="num-box"><div class="num">' + item.num + '</div><div class="pct">' + pct + '%</div><div class="bar"><div class="bar-fill" style="width:' + barW + '%"></div></div></div>';
+  });
+  h += '</div>';
+  h += '<div style="margin:10px 0 8px 0;font-size:12px;color:#888">冷号（出现最少）</div>';
+  h += '<div class="grid-5">';
+  a.cold.forEach(function(item) {
+    h += '<div class="num-box cold"><div class="num">' + item.num + '</div><div class="pct">' + item.pct + '%</div><div class="bar"><div class="bar-fill" style="width:' + Math.max(5, item.pct * 2) + '%"></div></div></div>';
+  });
+  h += '</div></div>';
+
+  // 遗漏
+  h += '<div class="card"><div class="card-title"><span class="icon" style="background:#43a047"></span>遗漏分析</div>';
+  h += '<table><tr><th>号码</th>';
+  for (var n = 1; n <= 15; n++) {
+    h += '<th>' + n + '</th>';
+  }
+  h += '</tr><tr><td>遗漏</td>';
+  for (var n = 1; n <= 15; n++) {
+    var miss = a.miss[n] || 0;
+    var cls = miss > a.avg_miss * 1.5 ? ' style="color:var(--red);font-weight:700"' : '';
+    h += '<td' + cls + '>' + miss + '</td>';
+  }
+  h += '</tr></table>';
+  h += '<div style="font-size:11px;color:#888;margin-top:6px">平均遗漏 ' + a.avg_miss + ' 期 | 最大遗漏 ' + a.max_miss + ' 期</div></div>';
+
+  // 配对
+  if (a.pairs && a.pairs.length > 0) {
+    h += '<div class="card"><div class="card-title"><span class="icon" style="background:#6a1b9a"></span>高频配对 (Top10)</div>';
+    h += '<div class="pairs-grid">';
+    a.pairs.slice(0, 10).forEach(function(p) {
+      h += '<div class="pair-item"><span>' + p.pair[0] + ' + ' + p.pair[1] + '</span><span style="color:var(--sub)">' + p.pct + '%</span></div>';
+    });
+    h += '</div></div>';
+  }
+
+  // EV分析
+  h += '<div class="card"><div class="card-title"><span class="icon" style="background:#e53935"></span>期望值分析</div>';
+  h += '<table class="ev-table">';
+  h += '<tr><th>中奖条件</th><th>概率</th><th>奖金(约)</th><th>期望值</th><th>盈亏</th></tr>';
+  // 中5
+  var p5 = 1/3003;
+  h += '<tr><td>中5个</td><td>' + (p5*100).toFixed(3) + '%</td><td>~1000元</td><td>' + (2*p5).toFixed(2) + '元</td><td style="color:#e53935">-2元</td></tr>';
+  // 中4
+  var p4 = 50/3003;
+  var ev4 = p4 * 10;
+  h += '<tr><td>中4个</td><td>' + (p4*100).toFixed(2) + '%</td><td>10元</td><td>' + ev4.toFixed(2) + '元</td><td style="color:#e53935">' + (ev4 - 2).toFixed(2) + '元</td></tr>';
+  h += '</table>';
+  h += '<div class="insight">💡 花2元买1注，平均拿回约' + (ev4 + p5*1000).toFixed(2) + '元。中4的概率1.67%虽然是数字彩里很高的，但10元奖金太低了。</div>';
+  h += '</div>';
+
+  return h;
+}
+
+function renderTTCX4(d, a) {
+  var h = '';
+
+  // 最新开奖
+  var last = d.data && d.data[0];
+  if (last) {
+    h += '<div class="card"><div class="card-title"><span class="icon" style="background:#1565c0"></span>最新开奖</div>';
+    h += '<div style="text-align:center;padding:8px 0">';
+    h += '<div style="font-size:12px;color:#888">第' + last.p + '期 · ' + (last.d||'') + '</div>';
+    h += '<div style="font-size:30px;font-weight:700;margin:8px 0;letter-spacing:6px">';
+    last.n.forEach(function(num, i) {
+      h += '<span style="display:inline-block;background:var(--blue);color:#fff;width:40px;height:40px;line-height:40px;border-radius:8px;margin:0 2px">' + num + '</span>';
+    });
+    h += '</div></div></div>';
+  }
+
+  // 冷热号
+  h += '<div class="card"><div class="card-title"><span class="icon" style="background:#ff8f00"></span>数字热度 (近' + a.total + '期)</div>';
+  h += '<div class="grid-5" style="grid-template-columns:repeat(5,1fr)">';
+  var allNums = [];
+  for (var n = 0; n <= 9; n++) { allNums.push(n); }
+  allNums.sort(function(a,b) { return (a.freq||0) - (b.freq||0); });
+  // 按频率排序
+  var sorted = [];
+  for (var n = 0; n <= 9; n++) { sorted.push({num:n, info: a.freq[n]}); }
+  sorted.sort(function(a,b) { return b.info.count - a.info.count; });
+  sorted.forEach(function(item) {
+    var pct = item.info.pct;
+    var isHot = sorted.indexOf(item) < 4;
+    var isCold = sorted.indexOf(item) > 6;
+    h += '<div class="num-box' + (isCold?' cold':'') + '"><div class="num">' + item.num + '</div>';
+    h += '<div class="pct">' + pct + '%</div>';
+    h += '<div class="bar"><div class="bar-fill" style="width:' + Math.min(100, pct * 2) + '%"></div></div>';
+    h += '</div>';
+  });
+  h += '</div></div>';
+
+  // 位置分析
+  if (d.position) {
+    h += '<div class="card"><div class="card-title"><span class="icon" style="background:#43a047"></span>位置分析</div>';
+    h += '<table><tr><th>位置</th>';
+    for (var i = 1; i <= 4; i++) { h += '<th>第' + i + '位</th>'; }
+    h += '</tr><tr><td>最热</td>';
+    d.position.forEach(function(pd) {
+      h += '<td><span class="tag tag-hot">' + pd.top[0].num + '</span></td>';
+    });
+    h += '</tr><tr><td>次热</td>';
+    d.position.forEach(function(pd) {
+      h += '<td>' + pd.top[1].num + '</td>';
+    });
+    h += '</tr></table></div>';
+  }
+
+  // 形态
+  if (d.patterns) {
+    h += '<div class="card"><div class="card-title"><span class="icon" style="background:#6a1b9a"></span>形态统计</div>';
+    h += '<div class="pairs-grid">';
+    h += '<div class="pair-item"><span>全奇</span><span>' + d.patterns.all_odd.pct + '%</span></div>';
+    h += '<div class="pair-item"><span>全偶</span><span>' + d.patterns.all_even.pct + '%</span></div>';
+    h += '<div class="pair-item"><span>全大(5-9)</span><span>' + d.patterns.all_big.pct + '%</span></div>';
+    h += '<div class="pair-item"><span>全小(0-4)</span><span>' + d.patterns.all_small.pct + '%</span></div>';
+    h += '<div class="pair-item" style="grid-column:1/3"><span>有重复号</span><span>' + d.patterns.has_repeat.pct + '%</span></div>';
+    h += '</div></div>';
+  }
+
+  // 策略建议
+  h += '<div class="card"><div class="card-title"><span class="icon" style="background:#e53935"></span>玩法 & 概率参考</div>';
+  h += '<table class="ev-table">';
+  h += '<tr><th>玩法</th><th>概率</th><th>奖金</th><th>返奖率</th></tr>';
+  h += '<tr><td>直选</td><td>0.01%</td><td>5000元</td><td>25%</td></tr>';
+  h += '<tr><td>组选24</td><td>0.24%</td><td>208元</td><td class="tag tag-hot">25%</td></tr>';
+  h += '<tr><td>组选12</td><td>0.12%</td><td>346元</td><td>20.8%</td></tr>';
+  h += '<tr><td>组选4</td><td>0.04%</td><td>1732元</td><td>34.6%⬆</td></tr>';
+  h += '</table>';
+  h += '<div class="insight">💡 推荐：组选24（中奖率最高1/417）+ 守号，每天2元。当前热号分布：' + sorted.slice(0,4).map(function(x){return x.num;}).join(',') + '</div>';
+  h += '</div>';
+
+  return h;
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
