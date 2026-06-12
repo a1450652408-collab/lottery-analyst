@@ -3531,16 +3531,16 @@ function renderRecommend(type, data) {
     (function() {
       if (cfg.type !== "keno") return;
       
-      // 选八8码单式（2元/天）
+      // 选八9码复式（18元/天）
       (function() {
-        var _s8 = [11,12,18,19,62,63,77,78];
+        var _s8 = [5,11,12,18,19,62,63,77,78];
         var _s8Str = _s8.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#1565c0;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 5万</span>选八8码·短连号拼接（2元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:二连11-12+18-19 | 60-80:二连62-63+77-78 | 1注=2元 | 中8=5万·中7=800</div>';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#1565c0;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 5万</span>选八9码复式·短连号拼接（18元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:05+二连11-12+18-19 | 60-80:二连62-63+77-78 | C(9,8)=9注=18元 | 中8=5万·中7=800</div>';
         _reHtml += '<div class="rec-balls">';
         _s8.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+49,916·中8一次·ROI 1366%</div>';
+        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+118,899·中8三次·中7二次·ROI 435%</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s8Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
       
@@ -3566,7 +3566,7 @@ function renderRecommend(type, data) {
         _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:三连02-04+热补 | 60-80:三连74-76+热补 | C(11,10)=11注=22元 | 中10=500万·中9=8000</div>';
         _reHtml += '<div class="rec-balls">';
         _s10.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+4,974,777·中10一次(500万)·中8一次(5万) | 三组合计44元/天</div>';
+        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+4,974,777·中10一次(500万)·中8一次(5万) | 三组合计60元/天</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
     })();
