@@ -2800,9 +2800,9 @@ function renderRecommend(type, data) {
     spHtml += '<div class="rec-header" style="color:#f57f17;font-weight:700">📏 大小预测 (准确率62~68%)</div>';
     spHtml += '<div class="rec-balls">';
     rec.sizePredict.forEach(function(sp) {
-      var cls = sp.predict === '大' ? 'ball r' : 'ball b';
-      spHtml += '<span class="' + cls + '" style="font-size:13px;padding:4px 8px;margin:2px">'
-        + '第' + sp.pos + '位: ' + sp.predict + ' (' + sp.range + ')</span>';
+      var bg = sp.predict === '大' ? '#e53935' : '#1565c0';
+      spHtml += '<span style="display:inline-block;background:' + bg + ';color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;margin:2px;white-space:nowrap">'
+        + '第' + sp.pos + '位: ' + sp.predict + '</span>';
     });
     spHtml += '</div>';
     spHtml += '<div style="font-size:10px;color:#999;margin-top:4px">推荐范围: ';
