@@ -1348,6 +1348,47 @@ function recommendDigit(data, cfg) {
     });
   });
 
+  /* ---- 大小预测（每位独立预测） ---- */
+  var sizePredict = [];
+  for (var sp = 0; sp < pos; sp++) {
+    var pa = posAnalysis[sp];
+    // 大(5-9)的小趋势
+    var bigEmaSum = 0, smallEmaSum = 0;
+    for (var d = 5; d <= 9; d++) bigEmaSum += (pa.ema[d] || 0);
+    for (var d = 0; d <= 4; d++) smallEmaSum += (pa.ema[d] || 0);
+    
+    // 近10期大小走势
+    var recent10 = pa.trend.slice(-10);
+    var rBig = recent10.filter(function(n) { return n >= 5; }).length;
+    
+    // EMA趋势 + 近期走势 + 历史比例 综合判断
+    var emaSignal = bigEmaSum > smallEmaSum ? 1 : -1;
+    var trendSignal = rBig > 5 ? 1 : (rBig < 5 ? -1 : 0);
+    var histSignal = pa.bigCount > pa.smallCount ? 1 : -1;
+    
+    var totalSignal = emaSignal * 0.5 + trendSignal * 0.3 + histSignal * 0.2;
+    var predict = totalSignal > 0 ? '大' : '小';
+    
+    // 选Top3对应范围的热号
+    var rangeNums = (predict === '大' ? [5,6,7,8,9] : [0,1,2,3,4]);
+    var rangeSorted = rangeNums.slice().sort(function(a, b) {
+      return (pa.ema[b]||0) - (pa.ema[a]||0);
+    });
+    
+    sizePredict.push({
+      pos: sp + 1,
+      predict: predict,
+      range: predict === '大' ? '5-9' : '0-4',
+      top3: rangeSorted.slice(0, 3),
+      confidence: Math.round(Math.abs(totalSignal) * 50 + 50),
+      emaBig: bigEmaSum,
+      emaSmall: smallEmaSum,
+      bigRatio: pa.bigRatio
+    });
+  }
+
+  sizePredict = sizePredict;  // 保留给返回用
+
   return {
     basic: [
       { nums: basic1, reason: reasonDigit(basic1, 'Markov转移预测') + ' | Markov每位上期→下期最可能' },
@@ -1361,6 +1402,7 @@ function recommendDigit(data, cfg) {
         reason: danCount + '胆拖 | ' + danCount + '热号作胆 + 邻号(±1)作拖'
       };
     }),
+    sizePredict: sizePredict,
     analysis: {
       hotReds: hotFlat,
       coldReds: coldFlat,
@@ -2764,26 +2806,6 @@ function renderRecommend(type, data) {
     });
     spHtml += '</div>';
     spHtml += '<div style="font-size:10px;color:#999;margin-top:4px">推荐范围: ';
-    rec.sizePredict.forEach(function(sp) {
-      spHtml += '[' + sp.top3.join(',') + '] ';
-    });
-    spHtml += '</div></div>';
-    basicHtml = spHtml + basicHtml;
-  }
-
-  
-  /* 数字彩大小预测 */
-  if (rec.sizePredict && rec.sizePredict.length > 0) {
-    var spHtml = '<div class="rec-card" style="background:#fff8e1;border-left:3px solid #ffc107;margin:8px 0">';
-    spHtml += '<div class="rec-header" style="color:#f57f17;font-weight:700">📏 大小预测 (准确率62~68%)</div>';
-    spHtml += '<div class="rec-balls">';
-    rec.sizePredict.forEach(function(sp) {
-      var cls = sp.predict === '大' ? 'ball r' : 'ball b';
-      spHtml += '<span class="' + cls + '" style="font-size:13px;padding:4px 8px;margin:2px">'
-        + '第' + sp.pos + '位: ' + sp.predict + ' (' + sp.range + ')</span>';
-    });
-    spHtml += '</div>';
-    spHtml += '<div style="font-size:10px;color:#999;margin-top:4px">推荐: ';
     rec.sizePredict.forEach(function(sp) {
       spHtml += '[' + sp.top3.join(',') + '] ';
     });
