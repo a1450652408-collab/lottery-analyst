@@ -1611,38 +1611,6 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 .matrix-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .matrix-item{background:#fff;padding:4px 8px;border-radius:8px;font-size:11px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;flex-wrap:wrap;align-items:center;gap:2px;max-width:100%}
 .matrix-item .mb{display:inline-block;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;color:#fff;text-align:center;line-height:22px;background:radial-gradient(circle at 35% 35%,#ff6b6b,#e53935);flex-shrink:0}
-.strategy-box{margin-top:12px;background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid rgba(255,152,0,.25);border-radius:12px;padding:14px;text-align:left}
-.strategy-head{font-size:15px;font-weight:700;color:#e65100;margin-bottom:2px}
-.strategy-desc{font-size:11px;color:#999;margin-bottom:10px}
-.strategy-nums{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
-.strategy-nums .sn{display:inline-block;width:34px;height:34px;border-radius:50%;font-size:13px;font-weight:700;color:#fff;text-align:center;line-height:34px;background:radial-gradient(circle at 35% 35%,#ff9800,#e65100);flex-shrink:0}
-.strategy-stats{display:flex;gap:8px;margin-bottom:12px}
-.strategy-stats .stat-item{flex:1;background:#fff;border-radius:10px;padding:8px 4px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.strategy-stats .stat-val{font-size:16px;font-weight:700;color:#333}
-.strategy-stats .stat-label{font-size:10px;color:#999;margin-top:2px}
-.strategy-detail{background:#fff;border-radius:10px;padding:10px 12px}
-.strategy-detail .detail-row{font-size:12px;color:#555;line-height:1.8;padding:2px 0}
-.strategy-detail .detail-icon{margin-right:4px}
-.stat-mini{font-size:12px;color:#555;padding:4px 0}
-.stat-mini .sm-row{display:flex;justify-content:space-between;padding:3px 8px;border-bottom:1px solid #f5f5f5;align-items:center}
-.stat-mini .sm-row:last-child{border:none}
-.stat-mini .sm-label{color:#999;flex-shrink:0}
-.stat-mini .sm-val{font-weight:700;text-align:right}
-.stat-mini .sm-nums{font-family:monospace;font-size:13px;letter-spacing:1px;margin-left:8px}
-.stat-mini .warn-tag{display:inline-block;background:#ffebee;color:#c62828;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-left:4px}
-.omit-bar{display:inline-block;height:6px;border-radius:3px;background:#ef5350;vertical-align:middle;margin:0 4px}
-.ks-table-wrap{max-height:400px;overflow-y:auto;margin-top:8px;border-radius:8px;border:1px solid #eee}
-.ks-table{width:100%;border-collapse:collapse;font-size:11px}
-.ks-table th{position:sticky;top:0;background:#fff3e0;color:#e65100;font-weight:700;padding:6px 4px;text-align:center;border-bottom:2px solid #ff9800;z-index:1}
-.ks-table td{padding:5px 3px;text-align:center;border-bottom:1px solid #f5f5f5;color:#555}
-.ks-table tr:nth-child(even) td{background:#fafafa}
-.ks-table .hit-6{color:#2e7d32;font-weight:700}
-.ks-table .hit-5{color:#e65100;font-weight:700}
-.ks-table .hit-4{color:#f57f17}
-.ks-table .profit-pos{color:#2e7d32;font-weight:700}
-.ks-table .profit-neg{color:#c62828}
-.ks-toggle{display:block;width:100%;padding:8px;margin-top:8px;background:#fff;border:1px dashed #ff9800;border-radius:8px;color:#e65100;font-size:13px;cursor:pointer;text-align:center;transition:background .2s}
-.ks-toggle:hover{background:#fff3e0}
 .loading-skeleton{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0f172a;font-family:sans-serif}
 @keyframes pulse-skel{0%,100%{opacity:.5}50%{opacity:1}}
 .btn{padding:8px 16px;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
@@ -1827,48 +1795,10 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div class="matrix-info" id="matrixInfo"></div>
       <div class="matrix-grid" id="matrixGrid"></div>
     </div>
-    <!-- AI 智能分析 -->
     <!-- 命中率 -->
     <div class="hit-rate-box" id="hitRateBox" style="display:none">
       <div class="hit-rate-label">📊 最新开奖命中率 <span id="hitPeriod"></span></div>
       <div id="hitRateGrid"></div>
-    </div>
-    <!-- 快乐8 固定守号策略 -->
-    <div class="strategy-box" id="kenoStrategyBox" style="display:none">
-      <div class="strategy-head">📌 守号策略：固定10码选六复式</div>
-      <div class="strategy-desc">基于115期历史回测验证，同组号码长期守号</div>
-      <div class="strategy-nums" id="strategyNums"></div>
-      <div class="strategy-stats">
-        <div class="stat-item">
-          <div class="stat-val">210注</div>
-          <div class="stat-label">选六复式</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val">420元/期</div>
-          <div class="stat-label">每期成本</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val" style="color:#2e7d32">+18,470</div>
-          <div class="stat-label">115期净利润</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val" style="color:#e65100">138.2%</div>
-          <div class="stat-label">回报率</div>
-        </div>
-      </div>
-      <div class="strategy-detail">
-        <div class="detail-row"><span class="detail-icon">🎯</span> 中6/6=5次（每次+4,440元）&nbsp;|&nbsp;中5/6=10次（每次+530元）</div>
-        <div class="detail-row"><span class="detail-icon">⚡</span> 10中4基本保本（-30元）&nbsp;|&nbsp;10中5小赚&nbsp;|&nbsp;10中6大赚</div>
-        <div class="detail-row"><span class="detail-icon">⏳</span> 最长连续亏损20期 &nbsp;|&nbsp; 守2个月盈利概率91%</div>
-        <div class="detail-row"><span class="detail-icon">💡</span> 建议：至少守号2个月以上，不要中途换号</div>
-      </div>
-      <button class="ks-toggle" id="ksToggle" onclick="toggleKenoDetail()">📋 查看每期中奖明细 ▼</button>
-      <div class="ks-table-wrap" id="ksDetailBox" style="display:none">
-        <table class="ks-table" id="ksDetailTable">
-          <thead><tr><th>期号</th><th>日期</th><th>开奖号码(前20)</th><th>命中</th><th>奖金</th><th>成本</th><th>净盈亏</th><th>累计盈亏</th></tr></thead>
-          <tbody id="ksDetailBody"></tbody>
-        </table>
-      </div>
     </div>
   </div>
   <!-- AI 智能分析 -->
@@ -1930,14 +1860,6 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 "use strict";
 
 /* ===== 全局变量/函数 ===== */
-var _ksDetailOpen = false;
-window.toggleKenoDetail = function() {
-  _ksDetailOpen = !_ksDetailOpen;
-  var box = document.getElementById("ksDetailBox");
-  var btn = document.getElementById("ksToggle");
-  if (box) box.style.display = _ksDetailOpen ? "block" : "none";
-  if (btn) btn.textContent = _ksDetailOpen ? "📋 收起明细 ▲" : "📋 查看每期中奖明细 ▼";
-};
 
 /* ===== 彩种配置（乐透50期 / 每日100期） ===== */
 window._C = {
@@ -3372,109 +3294,16 @@ function renderRecommend(type, data) {
     _reHtml += '<div style=\"font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
     _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分 | 基于2871期回测数据</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
 
-    /* ===== 选四3胆全托·加权随机8组（区间均衡叠加） ===== */
+    /* ===== 选四3胆全托·加权随机8组（已删除） ===== */
     var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用
     (function() {
-      var _pool = _zvPool.slice().sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });  // 全局多因子投票排序
+      var _pool = _zvPool.slice().sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });
       if (_pool.length < 30) return;
-      
-      // 评分：和紫色卡片一致的评分体系（W=50短窗更敏感）
       _eliteSc = {};
       _pool.forEach(function(n) {
         _eliteSc[n] = (_knEma[n]||0) * 5.0 + (_knFreq30[n]/Math.max(_win30,1)) * 3.0 + (_knMom[n]||0) * 2.0;
       });
-      
-      // 按评分排序
       _eliteRanked = _pool.slice().sort(function(a,b){ return (_eliteSc[b]||0) - (_eliteSc[a]||0); });
-      
-      // 确定性伪随机（基于最新期号哈希，保证所有设备号码一致）
-      var _seed = 20260610;
-      var _latestDraw = (data && data[0]) || {};
-      var _periodStr = String(_latestDraw.p || _latestDraw.period || _latestDraw.d || '');
-      for (var _si = 0; _si < _periodStr.length; _si++) {
-        _seed = ((_seed << 5) - _seed) + _periodStr.charCodeAt(_si);
-        _seed = _seed | 0;
-      }
-      // 避免种子为0
-      if (!_seed || _seed === 0) _seed = 20260610;
-      
-      var _srng = function() {
-        _seed = (_seed * 1664525 + 1013904223) | 0;
-        return ((_seed >>> 0) % 100000) / 100000;
-      };
-      
-      // 加权随机生成8组×3胆（回测验证：返奖率66.1%）
-      var _groups = [];
-      var _used = {};
-      var _topN = _eliteRanked.slice(0, 50);
-      var _attempts = 0;
-      
-      // 构建权重：评分平方
-      var _wArr = _topN.map(function(n) { return Math.max((_eliteSc[n]||0), 0.001); });
-      // 归一化权重
-      var _wSum = _wArr.reduce(function(a,b){return a+b}, 0);
-      _wArr = _wArr.map(function(w){ return w / _wSum; });
-      
-      while (_groups.length < 8 && _attempts < 200) {
-        _attempts++;
-        // 加权随机抽3个不同的号
-        var _cand = [];
-        var _usedInGroup = {};
-        while (_cand.length < 3) {
-          var _r = _srng();  // 使用确定性随机，非 Math.random()
-          var _cum = 0;
-          var _picked = null;
-          for (var _wi = 0; _wi < _topN.length; _wi++) {
-            _cum += _wArr[_wi];
-            if (_r <= _cum && !_usedInGroup[_topN[_wi]]) {
-              _picked = _topN[_wi];
-              break;
-            }
-          }
-          if (_picked) { _cand.push(_picked); _usedInGroup[_picked] = true; }
-        }
-        _cand.sort(function(a,b){return+a-+b});
-        var _key = _cand.join(",");
-        if (!_used[_key]) { _used[_key] = true; _groups.push(_cand); }
-      }
-      
-      if (_groups.length >= 8) {
-        _groups = _groups.slice(0, 8);
-        
-        _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff;background:linear-gradient(135deg,#f3e5f5,#e8eaf6)"><div class="rec-header">🔥 选四3胆全托·加权随机8组（返奖率66.1%·优化版）</div>';
-        
-        // 统计覆盖的号码范围
-        var _coveredSet = {};
-        _groups.forEach(function(g) { g.forEach(function(n) { _coveredSet[n] = (_coveredSet[n]||0) + 1; }); });
-        var _coveredNums = Object.keys(_coveredSet).sort(function(a,b){return+a-+b}).map(Number);
-        var _coveredStr = _coveredNums.slice(0, 20).map(function(n){return String(n).padStart(2,"0")}).join(",");
-        if (_coveredNums.length > 20) _coveredStr += '…' + (_coveredNums.length - 20) + '号';
-        
-        _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#ede7f6;border-radius:4px;margin-bottom:4px">📊 覆盖' + _coveredNums.length + '个号码 | 每组3胆+77托=77注=154元 | 8组=616注=1,232元/天</div>';
-        
-        // 显示8组胆码
-        var _gHtml = '';
-        for (var _gi = 0; _gi < _groups.length; _gi++) {
-          var _gn = _groups[_gi];
-          var _gnStr = _gn.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(",");
-          _gHtml += '<div class="rec-row"><span class="dt-label" style="color:#7c4dff;min-width:36px">第' + (_gi+1) + '</span><div class="dt-balls">';
-          _gn.sort(function(a,b){return+a-+b}).forEach(function(n) { _gHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
-          _gHtml += '</div><span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _gnStr + '\')">📋</span></div>';
-        }
-        _reHtml += _gHtml;
-        
-        // 一键复制所有胆码
-        var _allDanStr = '';
-        _groups.forEach(function(g, idx) {
-          _allDanStr += '第' + (idx+1) + '组:' + g.slice().sort(function(a,b){return+a-+b}).map(function(n){return String(n).padStart(2,"0")}).join(",") + '|';
-        });
-        _reHtml += '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:4px">';
-        _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _allDanStr + '\')">📋复制全部胆码</span>';
-        _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'每组配77托，选四3胆全托=77注=154元\')">📋复制说明</span>';
-        _reHtml += '</div>';
-        
-        _reHtml += '<div class="rec-reason">加权随机策略 | 50码池评分排序(EMA×5+频率×3+动量×2) | W=50短窗 | 221天回测返奖率66.1% | 选四3胆全托中2胆不亏</div></div>';
-      }
     })();
 
     /* ===== 选十·精英轮换30组 ===== */
@@ -4577,66 +4406,6 @@ function switchType(type) {
 }
 
 /* ===== 快乐8 固定守号策略（选六复式） ===== */
-var _kenoStrategyInited = false;
-var _ksNums = [11, 14, 33, 38, 39, 43, 50, 62, 69, 75];
-function initKenoStrategy() {
-  if (_kenoStrategyInited) return;
-  _kenoStrategyInited = true;
-  var nums = _ksNums;
-  var html = "";
-  nums.forEach(function(n) {
-    html += '<span class="sn">' + String(n).padStart(2,"0") + '</span>';
-  });
-  document.getElementById("strategyNums").innerHTML = html;
-
-  /* 逐期明细 */
-  var data = cache["kl8"] || (window.__LOTTERY_DATA && window.__LOTTERY_DATA.kl8) || [];
-  if (data.length > 0) {
-    var tbody = document.getElementById("ksDetailBody");
-    var rows = "";
-    var cum = 0;
-    var numSet = {};
-    nums.forEach(function(n) { numSet[n] = true; });
-    // 日期从旧到新
-    var sorted = data.slice().reverse();
-    var C = {}; // binomial cache
-    function binom(n, k) {
-      if (k < 0 || k > n) return 0;
-      if (k === 0 || k === n) return 1;
-      var key = n + "_" + k;
-      if (C[key] !== undefined) return C[key];
-      C[key] = binom(n-1, k-1) + binom(n-1, k);
-      return C[key];
-    }
-    for (var i = 0; i < sorted.length; i++) {
-      var item = sorted[i];
-      var drawn = getNums(item);
-      var match = 0;
-      for (var di = 0; di < drawn.length; di++) {
-        if (numSet[drawn[di]]) match++;
-      }
-      // 选六复式 C(10,6)=210注, 每注2元, 总成本420元
-      var cost = 420;
-      // 奖金计算
-      var prize = binom(match, 6) * 3000 + binom(match, 5) * binom(10 - match, 1) * 30
-                + binom(match, 4) * binom(10 - match, 2) * 10 + binom(match, 3) * binom(10 - match, 3) * 3;
-      var net = prize - cost;
-      cum += net;
-      var hitClass = match >= 6 ? "hit-6" : match >= 5 ? "hit-5" : match >= 4 ? "hit-4" : "";
-      var profitClass = net > 0 ? "profit-pos" : net < 0 ? "profit-neg" : "";
-      // 显示前10个开奖号
-      var showNums = drawn.slice(0, 10).join(",") + (drawn.length > 10 ? "..." : "");
-      rows += '<tr><td>' + item.p + '</td><td>' + item.d + '</td><td style="font-size:10px;text-align:left">' + showNums + '</td>'
-        + '<td class="' + hitClass + '">' + match + '/10</td>'
-        + '<td>' + (prize > 0 ? '+' + prize : "0") + '</td>'
-        + '<td>-420</td>'
-        + '<td class="' + profitClass + '">' + (net >= 0 ? "+" : "") + net + '</td>'
-        + '<td class="' + (cum >= 0 ? "profit-pos" : "profit-neg") + '">' + (cum >= 0 ? "+" : "") + cum + '</td></tr>';
-    }
-    tbody.innerHTML = rows;
-  }
-}
-
 /* ===== 加载所有数据 ===== */
 function loadAll(type) {
   type = type || cur;
@@ -4651,12 +4420,6 @@ function loadAll(type) {
     document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
     renderAnalysis(type, data);
     renderRecommend(type, data);
-    // 快乐8 守号策略显示
-    var ksBox = document.getElementById("kenoStrategyBox");
-    if (ksBox) {
-      ksBox.style.display = (type === "kl8") ? "block" : "none";
-      if (type === "kl8") initKenoStrategy();
-    }
     var sk = document.getElementById("loadingSkeleton");
     if (sk) sk.style.display = "none";
   }).catch(function(e) {
@@ -4666,11 +4429,6 @@ function loadAll(type) {
     var mock = genMock(type);
     renderAnalysis(type, mock);
     renderRecommend(type, mock);
-    var ksBox2 = document.getElementById("kenoStrategyBox");
-    if (ksBox2) {
-      ksBox2.style.display = (type === "kl8") ? "block" : "none";
-      if (type === "kl8") initKenoStrategy();
-    }
   });
 }
 
