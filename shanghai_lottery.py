@@ -197,6 +197,271 @@ def analyze_patterns(data):
     return {k: {"count": v, "pct": round(v / total * 100, 1)} for k, v in res.items()}
 
 
+# ===== 预测算法 =====
+
+def ema_score(data, window=30):
+    """EMA 评分+动量评分，类似紫色卡片逻辑"""
+    if not data:
+        return {}
+    train = data[:window] if len(data) >= window else data[:]
+    work = train[::-1]  # 时间正序
+    
+    total = len(work)
+    if total == 0:
+        return {}
+    
+    # 频率
+    freq = Counter()
+    for d in work:
+        for n in d["n"]:
+            freq[n] += 1
+    
+    # EMA
+    ema_vals = {}
+    all_nums = list(range(1, 16)) if "n" in data[0] and max(data[0]["n"]) > 9 else list(range(0, 10))
+    if data and len(data) > 0 and max(data[0].get("n", [0])) <= 15:
+        all_nums = list(range(1, 16))
+    
+    for n in all_nums:
+        seq = [1 if n in d["n"] else 0 for d in work]
+        e = seq[-1] if seq else 0
+        for v in seq[:-1][::-1]:
+            e = 0.5 * v + 0.5 * e
+        ema_vals[n] = e
+    
+    # 动量：前5期 vs 前6-10期
+    mom = {}
+    for n in all_nums:
+        r5 = sum(1 for d in work[:5] if n in d["n"]) if len(work) >= 5 else 0
+        p5 = sum(1 for d in work[5:10] if n in d["n"]) if len(work) >= 10 else 0
+        km = (r5 - p5) / max(p5, 1)
+        mom[n] = max(-2, min(2, km))
+    
+    # 综合评分（用最大频率归一化）
+    max_freq = max(freq.values()) if freq else 1
+    scores = {}
+    for n in all_nums:
+        s = ema_vals.get(n, 0) * 5.0 + (freq.get(n, 0) / max_freq) * 3.0 + mom.get(n, 0) * 2.0
+        scores[n] = s
+    
+    return {
+        "scores": scores,
+        "ranked": sorted(all_nums, key=lambda n: -scores.get(n, -999)),
+        "freq": freq,
+        "ema": ema_vals,
+        "mom": mom
+    }
+
+
+def predict_sh15x5(data):
+    """15选5多策略预测"""
+    if not data or len(data) < 20:
+        return None
+    
+    total = len(data)
+    pred = {
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "total": total,
+        "latest": data[0],
+        "strategies": []
+    }
+    
+    # ===== 策略1: EMA多因子评分 Top5 =====
+    es = ema_score(data, window=min(50, total))
+    top5 = es["ranked"][:5]
+    pred["strategies"].append({
+        "name": "EMA多因子评分(最优)",
+        "desc": "综合EMA热度(50%)+频率(30%)+动量(20%)，近50期数据",
+        "nums": sorted(top5),
+        "method": "ema",
+        "cost": 2,
+        "confidence": "★★★★"
+    })
+    
+    # ===== 策略2: 追热（近30期最热5个）=====
+    freq30 = Counter()
+    for d in data[:min(30, total)]:
+        for n in d["n"]:
+            freq30[n] += 1
+    hot5 = [n for n, _ in freq30.most_common(5)]
+    pred["strategies"].append({
+        "name": "追热策略(W=30)",
+        "desc": "近30期出现最多的5个号",
+        "nums": sorted(hot5),
+        "method": "hot",
+        "cost": 2,
+        "confidence": "★★★"
+    })
+    
+    # ===== 策略3: 追冷（当前遗漏最久的5个）=====
+    miss_cnt = {}
+    for n in range(1, 16):
+        mc = 0
+        for d in data:
+            if n in d["n"]:
+                break
+            mc += 1
+        miss_cnt[n] = mc
+    cold5 = sorted(range(1, 16), key=lambda n: -miss_cnt[n])[:5]
+    pred["strategies"].append({
+        "name": "追冷策略(遗漏最大)",
+        "desc": f"当前遗漏最大的5个号(最大遗漏{max(miss_cnt.values())}期)",
+        "nums": sorted(cold5),
+        "method": "cold",
+        "cost": 2,
+        "confidence": "★★★"
+    })
+    
+    # ===== 策略4: 均衡组合(热3+冷2) =====
+    balanced = sorted(hot5[:3] + cold5[:2])
+    pred["strategies"].append({
+        "name": "均衡组合(热3冷2)",
+        "desc": "3个热号(高频) + 2个冷号(遗漏大), 平衡覆盖",
+        "nums": balanced,
+        "method": "balanced",
+        "cost": 2,
+        "confidence": "★★★"
+    })
+    
+    # ===== 策略5: 7码复式推荐(热7) =====
+    from math import comb
+    hot7 = [n for n, _ in freq30.most_common(7)]
+    cost7 = comb(7, 5) * 2
+    pred["strategies"].append({
+        "name": "7码复式(追热)",
+        "desc": f"近30期最热7个号, {comb(7,5)}注{cost7}元, 任意奖概率10%",
+        "nums": sorted(hot7),
+        "method": "fushi_7",
+        "cost": cost7,
+        "confidence": "★★★"
+    })
+    
+    # ===== 策略6: 胆拖推荐 =====
+    dan = top5[:2]  # 用2个EMA最高分做胆
+    tuo_candidates = [n for n in es["ranked"][2:9] if n not in dan]
+    cost_dt = comb(len(tuo_candidates), 3) * 2
+    pred["strategies"].append({
+        "name": f"2胆{len(tuo_candidates)}拖(EMA)",
+        "desc": f"胆码:{sorted(dan)} 拖码:{sorted(tuo_candidates)}, {cost_dt}元/期",
+        "nums": {"dan": sorted(dan), "tuo": sorted(tuo_candidates)},
+        "method": "dantuo",
+        "cost": cost_dt,
+        "confidence": "★★★"
+    })
+    
+    return pred
+
+
+def predict_ttcx4(data):
+    """天天彩选4多策略预测"""
+    if not data or len(data) < 20:
+        return None
+    
+    total = len(data)
+    pred = {
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "total": total,
+        "latest": data[0],
+        "strategies": []
+    }
+    
+    # ===== 策略1: 位置频率直选 =====
+    pos_freq = [Counter() for _ in range(4)]
+    for d in data:
+        for i in range(4):
+            if i < len(d["n"]):
+                pos_freq[i][d["n"][i]] += 1
+    
+    zx_nums = [pf.most_common(1)[0][0] for pf in pos_freq]
+    pred["strategies"].append({
+        "name": "位置频率直选",
+        "desc": "每个位置取出现最多的数字, 直选1注",
+        "nums": zx_nums,
+        "method": "zhixuan",
+        "cost": 2,
+        "confidence": "★★"
+    })
+    
+    # ===== 策略2: 位置频率Top2直选(2注) =====
+    zx2_options = []
+    for pf in pos_freq:
+        top2 = [n for n, _ in pf.most_common(2)]
+        zx2_options.append(top2)
+    # 2^4 = 16注, 太多了, 只取前4注组合
+    pred["strategies"].append({
+        "name": "位置Top2直选(4注)",
+        "desc": f"每位置取前2个热门, 组成4个直选组合, 8元/期",
+        "nums": {
+            "pos1": zx2_options[0],
+            "pos2": zx2_options[1],
+            "pos3": zx2_options[2],
+            "pos4": zx2_options[3]
+        },
+        "method": "zhixuan_multi",
+        "cost": 8,
+        "confidence": "★★"
+    })
+    
+    # ===== 策略3: EMA综合评分→组选24推荐 =====
+    # 对天天彩, all_nums是0-9
+    es = ema_score(data, window=min(100, total))
+    # 直接用EMA评分最高的4个不同数字做组选24
+    top4_ema = [n for n in es["ranked"] if 0 <= n <= 9][:4]
+    pred["strategies"].append({
+        "name": "EMA组选24推荐",
+        "desc": f"EMA评分最高的4个不同数字, 1注组选24, 2元/期",
+        "nums": sorted(top4_ema),
+        "method": "zuxuan24",
+        "cost": 2,
+        "confidence": "★★★★"
+    })
+    
+    # ===== 策略4: 最近重复号预测 =====
+    # 统计近20期有重复号的模式
+    recent_patterns = []
+    for d in data[:min(20, total)]:
+        if len(set(d["n"])) < 4:
+            recent_patterns.append(d["n"])
+    
+    # 如果近期重复号多, 推荐组选4/组选12
+    has_repeat_pct = len(recent_patterns) / min(20, total) * 100
+    if has_repeat_pct > 30:
+        # 找最近频繁出现的数字
+        recent_counter = Counter()
+        for d in data[:min(10, total)]:
+            for n in d["n"]:
+                recent_counter[n] += 1
+        top3 = [n for n, _ in recent_counter.most_common(3)]
+        # 组选4: 3同+1异 → 用热号做3同, 另一个号选次热
+        z4_nums = [top3[0], top3[0], top3[0], top3[1]]
+        pred["strategies"].append({
+            "name": "组选4预测(重复号高频期)",
+            "desc": f"近10期重复号出现{has_repeat_pct:.0f}%, 推荐组选4: {top3[0]}×3+{top3[1]}",
+            "nums": sorted(z4_nums),
+            "method": "zuxuan4",
+            "cost": 2,
+            "confidence": "★★★"
+        })
+    
+    # ===== 策略5: 追热组选24(近30期最热4个不重复) =====
+    freq30 = Counter()
+    for d in data[:min(30, total)]:
+        for n in d["n"]:
+            freq30[n] += 1
+    hot4 = [n for n, _ in freq30.most_common(10) if n not in pred["strategies"][2]["nums"]][:4]
+    if len(set(hot4)) == 4:
+        pred["strategies"].append({
+            "name": "追热组选24(备选)",
+            "desc": "近30期热门数字选4个不同号",
+            "nums": sorted(hot4),
+            "method": "hot_zuxuan24",
+            "cost": 2,
+            "confidence": "★★★"
+        })
+    
+    return pred
+
+
 def main():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] === 上海地方彩票分析 ===")
 
@@ -213,11 +478,14 @@ def main():
         # 分析
         a = analyze(sh15, (1, 15))
         if a:
+            p = predict_sh15x5(sh15)
             out = {"type": "sh15x5", "date": datetime.now().strftime("%Y-%m-%d"),
-                   "data": sh15, "analysis": a}
+                   "data": sh15, "analysis": a, "prediction": p}
             with open(SH15_ANALYSIS, "w") as f:
                 json.dump(out, f, ensure_ascii=False, indent=2)
             print(f"  📊 热号:{a['hot'][0]['num']}({a['hot'][0]['pct']}%)…冷号:{a['cold'][0]['num']}({a['cold'][0]['pct']}%)")
+            if p:
+                print(f"  🎯 推荐: {len(p['strategies'])}种策略, 首选→{p['strategies'][0]['name']}: {p['strategies'][0]['nums']}")
     else:
         print(f"  ❌ 获取失败" + (f"({len(sh15)}条)" if sh15 else ""))
 
@@ -234,12 +502,15 @@ def main():
         pos = analyze_position(ttcx4)
         pat = analyze_patterns(ttcx4)
         if a:
+            p = predict_ttcx4(ttcx4)
             out = {"type": "ttcx4", "date": datetime.now().strftime("%Y-%m-%d"),
-                   "data": ttcx4, "analysis": a, "position": pos, "patterns": pat}
+                   "data": ttcx4, "analysis": a, "position": pos, "patterns": pat, "prediction": p}
             with open(TTCX4_ANALYSIS, "w") as f:
                 json.dump(out, f, ensure_ascii=False, indent=2)
             print(f"  📊 热号:{a['hot'][0]['num']}({a['hot'][0]['pct']}%)")
             print(f"  重复号频率: {pat['has_repeat']['pct']}%")
+            if p:
+                print(f"  🎯 推荐: {len(p['strategies'])}种策略, 首选→{p['strategies'][0]['name']}: {p['strategies'][0]['nums']}")
             for pd in pos:
                 print(f"  位{pd['pos']}: {[str(t['num']) for t in pd['top'][:3]]}")
     else:

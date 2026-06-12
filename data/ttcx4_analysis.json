@@ -581,5 +581,85 @@
       "count": 6,
       "pct": 30.0
     }
+  },
+  "prediction": {
+    "date": "2026-06-12",
+    "total": 20,
+    "latest": {
+      "p": "2026152",
+      "n": [
+        1,
+        8,
+        4,
+        9
+      ],
+      "d": "2026-06-11"
+    },
+    "strategies": [
+      {
+        "name": "位置频率直选",
+        "desc": "每个位置取出现最多的数字, 直选1注",
+        "nums": [
+          1,
+          7,
+          6,
+          1
+        ],
+        "method": "zhixuan",
+        "cost": 2,
+        "confidence": "★★"
+      },
+      {
+        "name": "位置Top2直选(4注)",
+        "desc": "每位置取前2个热门, 组成4个直选组合, 8元/期",
+        "nums": {
+          "pos1": [
+            1,
+            0
+          ],
+          "pos2": [
+            7,
+            0
+          ],
+          "pos3": [
+            6,
+            1
+          ],
+          "pos4": [
+            1,
+            3
+          ]
+        },
+        "method": "zhixuan_multi",
+        "cost": 8,
+        "confidence": "★★"
+      },
+      {
+        "name": "EMA组选24推荐",
+        "desc": "EMA评分最高的4个不同数字, 1注组选24, 2元/期",
+        "nums": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "method": "zuxuan24",
+        "cost": 2,
+        "confidence": "★★★★"
+      },
+      {
+        "name": "追热组选24(备选)",
+        "desc": "近30期热门数字选4个不同号",
+        "nums": [
+          0,
+          6,
+          7,
+          9
+        ],
+        "method": "hot_zuxuan24",
+        "cost": 2,
+        "confidence": "★★★"
+      }
+    ]
   }
 }
