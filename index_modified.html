@@ -2797,7 +2797,7 @@ function renderRecommend(type, data) {
   /* 数字彩大小预测 */
   if (rec.sizePredict && rec.sizePredict.length > 0) {
     var spHtml = '<div class="rec-card" style="background:#fff8e1;border-left:3px solid #ffc107;margin:8px 0">';
-    spHtml += '<div class="rec-header" style="color:#f57f17;font-weight:700">📏 大小预测 (准确率62~68%)</div>';
+    spHtml += '<div class="rec-header" style="color:#f57f17;font-weight:700">📏 大小预测 (≈随机50%)</div>';
     spHtml += '<div class="rec-balls">';
     rec.sizePredict.forEach(function(sp) {
       var bg = sp.predict === '大' ? '#e53935' : '#1565c0';
@@ -2809,7 +2809,8 @@ function renderRecommend(type, data) {
     rec.sizePredict.forEach(function(sp) {
       spHtml += '[' + sp.top3.join(',') + '] ';
     });
-    spHtml += '</div></div>';
+    spHtml += '</div>';
+    spHtml += '<div style="font-size:10px;color:#999;margin-top:4px;padding-bottom:2px">⚠️ 6年2500期回测准确率仅49.5%，低于随机，仅供参考</div></div>';
     basicHtml = spHtml + basicHtml;
   }
 
