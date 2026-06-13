@@ -3546,14 +3546,14 @@ function renderRecommend(type, data) {
       
       // 选九10码复式（20元/天）
       (function() {
-        var _s9 = [2,3,4,14,15,16,55,56,64,65];
+        var _s9 = [7,8,14,15,21,22,35,36,44,45];
         var _s9Str = _s9.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">';
         _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">💰 30万</span>选九10码复式·连号拼接（20元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:三连02-04+三连14-16 | 40-80:二连55-56+二连64-65 | 10注=20元 | 中9=30万</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">全二连:07-08+14-15+21-22+35-36+44-45 | 10注=20元 | 中9=30万</div>';
         _reHtml += '<div class="rec-balls">';
         _s9.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 连号拼接·跨区覆盖 | 回测1971期净-32,892·中8二次·中7四次</div>';
+        _reHtml += '</div><div class="rec-reason">📊 全二连·零三连 | 回测1971期净-34,931·中8一次·中7三次·与选八选十0重叠</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s9Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
       
