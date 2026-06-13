@@ -4,7 +4,7 @@
 
 从 163.com 自动抓取最新开奖数据（无需硬编码期号）：
 1. 访问各彩种首页 → 自动解析最新开奖号码、期号、日期
-2. 更新 index_modified.html 中嵌入的 __LOTTERY_DATA
+2. 更新 index_modified.html 中嵌入的 __LOTTERY_DATA（同时同步到 index.html 供 GitHub Pages 使用）
 3. 同步 data/*.json 独立数据文件
 4. 提交到 GitHub（可选）
 
@@ -207,6 +207,12 @@ def write_html(html, data, data_start, data_end):
     with open(HTML_PATH, "w", encoding="utf-8") as f:
         f.write(new_html)
     print(f"  ✅ HTML written: {HTML_PATH}")
+
+    # 同步到 index.html（GitHub Pages 使用的文件）
+    index_path = os.path.join(PROJECT_ROOT, "index.html")
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write(new_html)
+    print(f"  ✅ HTML synced: {index_path}")
 
 
 def sync_individual_file(data, type_key):

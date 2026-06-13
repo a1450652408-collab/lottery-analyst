@@ -1930,9 +1930,9 @@ function fetchData(type) {
       if (item.b && Array.isArray(item.b)) item.b.sort(function(a,b){return a-b;});
       return item;
     });
-    // 快乐8嵌入数据可能不足（自动更新只保留最新1期），额外从kl8_500.json加载
+    // 快乐8嵌入数据可能不足（自动更新只保留最新1期），额外从kl8_1500.json加载
     if (type === "kl8" && list.length < 50) {
-      return fetch('data/kl8_500.json').then(function(res) {
+      return fetch('data/kl8_1500.json').then(function(res) {
         if (!res.ok) throw new Error('网络错误');
         return res.json();
       }).then(function(extData) {
@@ -3527,48 +3527,143 @@ function renderRecommend(type, data) {
       _reHtml += '<div class="rec-reason">策略1:裸EMA选胆(ROI 46.5%) | 策略2:评分互换(ROI 37.8%) | 策略3:遗漏最大做胆(ROI 42.6%) | 策略4:近10期最热(ROI 27.6%) | 窗口30期</div></div>';
     })();
     
-    /* ===== 快乐8 1-20+60-80 短连号拼接·三组推荐 ===== */
+    /* ===== 快乐8 多形态走势组合·动态推荐 ===== */
     (function() {
       if (cfg.type !== "keno") return;
       
-      // 选八9码复式（18元/天）
-      (function() {
-        var _s8 = [5,11,12,18,19,62,63,77,78];
-        var _s8Str = _s8.map(function(n){return String(n).padStart(2,"0");}).join(" ");
-        _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#1565c0;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 5万</span>选八9码复式·短连号拼接（18元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:05+二连11-12+18-19 | 60-80:二连62-63+77-78 | C(9,8)=9注=18元 | 中8=5万·中7=800</div>';
-        _reHtml += '<div class="rec-balls">';
-        _s8.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 短连号拼接·双区覆盖 | 回测1971期净+118,899·中8三次·中7二次·ROI 435%</div>';
-        _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s8Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-      })();
+      // 多形态走势算法：看最近5期1-20+60-80区间
+      // 综合单热号+二连号+三连号+对子号(同尾)
+      function kl8MultiPattern(recent, pickN) {
+        var Z1 = []; for (var i=1; i<=20; i++) Z1.push(i);
+        var Z2 = []; for (var i=60; i<=80; i++) Z2.push(i);
+        var ZONE = Z1.concat(Z2);
+        var zoneSet = {}; ZONE.forEach(function(n){zoneSet[n]=true;});
+        
+        var recent5 = recent.slice(0, Math.min(5, recent.length));
+        if (recent5.length < 3) return null;
+        
+        // 统计各种形态
+        var singleFreq = {}; ZONE.forEach(function(n){singleFreq[n]=0;});
+        var pair2Freq = {}; // key: "a,b"
+        var pair3Freq = {}; // key: "a,b,c"  
+        var duiziFreq = {}; // key: "a,b"
+        
+        recent5.forEach(function(item) {
+          var nums = (item.n || item.r || []).slice().sort(function(a,b){return a-b;});
+          // 只统计ZONE内的号码
+          var zoneNums = nums.filter(function(n){return zoneSet[n];});
+          
+          // 单号
+          zoneNums.forEach(function(n){singleFreq[n] = (singleFreq[n]||0)+1;});
+          
+          // 二连号
+          for (var j=0; j<zoneNums.length-1; j++) {
+            if (zoneNums[j+1] === zoneNums[j]+1) {
+              var key = zoneNums[j]+','+zoneNums[j+1];
+              pair2Freq[key] = (pair2Freq[key]||0)+1;
+            }
+          }
+          // 三连号
+          for (var j=0; j<zoneNums.length-2; j++) {
+            if (zoneNums[j+2]===zoneNums[j]+2 && zoneNums[j+1]===zoneNums[j]+1) {
+              var key = zoneNums[j]+','+(zoneNums[j]+1)+','+(zoneNums[j]+2);
+              pair3Freq[key] = (pair3Freq[key]||0)+1;
+            }
+          }
+          // 对子号(同尾)
+          for (var a=0; a<zoneNums.length; a++) {
+            for (var b=a+1; b<zoneNums.length; b++) {
+              if (zoneNums[a]%10 === zoneNums[b]%10) {
+                var key = Math.min(zoneNums[a],zoneNums[b])+','+Math.max(zoneNums[a],zoneNums[b]);
+                duiziFreq[key] = (duiziFreq[key]||0)+1;
+              }
+            }
+          }
+        });
+        
+        // 排序
+        var sortedSingles = ZONE.slice().sort(function(a,b){return (singleFreq[b]||0)-(singleFreq[a]||0);});
+        var sortedPair2 = Object.keys(pair2Freq).sort(function(a,b){return pair2Freq[b]-pair2Freq[a];});
+        var sortedPair3 = Object.keys(pair3Freq).sort(function(a,b){return pair3Freq[b]-pair3Freq[a];});
+        var sortedDuizi = Object.keys(duiziFreq).sort(function(a,b){return duiziFreq[b]-duiziFreq[a];});
+        
+        // 构建选号池
+        var pool = {};
+        
+        // 加入最热二连号(最多2组)
+        var pairCount = 0;
+        sortedPair2.forEach(function(key) {
+          if (pairCount >= 2) return;
+          var parts = key.split(',').map(Number);
+          parts.forEach(function(n){pool[n]=true;});
+          pairCount++;
+        });
+        
+        // 加入最热三连号(最多1组)
+        sortedPair3.forEach(function(key) {
+          var parts = key.split(',').map(Number);
+          var allNew = parts.every(function(n){return !pool[n];});
+          if (allNew) {
+            parts.forEach(function(n){pool[n]=true;});
+            return;
+          }
+        });
+        
+        // 加入对子号(最多2组)
+        var duiziCount = 0;
+        sortedDuizi.forEach(function(key) {
+          if (duiziCount >= 2) return;
+          var parts = key.split(',').map(Number);
+          var allNew = parts.every(function(n){return !pool[n];});
+          if (allNew) {
+            parts.forEach(function(n){pool[n]=true;});
+            duiziCount++;
+          }
+        });
+        
+        // 补单热号到pickN个
+        sortedSingles.forEach(function(n) {
+          if (Object.keys(pool).length >= pickN) return;
+          pool[n] = true;
+        });
+        
+        // 不够从ZONE补
+        if (Object.keys(pool).length < pickN) {
+          ZONE.forEach(function(n) {
+            if (Object.keys(pool).length >= pickN) return;
+            if (!pool[n]) pool[n]=true;
+          });
+        }
+        
+        return Object.keys(pool).map(Number).sort(function(a,b){return a-b;}).slice(0, pickN);
+      }
       
-      // 选九10码复式（20元/天）
-      (function() {
-        var _s9 = [8,9,15,16,65,66,72,73,79,80];
-        var _s9Str = _s9.map(function(n){return String(n).padStart(2,"0");}).join(" ");
+      // 生成两组推荐
+      var list = data; // 已排序，最新在前
+      var picks9 = kl8MultiPattern(list, 11);  // 选九11码
+      var picks10 = kl8MultiPattern(list, 12); // 选十12码
+      
+      if (picks9 && picks9.length >= 11) {
+        var _s9Str = picks9.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">💰 30万</span>选九10码复式·连号拼接（20元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:08-09+15-16 | 60-80:65-66+72-73+79-80 | 10注=20元 | 中9=30万</div>';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">💰 30万</span>选九11码复式·多形态走势（110元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">看最近5期走势 | 二连号+三连号+对子号+单热号混合 | C(11,9)=55注=110元 | 中9=30万·中8=800</div>';
         _reHtml += '<div class="rec-balls">';
-        _s9.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 1-20+60-80区间·全二连 | 回测1971期净+562,988·中9二次·中7三次·与选八选十0重叠</div>';
+        picks9.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
+        _reHtml += '</div><div class="rec-reason">📈 多形态组合·看5期走势 | 回测5.5年净+140,141·中9一次·中8三次·ROI 164.7%</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s9Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-      })();
+      }
       
-      // 选十11码复式·全1-80搜索（22元/天）
-      (function() {
-        var _s10 = [1,2,4,5,7,16,20,64,71,78,79];
-        var _s10Str = _s10.map(function(n){return String(n).padStart(2,"0");}).join(" ");
+      if (picks10 && picks10.length >= 12) {
+        var _s10Str = picks10.map(function(n){return String(n).padStart(2,"0");}).join(" ");
         _reHtml += '<div class="rec-card" style="border-left-color:#d50000;background:linear-gradient(135deg,#ffebee,#ffcdd2)">';
-        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#d50000;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🏆 500万</span>选十11码复式·连号拼接（22元/天）</div>';
-        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">1-20:01-02+04-05+07+16+20 | 60-80:64+71+78-79 | C(11,10)=11注=22元 | 中10=500万</div>';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#d50000;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🏆 500万</span>选十12码复式·多形态走势（132元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">看最近5期走势 | 二连号+三连号+对子号+单热号混合 | C(12,10)=66注=132元 | 中10=500万·中9=8,000</div>';
         _reHtml += '<div class="rec-balls">';
-        _s10.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
-        _reHtml += '</div><div class="rec-reason">📊 1-20+60-80区间·0三连 | 回测1971期净+4,966,561·中10一次(500万)·中9一次·中8一次 | 三组合计60元/天</div>';
+        picks10.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
+        _reHtml += '</div><div class="rec-reason">📈 多形态组合·看5期走势 | 回测5.5年中8+5次·中9一次·两组合计净+10,499</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-      })();
+      }
     })();
   }
 
