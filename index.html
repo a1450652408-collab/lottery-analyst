@@ -4220,6 +4220,13 @@ function renderRecommend(type, data) {
         }
         return p;
       }
+      function _combN(arr, n) {
+        if (n===0) return [[]]; if (arr.length<n) return [];
+        var r=[], f=arr[0], rest=arr.slice(1);
+        var wF = _combN(rest, n-1); for (var i=0;i<wF.length;i++) r.push([f].concat(wF[i]));
+        var woF = _combN(rest, n); for (var i=0;i<woF.length;i++) r.push(woF[i]);
+        return r;
+      }
       var scV3=_plScoreV3();
       
       /* 五不同推荐 V3: 杀1号+EMA评分, 仅推Top2组 */
@@ -4369,13 +4376,6 @@ function renderRecommend(type, data) {
       for (var a=0;a<com.length;a++) for (var b=a+1;b<com.length;b++)
         for (var p=0;p<pairs.length;p++) if ((com[a]===pairs[p][0]&&com[b]===pairs[p][1])||(com[a]===pairs[p][1]&&com[b]===pairs[p][0])) s++;
       return s;
-    }
-    function _combN(arr, n) {
-      if (n===0) return [[]]; if (arr.length<n) return [];
-      var r=[], f=arr[0], rest=arr.slice(1);
-      var wF = _combN(rest, n-1); for (var i=0;i<wF.length;i++) r.push([f].concat(wF[i]));
-      var woF = _combN(rest, n); for (var i=0;i<woF.length;i++) r.push(woF[i]);
-      return r;
     }
     function _plBuild(morph) {
       var mf={}; for (var i=0;i<=9;i++) mf[i]=0; var pf={}; var rf={}; var n=0;
