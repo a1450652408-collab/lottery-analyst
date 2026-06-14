@@ -12,8 +12,14 @@
 """
 
 import re, json, sys, os, time, urllib.request
+from datetime import datetime
+from collections import Counter
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 导入上海地方彩票分析函数
+sys.path.insert(0, PROJECT_ROOT := os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from shanghai_lottery import analyze as sh_analyze, analyze_position, analyze_patterns
+from shanghai_lottery import predict_sh15x5, predict_ttcx4
+
 HTML_PATH = os.path.join(PROJECT_ROOT, "index_modified.html")
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 KL8_FILE = os.path.join(DATA_DIR, "kl8_500.json")
@@ -44,6 +50,125 @@ INDIVIDUAL_FILES = {
 }
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+# 天天彩选4独立数据文件
+TTCX4_FILE = os.path.join(DATA_DIR, "ttcx4_data.json")
+# 天天彩选4分析文件（给shanghai.html用）
+TTCX4_ANALYSIS = os.path.join(DATA_DIR, "ttcx4_analysis.json")
+# 15选5独立数据文件
+SH15X5_FILE = os.path.join(DATA_DIR, "sh15x5_data.json")
+# 15选5分析文件（给shanghai.html用）
+SH15X5_ANALYSIS = os.path.join(DATA_DIR, "sh15x5_analysis.json")
+
+
+def fetch_ttcx4():
+    """从东方财富获取天天彩选4数据"""
+    url = "https://caipiao.eastmoney.com/Result/Category/ttcx4"
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        resp = urllib.request.urlopen(req, timeout=20)
+        html = resp.read().decode("utf-8", errors="replace")
+    except Exception as e:
+        print(f"  TTCX4 FETCH FAIL: {e}")
+        return None
+
+    import re
+    results = []
+    rows = re.findall(r'<tr>.*?</tr>', html, re.DOTALL)
+    for row in rows:
+        period_m = re.search(r'href="#(\d{7})"', row)
+        if not period_m:
+            continue
+        period = period_m.group(1)
+        nums = [int(n) for n in re.findall(r'class="text-primary">(\d)</span>', row)]
+        if len(nums) != 4:
+            continue
+        if period not in {r["p"] for r in results}:
+            results.append({"p": period, "n": nums})
+
+    for m in re.finditer(r'(\d{4}-\d{2}-\d{2})', html):
+        day = m.group(1)
+        for r in results:
+            if "d" not in r and int(r["p"][:4]) == int(day[:4]):
+                r["d"] = day
+                break
+
+    results.sort(key=lambda x: -int(x["p"]))
+    return results
+
+
+def fetch_sh15x5():
+    """从ip.cn获取15选5数据"""
+    url = "https://ip.cn/caipiao/15x5.html"
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        resp = urllib.request.urlopen(req, timeout=15)
+        html = resp.read().decode("utf-8", errors="replace")
+    except Exception as e:
+        print(f"  SH15X5 FETCH FAIL: {e}")
+        return None
+
+    import re
+    results = []
+    rows = re.findall(r'<tr>.*?</tr>', html, re.DOTALL)
+    for row in rows:
+        period_m = re.search(r'<td>\s*<span>\s*(\d{7})\s*</span>\s*</td>', row)
+        if not period_m: continue
+        period = period_m.group(1)
+        nums = [int(n) for n in re.findall(r'icon-redball[^>]*>(\d+)</span>', row)]
+        if len(nums) != 5: continue
+        date_m = re.search(r'<td>\s*<span>\s*(\d{2}-\d{2})\s*</span>\s*</td>', row)
+        year = "2026"
+        date_str = f'{year}-{date_m.group(1)}' if date_m else ''
+        results.append({"p": period, "d": date_str, "n": sorted(nums)})
+
+    results.sort(key=lambda x: -int(x["p"]))
+    return results
+
+
+def gen_sh15x5_recommend(data):
+    """生成15选5推荐（6码复式连号方案）"""
+    from collections import Counter
+    from itertools import combinations
+
+    freq = Counter()
+    for item in data:
+        for n in item['n']:
+            freq[n] += 1
+
+    # 取热号Top6做6码复式
+    top6 = [n for n, _ in sorted(freq.items(), key=lambda x: -x[1])[:6]]
+    tickets = list(combinations(top6, 5))
+    return {
+        "pool": sorted(top6),
+        "tickets": len(tickets),
+        "cost": len(tickets) * 2,
+        "numbers": [sorted(list(t)) for t in tickets]
+    }
+
+
+def gen_ttcx4_recommend(data):
+    """生成天天彩选4推荐（每位置Top2热号）"""
+    from collections import Counter
+    from itertools import product
+
+    pos_freq = [Counter() for _ in range(4)]
+    for item in data:
+        for i in range(4):
+            pos_freq[i][item['n'][i]] += 1
+
+    picks = []
+    for pos in range(4):
+        top2 = sorted(pos_freq[pos].items(), key=lambda x: -x[1])[:2]
+        picks.append([n for n, _ in top2])
+
+    tickets = list(product(*picks))
+    return {
+        "picks": picks,
+        "tickets": len(tickets),
+        "cost": len(tickets) * 2,
+        "numbers": [list(t) for t in tickets[:10]]
+    }
 
 
 def fetch_page(ltype_base):
@@ -335,6 +460,93 @@ def main():
     # 同步独立数据文件
     sync_all_data_files(data)
 
+    # ===== 天天彩选4（独立数据源：东方财富） =====
+    print("\n--- ttcx4 (天天彩选4) ---")
+    try:
+        ttcx4_data = fetch_ttcx4()
+        if ttcx4_data and len(ttcx4_data) > 0:
+            # 保存数据文件
+            with open(TTCX4_FILE, "w", encoding="utf-8") as f:
+                json.dump(ttcx4_data, f, ensure_ascii=False, separators=(",", ":"))
+            latest = ttcx4_data[0]
+            print(f"  ✅ {len(ttcx4_data)}条, 最新={latest['p']}({latest.get('d','?')})")
+
+            # 生成推荐
+            rec = gen_ttcx4_recommend(ttcx4_data)
+            print(f"  推荐: 每位置{rec['picks']} → {rec['tickets']}注={rec['cost']}元/天")
+
+            # 存到 __LOTTERY_DATA（嵌入网站）
+            data["ttcx4"] = ttcx4_data
+
+            # 生成分析文件（给 shanghai.html 用）
+            try:
+                a = sh_analyze(ttcx4_data, (0, 9))
+                pos = analyze_position(ttcx4_data)
+                pat = analyze_patterns(ttcx4_data)
+                if a:
+                    p = predict_ttcx4(ttcx4_data)
+                    analysis_out = {
+                        "type": "ttcx4",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "data": ttcx4_data,
+                        "analysis": a,
+                        "position": pos,
+                        "patterns": pat,
+                        "prediction": p
+                    }
+                    with open(TTCX4_ANALYSIS, "w", encoding="utf-8") as f:
+                        json.dump(analysis_out, f, ensure_ascii=False, indent=2)
+                    print(f"  ✅ ttcx4_analysis.json 已生成")
+            except Exception as ae:
+                print(f"  ⚠️ ttcx4分析生成失败: {ae}")
+        else:
+            print("  ⚠️ 无数据")
+            failed_types.append("ttcx4")
+    except Exception as e:
+        print(f"  ❌ FAIL: {e}")
+        import traceback; traceback.print_exc()
+        failed_types.append("ttcx4")
+
+    # ===== 15选5（独立数据源：ip.cn） =====
+    print("\n--- sh15x5 (15选5) ---")
+    try:
+        sh15x5_data = fetch_sh15x5()
+        if sh15x5_data and len(sh15x5_data) > 0:
+            with open(SH15X5_FILE, "w", encoding="utf-8") as f:
+                json.dump(sh15x5_data, f, ensure_ascii=False, separators=(",", ":"))
+            latest = sh15x5_data[0]
+            print(f"  [OK] {len(sh15x5_data)}条, 最新={latest['p']}({latest.get('d','?')})")
+            rec = gen_sh15x5_recommend(sh15x5_data)
+            print(f"  推荐: 6码池{rec['pool']} -> {rec['tickets']}注={rec['cost']}元/天")
+            data["sh15x5"] = sh15x5_data
+
+            # 生成分析文件（给 shanghai.html 用）
+            try:
+                a = sh_analyze(sh15x5_data, (1, 15))
+                if a:
+                    p = predict_sh15x5(sh15x5_data)
+                    analysis_out = {
+                        "type": "sh15x5",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "data": sh15x5_data,
+                        "analysis": a,
+                        "prediction": p
+                    }
+                    with open(SH15X5_ANALYSIS, "w", encoding="utf-8") as f:
+                        json.dump(analysis_out, f, ensure_ascii=False, indent=2)
+                    print(f"  ✅ sh15x5_analysis.json 已生成")
+            except Exception as ae:
+                print(f"  ⚠️ sh15x5分析生成失败: {ae}")
+        else:
+            print("  [WARN] 无数据")
+    except Exception as e:
+        print(f"  [FAIL] {e}")
+        import traceback; traceback.print_exc()
+        failed_types.append("sh15x5")
+
+    # 写回 HTML（含ttcx4和sh15x5数据）
+    write_html(html, data, ds, de)
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
@@ -345,7 +557,51 @@ def main():
         print(f"❌ FAILED: {', '.join(failed_types)}")
     print("=" * 55)
 
+    # 自动 Git 提交+推送（避免依赖AI agent的shell环境）
+    _auto_git_push(PROJECT_ROOT, updated_types or skipped_types)
+
     return len(updated_types) > 0
+
+
+def _auto_git_push(project_root, has_changes):
+    """自动 commit + push 到 GitHub"""
+    import subprocess
+    try:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        r = subprocess.run(
+            ["git", "add", "index_modified.html", "index.html", "data/"],
+            cwd=project_root, capture_output=True, text=True, timeout=30
+        )
+        if r.returncode != 0:
+            print(f"  ⚠️ git add: {r.stderr.strip()[:100]}")
+        
+        r = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=project_root, capture_output=True, text=True, timeout=15
+        )
+        if r.returncode == 0:
+            print("  ⏭️  Git: 无变更，跳过推送")
+            return
+        
+        r = subprocess.run(
+            ["git", "commit", "-m", f"data: auto-update {today_str}"],
+            cwd=project_root, capture_output=True, text=True, timeout=30
+        )
+        if r.returncode == 0:
+            print(f"  ✅ Git commit: {r.stdout.strip()[:80]}")
+        else:
+            print(f"  ⚠️ Git commit: {r.stderr.strip()[:150]}")
+        
+        r = subprocess.run(
+            ["git", "push", "origin", "master"],
+            cwd=project_root, capture_output=True, text=True, timeout=60
+        )
+        if r.returncode == 0:
+            print(f"  ✅ Git push: {r.stdout.strip()[:80]}")
+        else:
+            print(f"  ⚠️ Git push: {r.stderr.strip()[:200]}")
+    except Exception as e:
+        print(f"  ⚠️ Git自动推送异常: {e}")
 
 
 if __name__ == "__main__":
