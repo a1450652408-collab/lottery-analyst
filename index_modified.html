@@ -3741,22 +3741,8 @@ function renderRecommend(type, data) {
       
       _x1Html += '<div class="rec-card" style="border-left-color:#d32f2f"><div class="rec-header">🎯 选一精准推荐 · ' + _x1Date + '</div>';
       
-      /* 综合精选：多策略投票 */
-      var _x1Votes = {};
-      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1Votes[_x1n] = 0;
-      // 热号排名给分
-      _x1EmaRank.forEach(function(item, idx) { _x1Votes[item.n] += (80 - idx) * 2; });
-      // 冷号排名给分
-      _x1MissRank.forEach(function(item, idx) { _x1Votes[item.n] += (80 - idx) * 1; });
-      // 多因子投票排名给分
-      _x1VoteRank.forEach(function(item, idx) { _x1Votes[item.n] += (80 - idx) * 3; });
-      // 近5期排名给分
-      _x1R5Rank.forEach(function(item, idx) { _x1Votes[item.n] += (80 - idx) * 1.5; });
-      
-      var _x1Final = -1, _x1FinalV = -999;
-      for (var _x1n = 1; _x1n <= 80; _x1n++) {
-        if (_x1Votes[_x1n] > _x1FinalV) { _x1FinalV = _x1Votes[_x1n]; _x1Final = _x1n; }
-      }
+      /* 综合精选：随机选号（回测证明算法不比随机好） */
+      var _x1Final = Math.floor(Math.random() * 80) + 1;
       
       var _x1Freq = _knFreq30[_x1Final]||0;
       var _x1Miss = _knMissStreak[_x1Final]||0;
@@ -3771,7 +3757,7 @@ function renderRecommend(type, data) {
       _x1Html += '<span>⏳ 遗漏 <b>' + _x1Miss + '</b>期</span>';
       _x1Html += '<span>📈 EMA <b>' + _x1Ema + '</b></span>';
       _x1Html += '</div>';
-      _x1Html += '<div style="font-size:10px;color:#999;margin-top:4px">综合热号+冷号+多因子+趋势4种策略加权</div>';
+      _x1Html += '<div style="font-size:10px;color:#999;margin-top:4px">🎲 每期随机生成 | 概率25% | 建议搭配追号计划使用</div>';
       _x1Html += '</div>';
       
       /* 追号计划参考 */
