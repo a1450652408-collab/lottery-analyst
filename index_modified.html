@@ -1828,6 +1828,10 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div class="rec-title"><div class="dot" style="background:var(--orange)"></div>胆拖推荐（3注：2胆·3胆·4胆）</div>
       <div id="dantuoRecs"></div>
     </div>
+    <div class="rec-section" id="xuan1Section" style="display:none">
+      <div class="rec-title"><div class="dot" style="background:#d32f2f"></div>🎯 选一精准推荐（追号参考）</div>
+      <div id="xuan1Recs"></div>
+    </div>
     <div class="rec-section" id="enhancedSection" style="display:none">
       <div class="rec-title"><div class="dot" style="background:#7b1fa2"></div>智能增强推荐（基于012路·质合·杀号·独胆）</div>
       <div id="enhancedRecs"></div>
@@ -3671,6 +3675,112 @@ function renderRecommend(type, data) {
       _reHtml += '<div class="rec-reason">看最近5期频率排序 | 信号策略不自作主张，只在信号触发时按照此排名取前14码出击 | 回测5.5年·选十14码复式·每次2,002元</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     })();
+    
+    /* ===== 选一精准推荐 ===== */
+    (function() {
+      if (cfg.type !== "keno") return;
+      if (!_knEma || !_knFreq30) return;
+      
+      var _x1Html = '';
+      var _x1Now = new Date();
+      var _x1Date = _x1Now.getFullYear() + '-' + String(_x1Now.getMonth()+1).padStart(2,'0') + '-' + String(_x1Now.getDate()).padStart(2,'0');
+      
+      /* 策略1: 热号推荐（EMA综合评分最高）*/
+      var _x1EmaRank = [];
+      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1EmaRank.push({n:_x1n,s:(_knEma[_x1n]||0)*5 + (Math.min(_knFreq30[_x1n]||0,30)/30)*3 + (_knMom[_x1n]||0)*2});
+      _x1EmaRank.sort(function(a,b){return b.s-a.s;});
+      var _x1Hot = _x1EmaRank[0];
+      
+      /* 策略2: 冷号推荐（遗漏最久）*/
+      var _x1MissRank = [];
+      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1MissRank.push({n:_x1n,m:_knMissStreak[_x1n]||0});
+      _x1MissRank.sort(function(a,b){return b.m-a.m;});
+      var _x1Cold = _x1MissRank[0];
+      
+      /* 策略3: 综合推荐（多因子投票最高）*/
+      var _x1VoteRank = [];
+      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1VoteRank.push({n:_x1n,v:_zvVotes[_x1n]||0});
+      _x1VoteRank.sort(function(a,b){return b.v-a.v;});
+      var _x1Best = _x1VoteRank[0];
+      
+      /* 策略4: 趋势王（近5期出现最多）*/
+      var _x1R5 = {};
+      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1R5[_x1n] = 0;
+      for (var _x1j = 0; _x1j < Math.min(5, _reUseData.length); _x1j++) {
+        var _x1nd = getNums(_reUseData[_x1j]);
+        _x1nd.forEach(function(n){_x1R5[n]=(_x1R5[n]||0)+1;});
+      }
+      var _x1R5Rank = [];
+      for (var _x1n = 1; _x1n <= 80; _x1n++) _x1R5Rank.push({n:_x1n,c:_x1R5[_x1n]||0});
+      _x1R5Rank.sort(function(a,b){return b.c-a.c;});
+      var _x1Trend = _x1R5Rank[0];
+      
+      /* 上次出现期数 */
+      function _x1LastSeen(n) {
+        for (var _i = 0; _i < _reUseData.length; _i++) {
+          if (getNums(_reUseData[_i]).indexOf(n) >= 0) return _i;
+        }
+        return -1;
+      }
+      
+      /* 策略卡片 */
+      var _x1Strategies = [
+        {name:'🔥 热号追击', num:_x1Hot.n, score:_x1Hot.s.toFixed(1), 
+         freq:_knFreq30[_x1Hot.n]||0, miss:_knMissStreak[_x1Hot.n]||0,
+         desc:'EMA多因子综合评分最高', color:'#e53935'},
+        {name:'❄️ 冷号回补', num:_x1Cold.n, score: '', 
+         freq:_knFreq30[_x1Cold.n]||0, miss:_x1Cold.m,
+         desc:'遗漏' + _x1Cold.m + '期未出', color:'#1565c0'},
+        {name:'💎 综合优选', num:_x1Best.n, score: '',
+         freq:_knFreq30[_x1Best.n]||0, miss:_knMissStreak[_x1Best.n]||0,
+         desc:'多因子投票综合评分最高', color:'#7b1fa2'},
+        {name:'📈 趋势王', num:_x1Trend.n, score: '',
+         freq:_x1Trend.c, miss:_knMissStreak[_x1Trend.n]||0,
+         desc:'近5期出现' + (_x1Trend.c) + '次', color:'#ff8f00'}
+      ];
+      
+      _x1Html += '<div class="rec-card" style="border-left-color:#d32f2f"><div class="rec-header">🎯 选一精准推荐 · ' + _x1Date + '</div>';
+      _x1Html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0">';
+      
+      _x1Strategies.forEach(function(s) {
+        var _x1Pct = Math.round((s.freq / Math.min(_reUseData.length, 30)) * 100);
+        _x1Html += '<div style="background:' + s.color + '11;border:1.5px solid ' + s.color + ';border-radius:10px;padding:8px;text-align:center">';
+        _x1Html += '<div style="font-size:10px;color:#666;margin-bottom:2px">' + s.name + '</div>';
+        _x1Html += '<div style="font-size:28px;font-weight:800;color:' + s.color + '">' + String(s.num).padStart(2,'0') + '</div>';
+        _x1Html += '<div style="font-size:10px;color:#999;margin-top:2px">近30期' + s.freq + '次(' + _x1Pct + '%) | 遗漏' + s.miss + '期</div>';
+        _x1Html += '<div style="font-size:9px;color:#888;margin-top:2px">' + s.desc + '</div>';
+        _x1Html += '</div>';
+      });
+      
+      _x1Html += '</div>';
+      
+      /* 追号计划参考 */
+      _x1Html += '<div style="margin-top:6px;padding:6px;background:#fff3e0;border-radius:6px;font-size:11px;line-height:1.6">';
+      _x1Html += '<div style="font-weight:700;color:#e65100;margin-bottom:3px">📊 追号参考（每期×3倍投, 5期止损）</div>';
+      _x1Html += '<table style="width:100%;font-size:10px"><tr><th>期次</th><th>倍数</th><th>成本</th><th>累计</th><th>中奖</th><th>净赚</th></tr>';
+      var _x1Mult = 1, _x1Total = 0;
+      for (var _x1i = 0; _x1i < 5; _x1i++) {
+        var _x1c = 2 * _x1Mult, _x1t = _x1Total + _x1c;
+        _x1Total = _x1t;
+        var _x1p = (4.6 * _x1Mult).toFixed(1);
+        var _x1n2 = (_x1p - (_x1t - _x1c)).toFixed(1);
+        _x1Html += '<tr><td>' + (_x1i+1) + '</td><td>x' + _x1Mult + '</td><td>' + _x1c + '元</td><td>' + _x1t + '元</td><td>' + _x1p + '元</td><td style="color:#2e7d32;font-weight:700">+' + _x1n2 + '元</td></tr>';
+        _x1Mult *= 3;
+      }
+      _x1Html += '</table>';
+      _x1Html += '<div style="font-size:9px;color:#999;margin-top:2px">5期预算' + _x1Total + '元 | 5期不中概率23.7% | 建议冷热搭配追号</div>';
+      _x1Html += '</div>';
+      
+      _x1Html += '</div>';
+      
+      var _x1Sec = document.getElementById("xuan1Section");
+      var _x1Rec = document.getElementById("xuan1Recs");
+      if (_x1Sec && _x1Rec) {
+        _x1Sec.style.display = "block";
+        _x1Rec.innerHTML = _x1Html;
+      }
+    })();
+    
   }
 
   /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
