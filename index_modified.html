@@ -4079,7 +4079,7 @@ function renderRecommend(type, data) {
 
   /* ===== 数字彩 包号推荐 V2（六因子优化） ===== */
   if (cfg.type === "digit" && type !== "pl5") {
-    var _rePosCount = type === "pl5" ? 5 : type === "qxc" ? 7 : 3;
+    var _rePosCount = type === "pl5" ? 5 : type === "qxc" ? 7 : type === "ttcx4" ? 4 : 3;
     var _rePosKeep = type === "pl5" ? 5 : type === "qxc" ? 4 : 4; // V2: 改为4个/位（64注128元）
     var _reAllCands = [];
     /* V2新增：今日精选1注（最优直选） */
