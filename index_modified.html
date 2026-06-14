@@ -3769,7 +3769,7 @@ function renderRecommend(type, data) {
         var _x1c = Math.round(2 * _x1Mult), _x1t = _x1Total + _x1c;
         _x1Total = _x1t;
         var _x1p = (4.6 * _x1Mult).toFixed(1);
-        var _x1n2 = (_x1p - (_x1t - _x1c)).toFixed(1);
+        var _x1n2 = (_x1p - _x1t).toFixed(1);
         _x1Html += '<tr><td>' + (_x1i+1) + '</td><td>x' + _x1Mult.toFixed(1) + '</td><td>' + _x1c + '元</td><td>' + _x1t + '元</td><td>' + _x1p + '元</td><td style="color:#2e7d32;font-weight:700">+' + _x1n2 + '元</td></tr>';
         if (_x1i < 4) { _x1Mult *= 2; } else { _x1Mult *= 2.5; }
       }
