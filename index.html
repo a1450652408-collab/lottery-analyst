@@ -3760,21 +3760,21 @@ function renderRecommend(type, data) {
       _x1Html += '<div style="font-size:10px;color:#999;margin-top:4px">🎲 每期随机生成 | 概率25% | 建议搭配追号计划使用</div>';
       _x1Html += '</div>';
       
-      /* 追号计划参考 */
+      /* 追号计划参考：五期阶梯方案 */
       _x1Html += '<div style="margin-top:4px;padding:6px;background:#fff3e0;border-radius:6px;font-size:11px;line-height:1.6">';
-      _x1Html += '<div style="font-weight:700;color:#e65100;margin-bottom:3px">📊 追号计划（每期×3倍投, 5期止损）</div>';
+      _x1Html += '<div style="font-weight:700;color:#e65100;margin-bottom:3px">📊 追号计划（五期阶梯 · 第1~5期×2, 第6~10期×2.5）</div>';
       _x1Html += '<table style="width:100%;font-size:10px"><tr><th>期次</th><th>倍数</th><th>成本</th><th>累计</th><th>中奖</th><th>净赚</th></tr>';
       var _x1Mult = 1, _x1Total = 0;
-      for (var _x1i = 0; _x1i < 5; _x1i++) {
-        var _x1c = 2 * _x1Mult, _x1t = _x1Total + _x1c;
+      for (var _x1i = 0; _x1i < 10; _x1i++) {
+        var _x1c = Math.round(2 * _x1Mult), _x1t = _x1Total + _x1c;
         _x1Total = _x1t;
         var _x1p = (4.6 * _x1Mult).toFixed(1);
         var _x1n2 = (_x1p - (_x1t - _x1c)).toFixed(1);
-        _x1Html += '<tr><td>' + (_x1i+1) + '</td><td>x' + _x1Mult + '</td><td>' + _x1c + '元</td><td>' + _x1t + '元</td><td>' + _x1p + '元</td><td style="color:#2e7d32;font-weight:700">+' + _x1n2 + '元</td></tr>';
-        _x1Mult *= 3;
+        _x1Html += '<tr><td>' + (_x1i+1) + '</td><td>x' + _x1Mult.toFixed(1) + '</td><td>' + _x1c + '元</td><td>' + _x1t + '元</td><td>' + _x1p + '元</td><td style="color:#2e7d32;font-weight:700">+' + _x1n2 + '元</td></tr>';
+        if (_x1i < 4) { _x1Mult *= 2; } else { _x1Mult *= 2.5; }
       }
       _x1Html += '</table>';
-      _x1Html += '<div style="font-size:9px;color:#999;margin-top:2px">5期预算' + _x1Total + '元 | 5期不中概率23.7% | 追号请量力而行</div>';
+      _x1Html += '<div style="font-size:9px;color:#999;margin-top:2px">10期预算' + _x1Total + '元 | 10期不中概率5.6% | 任何一期中奖都盈利 | 追号请量力而行</div>';
       _x1Html += '</div>';
       
       _x1Html += '</div>';
