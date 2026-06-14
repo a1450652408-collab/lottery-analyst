@@ -1,0 +1,14 @@
+{
+  "date": "2026-06-15",
+  "updateTime": "02:54",
+  "modelVersion": "V6 (Elo + 实力泊松)",
+  "totalMatches": 22,
+  "posEvCount": 0,
+  "recommendations": [],
+  "topRecommend": null,
+  "dataSource": {
+    "odds": "webapi.sporttery.cn",
+    "strength": "team_data_cache.json (48队)",
+    "model": "Poisson + Strength-to-Coefficients"
+  }
+}
