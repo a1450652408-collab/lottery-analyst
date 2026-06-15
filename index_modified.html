@@ -1851,6 +1851,37 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div id="hitRateGrid"></div>
     </div>
   </div>
+
+  <!-- 拖拉机提醒 -->
+  <div class="card" id="tuolajiCard" style="display:none">
+    <div class="section-head"><div class="left"><div class="dot" style="background:#e65100"></div>🚜 拖拉机追号提醒</div><div class="right" id="tuolajiStatus">加载中...</div></div>
+    <div style="padding:4px 0">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+        <div class="stat-mini" style="flex:1;min-width:100px">
+          <div style="font-size:11px;color:var(--gray)">距上次拖拉机</div>
+          <div style="font-size:22px;font-weight:700" id="tuolajiGap">-</div>
+        </div>
+        <div class="stat-mini" style="flex:1;min-width:100px">
+          <div style="font-size:11px;color:var(--gray)">上次号码</div>
+          <div style="font-size:22px;font-weight:700" id="tuolajiLast">-</div>
+        </div>
+        <div class="stat-mini" style="flex:1;min-width:100px">
+          <div style="font-size:11px;color:var(--gray)">平均间隔</div>
+          <div style="font-size:22px;font-weight:700" id="tuolajiAvg">21期</div>
+        </div>
+      </div>
+      <div id="tuolajiAlert" style="display:none;padding:10px 14px;border-radius:8px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1px solid #ff9800;margin-top:4px">
+        <div style="font-weight:700;color:#e65100;font-size:15px;margin-bottom:4px">⏰ 拖拉机提醒！</div>
+        <div style="font-size:13px;color:#bf360c">已连续 <span id="tuolajiAlertGap" style="font-weight:700;font-size:16px">-</span> 期未出拖拉机，超过平均间隔（21期），可以考虑开始追号了。</div>
+        <div style="margin-top:8px;font-size:12px;color:#795548">
+          建议：每期买1注拖拉机（2元），65元奖金，倍投参考上方量化表。
+        </div>
+      </div>
+      <div id="tuolajiNormal" style="padding:6px 0;font-size:13px;color:var(--gray)">
+        当前距上次拖拉机 <span id="tuolajiNormalGap">-</span> 期，尚未到提醒线。连续18期未出自动提醒。
+      </div>
+    </div>
+  </div>
   <!-- AI 智能分析 -->
   <div class="ai-section" id="aiSection">
     <button class="btn btn-ai btn-sm" id="btnAiAnalysis" style="width:100%;margin:6px 0">
@@ -4799,6 +4830,7 @@ function loadAll(type) {
     document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
     renderAnalysis(type, data);
     renderRecommend(type, data);
+    updateTuolaji(type);
     var sk = document.getElementById("loadingSkeleton");
     if (sk) sk.style.display = "none";
   }).catch(function(e) {
@@ -5234,6 +5266,63 @@ function _copyZu3Nums(coldDan, coldTuos, hotDan, hotTuos, el) {
   }
   el.textContent = '\u2705\u5DF2\u590D\u5236';
   setTimeout(function(){ el.textContent = '\uD83D\uDCCB\u590D\u5236'; }, 2000);
+}
+/* ===== 拖拉机提醒 ===== */
+function updateTuolaji(type) {
+  var card = document.getElementById("tuolajiCard");
+  if (!card) return;
+  if (type !== "fc3d") { card.style.display = "none"; return; }
+  card.style.display = "block";
+
+  var data = (window.__LOTTERY_DATA || {}).fc3d;
+  if (!data || data.length < 5) { card.style.display = "none"; return; }
+
+  function isShunzi(nums) {
+    var s = nums.slice(0,3).sort(function(a,b){return a-b;});
+    var sets = [[0,1,2],[1,2,3],[2,3,4],[3,4,5],[4,5,6],[5,6,7],[6,7,8],[7,8,9]];
+    for (var i=0;i<sets.length;i++) {
+      if (s[0]===sets[i][0] && s[1]===sets[i][1] && s[2]===sets[i][2]) return true;
+    }
+    return false;
+  }
+
+  var lastShunziIdx = -1;
+  var lastNums = null;
+  for (var i=0;i<data.length;i++) {
+    var nums = data[i].n || data[i].r || [];
+    if (nums.length >= 3 && isShunzi(nums)) {
+      lastShunziIdx = i;
+      lastNums = nums.slice(0,3);
+      break;
+    }
+  }
+
+  var si = document.getElementById("tuolajiStatus");
+  var gapEl = document.getElementById("tuolajiGap");
+  var lastEl = document.getElementById("tuolajiLast");
+  var alertBox = document.getElementById("tuolajiAlert");
+  var normalBox = document.getElementById("tuolajiNormal");
+
+  if (lastShunziIdx < 0) {
+    if (si) si.textContent = "数据不足";
+    return;
+  }
+
+  var gap = lastShunziIdx;
+  if (gapEl) gapEl.textContent = gap + "期";
+  if (lastEl) lastEl.textContent = lastNums.join("");
+
+  if (gap >= 18) {
+    if (alertBox) alertBox.style.display = "block";
+    if (normalBox) normalBox.style.display = "none";
+    if (document.getElementById("tuolajiAlertGap")) document.getElementById("tuolajiAlertGap").textContent = gap + "";
+    if (si) { si.textContent = "🎯 建议关注"; si.style.color = "#e65100"; }
+  } else {
+    if (alertBox) alertBox.style.display = "none";
+    if (normalBox) normalBox.style.display = "block";
+    if (document.getElementById("tuolajiNormalGap")) document.getElementById("tuolajiNormalGap").textContent = gap + "";
+    if (si) { si.textContent = "等待中 (" + gap + "/18)"; si.style.color = "var(--gray)"; }
+  }
 }
 </script>
 </body>
