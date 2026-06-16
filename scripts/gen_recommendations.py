@@ -159,7 +159,8 @@ def select_kl8_9dan(recent, vl):
     for n in pool35:
         r5 = sum(1 for d in recent[:5] if n in get_nums(d))
         seq = [1 if n in get_nums(d) else 0 for d in recent[:30]]
-        e = seq[0] if seq else 0
+        seq_rev = seq[::-1]
+        e = seq_rev[0]
         for v in seq[1:]: e = 0.5*v + 0.5*e
         mom[n] = r5*3 + e*12 + freq.get(n,0)*0.5
     # 重号/回补/热号注入
@@ -230,7 +231,8 @@ def recommend_lotto_blue(recent, bMax, bC):
     ema_b={}
     for n in range(1,bMax+1):
         seq=[1 if n in get_blue(d) else 0 for d in recent]
-        e=seq[0] if seq else 0
+        seq_rev = seq[::-1]
+        e = seq_rev[0]
         for v in seq[1:]: e=0.5*v+0.5*e; ema_b[n]=e
     b_scores={}
     for n in range(1,bMax+1):
@@ -252,7 +254,8 @@ def recommend_lotto(recent, rMax, rC, bMax, bC):
     ema_r={}
     for n in range(1,rMax+1):
         seq=[1 if n in get_nums(d) else 0 for d in recent]
-        e=seq[0] if seq else 0
+        seq_rev = seq[::-1]
+        e = seq_rev[0]
         for v in seq[1:]: e=0.5*v+0.5*e; ema_r[n]=e
     s1=set(hot_r[:rC])
     s2=set()
@@ -314,7 +317,8 @@ def recommend_lotto_enhanced(recent, rMax, rC, bMax, bC):
     ema_r={}
     for n in range(1,rMax+1):
         seq=[1 if n in get_nums(d) else 0 for d in recent]
-        e=seq[0] if seq else 0
+        seq_rev = seq[::-1]
+        e = seq_rev[0]
         for v in seq[1:]: e=0.5*v+0.5*e; ema_r[n]=e
     # 质数
     primes=set()
@@ -398,7 +402,8 @@ def recommend_digit(recent, pos):
     for pi in range(pos):
         for n in range(10):
             seq=[1 if len(get_nums(d))>pi and get_nums(d)[pi]==n else 0 for d in recent]
-            e=seq[0] if seq else 0
+            seq_rev = seq[::-1]
+            e = seq_rev[0]
             for v in seq[1:]: e=0.4*v+0.6*e
             pema[pi][n]=e
     scored_pos=[]
