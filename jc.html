@@ -1,389 +1,231 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>竞彩足球·价值投注推荐</title>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>竞彩足球 · 双盘分析</title>
 <style>
-:root{--red:#e53935;--blue:#1976d2;--green:#4caf50;--orange:#f57c00;--purple:#7b1fa2;--cyan:#0097a7;--bg:#f0f2f5;--sub:#999;--text:#333;--card:#fff}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.header{padding:16px;background:linear-gradient(135deg,#d32f2f,#b71c1c);color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(211,47,47,.3)}
-.header-top{display:flex;justify-content:space-between;align-items:center}
-.header h1{font-size:20px;font-weight:700;letter-spacing:1px}
-.header .sub{font-size:12px;margin-top:4px;color:rgba(255,255,255,.85);letter-spacing:2px}
-.type-bar{display:flex;overflow-x:auto;margin-bottom:4px;gap:6px;padding:4px 0 10px 0;scrollbar-width:thin;scrollbar-color:#d32f2f #f0f0f0}
-.type-bar::-webkit-scrollbar{display:block;height:6px}
-.type-bar::-webkit-scrollbar-track{background:#f0f0f0;border-radius:3px;margin:0 10px}
-.type-bar::-webkit-scrollbar-thumb{background:#d32f2f;border-radius:3px}
-.type-btn{padding:6px 14px;border-radius:20px;background:var(--card);cursor:pointer;white-space:nowrap;font-size:13px;border:1.5px solid #e0e0e0;transition:all .2s;font-weight:500;text-decoration:none;color:var(--text);display:inline-block}
-.type-btn.active{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 8px rgba(244,67,54,.3)}
-.type-btn.jc-link{background:var(--red);color:#fff;border-color:var(--red)}
-.card{background:var(--card);margin:8px 12px;padding:14px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
-.page{padding:4px 0 70px 0}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.page.active{display:block;animation:fadeIn .25s ease}
-.match-card{background:#fff;margin:8px 12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
-.match-top{padding:10px 12px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:8px}
-.match-star{color:#ff9800;font-size:14px}
-.match-league{font-size:11px;color:#888}
-.match-time{font-size:10px;color:#999;margin-left:auto}
-.match-body{padding:10px 12px}
-.match-teams{font-size:15px;font-weight:700;margin-bottom:6px}
-.match-vs{color:#999;font-size:12px;font-weight:400;margin:0 4px}
-.match-odds{display:flex;gap:8px;margin:8px 0}
-.odds-box{flex:1;text-align:center;padding:6px 4px;background:#fafafa;border-radius:8px}
-.odds-box .odds-label{font-size:10px;color:#999;margin-bottom:2px}
-.odds-box .odds-val{font-size:16px;font-weight:700;color:var(--text)}
-.odds-box.pick{background:#fff5f5;border:1.5px solid var(--red)}
-.odds-box.pick .odds-val{color:var(--red)}
-.match-rec{display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:#fff5f5;border-radius:6px;font-size:13px;color:var(--red);font-weight:700}
-.match-conf{font-size:11px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;font-weight:400}
-.match-detail{display:none;padding:0 12px 10px 12px;border-top:1px solid #f5f5f5}
-.match-detail.open{display:block}
-.detail-btn{font-size:10px;color:#999;cursor:pointer;padding:4px;text-align:center;border-top:1px solid #f5f5f5;user-select:none}
-.detail-btn:hover{background:#fafafa}
-.empty-box{text-align:center;padding:40px 12px;color:#999;font-size:14px;line-height:2}
-.footer{position:fixed;bottom:0;width:100%;max-width:480px;display:flex;background:var(--card);border-top:1px solid #eee;z-index:100}
-.footer .tab-btn{flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;color:#999;font-weight:500;text-align:center;text-decoration:none;display:block}
-.footer .tab-btn.active{color:var(--red);font-weight:700}
-.loading{text-align:center;padding:60px 0;color:#999;font-size:14px}
-.loading .spinner{width:24px;height:24px;border:3px solid #f0f0f0;border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,system-ui,Segoe UI,sans-serif;background:#f5f5f5;color:#333;max-width:480px;margin:0 auto;padding:12px;padding-bottom:80px}
+.header{text-align:center;padding:16px 0 8px}
+.header h1{font-size:20px;background:linear-gradient(135deg,#1565c0,#e65100);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{font-size:12px;color:#999;margin-top:4px}
+.card{background:#fff;margin:8px 0;padding:14px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.match-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.match-teams{font-size:15px;font-weight:700}
+.match-time{font-size:11px;color:#999}
+.odds-row{display:flex;gap:8px;font-size:11px;margin-bottom:6px}
+.odds-tag{background:#f0f0f0;padding:2px 8px;border-radius:4px;color:#666}
+.odds-val{font-weight:700}
+.strategy-box{background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:8px;padding:10px;margin-top:6px}
+.strategy-box.negative{background:linear-gradient(135deg,#fce4ec,#ffebee)}
+.roi-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700}
+.roi-high{background:#2e7d32;color:#fff}
+.roi-mid{background:#f9a825;color:#fff}
+.roi-low{background:#e53935;color:#fff}
+.bet-detail{font-size:12px;color:#555;margin-top:6px;line-height:1.6}
+.section-title{font-size:14px;font-weight:700;margin:12px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title .dot{width:8px;height:8px;border-radius:50%}
+.filter-bar{display:flex;gap:6px;margin:8px 0;overflow-x:auto}
+.filter-btn{padding:6px 14px;border:1px solid #ddd;border-radius:16px;font-size:12px;background:#fff;cursor:pointer;white-space:nowrap}
+.filter-btn.active{background:#1565c0;color:#fff;border-color:#1565c0}
+.passed{opacity:.5;filter:grayscale(.3)}
+.footer{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fff;padding:12px;border-top:1px solid #eee;text-align:center;font-size:11px;color:#999}
+.note{font-size:11px;color:#999;padding:8px;text-align:center}
 </style>
-</head><body>
+</head>
+<body>
 
 <div class="header">
-  <div class="header-top"><h1>⚽ 竞彩足球·价值投注</h1></div>
-  <div class="sub">基于赔率价值分析 · 每日更新 <span id="jcUpdateTime" style="font-size:10px;color:rgba(255,255,255,.7)"></span></div>
+  <h1>⚽ 竞彩足球 · 双盘分析</h1>
+  <p>泊松模型 + HAD×HHAD 双盘ROI | 数据更新: <span id="updateTime">—</span></p>
 </div>
 
-<div class="type-bar" style="padding:8px 12px">
-  <span class="type-btn active">竞彩足球</span>
-  <a class="type-btn" href="index.html">双色球</a>
-  <a class="type-btn" href="index.html">大乐透</a>
-  <a class="type-btn" href="index.html">快乐8</a>
-  <a class="type-btn" href="index.html">福彩3D</a>
-  <a class="type-btn" href="index.html">排列三</a>
-  <a class="type-btn" href="index.html">排列五</a>
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" onclick="filter('all')">全部</button>
+  <button class="filter-btn" onclick="filter('today')">今天可买</button>
 </div>
 
-<div class="page active" id="mainPage">
-  <div id="loadingIndicator" class="loading">
-    <div class="spinner"></div>
-    <div>正在加载竞彩数据...</div>
-  </div>
-  <div id="matchList" style="display:none"></div>
-  <div id="emptyMessage" class="empty-box" style="display:none">
-    <div style="font-size:40px;margin-bottom:12px">⚽</div>
-    <div>今日暂无竞彩比赛数据</div>
-    <div style="font-size:12px;color:#bbb;margin-top:6px">数据源: 竞彩网官方 webapi.sporttery.cn</div>
-  </div>
-</div>
+<div id="matchList"></div>
 
 <div class="footer">
-  <a class="tab-btn active" href="jc.html">竞彩</a>
-  <a class="tab-btn" href="index.html">推荐</a>
-  <a class="tab-btn" href="index.html">走势</a>
-  <a class="tab-btn" href="index.html">数据</a>
+  基于HHAD让球盘泊松拟合 | 模型仅供参考 | 投资有风险
 </div>
 
 <script>
-// ===== 数据内嵌（由 jc_analysis.py 自动生成更新） =====
-var JC_DATA = {"date": "2026-06-16", "updateTime": "08:58", "modelVersion": "V5 (Poisson + 泊松模型)", "totalMatches": 8, "topRecommend": {"matchId": 2040184, "matchNum": "周三023", "league": "世界杯", "homeTeam": "加纳", "awayTeam": "巴拿马", "matchDate": "2026-06-18", "matchTime": "07:00", "had_h": 1.96, "had_d": 3.0, "had_a": 3.5, "hhad_goalLine": -1.0, "hhad_h": 4.25, "hhad_d": 3.52, "hhad_a": 1.64, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "Ghana", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "Panama", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "recommend": "主胜", "best_odds": 1.96, "best_value": 1.5, "ev": -11.4, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 45.2, "draw_prob": 29.5, "away_prob": 25.3, "all_options": [{"label": "主胜", "odds": 1.96, "model_prob": 45.2, "market_prob": 45.2, "value_gap": 0, "ev": -11.4, "is_value": false}, {"label": "平局", "odds": 3.0, "model_prob": 29.5, "market_prob": 29.5, "value_gap": 0, "ev": -11.4, "is_value": false}, {"label": "客胜", "odds": 3.5, "model_prob": 25.3, "market_prob": 25.3, "value_gap": 0, "ev": -11.4, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, "recommendations": [{"matchId": 2040184, "matchNum": "周三023", "league": "世界杯", "homeTeam": "加纳", "awayTeam": "巴拿马", "matchDate": "2026-06-18", "matchTime": "07:00", "had_h": 1.96, "had_d": 3.0, "had_a": 3.5, "hhad_goalLine": -1.0, "hhad_h": 4.25, "hhad_d": 3.52, "hhad_a": 1.64, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "Ghana", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "Panama", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "recommend": "主胜", "best_odds": 1.96, "best_value": 1.5, "ev": -11.4, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 45.2, "draw_prob": 29.5, "away_prob": 25.3, "all_options": [{"label": "主胜", "odds": 1.96, "model_prob": 45.2, "market_prob": 45.2, "value_gap": 0, "ev": -11.4, "is_value": false}, {"label": "平局", "odds": 3.0, "model_prob": 29.5, "market_prob": 29.5, "value_gap": 0, "ev": -11.4, "is_value": false}, {"label": "客胜", "odds": 3.5, "model_prob": 25.3, "market_prob": 25.3, "value_gap": 0, "ev": -11.4, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, {"matchId": 2040177, "matchNum": "周一016", "league": "世界杯", "homeTeam": "伊朗", "awayTeam": "新西兰", "matchDate": "2026-06-16", "matchTime": "09:00", "had_h": 1.55, "had_d": 3.38, "had_a": 5.3, "hhad_goalLine": -1.0, "hhad_h": 2.87, "hhad_d": 3.3, "hhad_a": 2.09, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "Iran", "position": 3, "group": "Group G", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "New Zealand", "position": 3, "group": "Group G", "points": 0, "played": 0, "form": null, "has_data": false}, "away_coach": "Darren Bazeley", "away_player_count": 26, "away_avg_age": 27.7, "away_pos_dist": {"GK": 3, "DF": 9, "MF": 7, "FW": 7}, "away_players": ["GK Max Crocombe(32)", "GK Michael Woud(27)", "GK Alex Paulsen(23)", "DF Liberato Cacace(25)", "DF Tommy Smith(36)", "DF Michael Boxall(37)", "DF Francis De Vries(31)", "DF Callan Elliot(26)"], "recommend": "主胜", "best_odds": 1.55, "best_value": 1.5, "ev": -11.5, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 57.1, "draw_prob": 26.2, "away_prob": 16.7, "all_options": [{"label": "主胜", "odds": 1.55, "model_prob": 57.1, "market_prob": 57.1, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "平局", "odds": 3.38, "model_prob": 26.2, "market_prob": 26.2, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "客胜", "odds": 5.3, "model_prob": 16.7, "market_prob": 16.7, "value_gap": 0, "ev": -11.5, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, {"matchId": 2040178, "matchNum": "周二017", "league": "世界杯", "homeTeam": "法国", "awayTeam": "塞内加尔", "matchDate": "2026-06-17", "matchTime": "03:00", "had_h": 1.31, "had_d": 4.23, "had_a": 7.7, "hhad_goalLine": -1.0, "hhad_h": 2.12, "hhad_d": 3.37, "hhad_a": 2.77, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "France", "position": 1, "group": "Group I", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "Senegal", "position": 1, "group": "Group I", "points": 0, "played": 0, "form": null, "has_data": false}, "home_coach": "Didier Deschamps", "home_player_count": 26, "home_avg_age": 26.6, "home_pos_dist": {"GK": 3, "DF": 9, "MF": 8, "FW": 6}, "home_players": ["GK Brice Samba(32)", "GK Mike Maignan(30)", "GK Robin Risser(21)", "DF Theo Hernández(28)", "DF Lucas Digne(32)", "DF Lucas Hernández(30)", "DF Jules Koundé(27)", "DF Dayot Upamecano(27)"], "recommend": "主胜", "best_odds": 1.31, "best_value": 1.5, "ev": -11.5, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 67.6, "draw_prob": 20.9, "away_prob": 11.5, "all_options": [{"label": "主胜", "odds": 1.31, "model_prob": 67.6, "market_prob": 67.6, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "平局", "odds": 4.23, "model_prob": 20.9, "market_prob": 20.9, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "客胜", "odds": 7.7, "model_prob": 11.5, "market_prob": 11.5, "value_gap": 0, "ev": -11.5, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, {"matchId": 2040180, "matchNum": "周二019", "league": "世界杯", "homeTeam": "阿根廷", "awayTeam": "阿尔及利", "matchDate": "2026-06-17", "matchTime": "09:00", "had_h": 1.26, "had_d": 4.4, "had_a": 9.2, "hhad_goalLine": -1.0, "hhad_h": 1.9, "hhad_d": 3.5, "hhad_a": 3.15, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "Argentina", "position": 1, "group": "Group J", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"note": "未找到映射: 阿尔及利"}, "recommend": "主胜", "best_odds": 1.26, "best_value": 1.5, "ev": -11.5, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 70.3, "draw_prob": 20.1, "away_prob": 9.6, "all_options": [{"label": "主胜", "odds": 1.26, "model_prob": 70.3, "market_prob": 70.3, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "平局", "odds": 4.4, "model_prob": 20.1, "market_prob": 20.1, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "客胜", "odds": 9.2, "model_prob": 9.6, "market_prob": 9.6, "value_gap": 0, "ev": -11.5, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, {"matchId": 2040181, "matchNum": "周二020", "league": "世界杯", "homeTeam": "奥地利", "awayTeam": "约旦", "matchDate": "2026-06-17", "matchTime": "12:00", "had_h": 1.21, "had_d": 5.15, "had_a": 9.2, "hhad_goalLine": -1.0, "hhad_h": 1.79, "hhad_d": 3.56, "hhad_a": 3.45, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "Austria", "position": 1, "group": "Group J", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "Jordan", "position": 1, "group": "Group J", "points": 0, "played": 0, "form": null, "has_data": false}, "recommend": "主胜", "best_odds": 1.21, "best_value": 1.5, "ev": -11.5, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 73.2, "draw_prob": 17.2, "away_prob": 9.6, "all_options": [{"label": "主胜", "odds": 1.21, "model_prob": 73.2, "market_prob": 73.2, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "平局", "odds": 5.15, "model_prob": 17.2, "market_prob": 17.2, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "客胜", "odds": 9.2, "model_prob": 9.6, "market_prob": 9.6, "value_gap": 0, "ev": -11.5, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}, {"matchId": 2040183, "matchNum": "周三022", "league": "世界杯", "homeTeam": "英格兰", "awayTeam": "克罗地亚", "matchDate": "2026-06-18", "matchTime": "04:00", "had_h": 1.53, "had_d": 3.5, "had_a": 5.25, "hhad_goalLine": -1.0, "hhad_h": 2.84, "hhad_d": 3.2, "hhad_a": 2.15, "home_strength": 50, "away_strength": 50, "strength_diff": 0, "home_detail": {"eng_name": "England", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "away_detail": {"eng_name": "Croatia", "position": 1, "group": "Group L", "points": 0, "played": 0, "form": null, "has_data": false}, "recommend": "主胜", "best_odds": 1.53, "best_value": 1.6, "ev": -11.5, "score": 0.5, "confidence": "★", "reasons": [], "poisson_source": "odds_only", "home_prob": 57.9, "draw_prob": 25.3, "away_prob": 16.9, "all_options": [{"label": "主胜", "odds": 1.53, "model_prob": 57.9, "market_prob": 57.9, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "平局", "odds": 3.5, "model_prob": 25.3, "market_prob": 25.3, "value_gap": 0, "ev": -11.5, "is_value": false}, {"label": "客胜", "odds": 5.25, "model_prob": 16.9, "market_prob": 16.9, "value_gap": 0, "ev": -11.5, "is_value": false}], "kelly_advice": {"suggest_stake": 0, "kelly_pct": 0, "note": "无正EV，不建议投注"}}], "s2recommend": null, "valueBets": [], "scorePredictions": [{"homeTeam": "伊朗", "awayTeam": "新西兰", "homeProb": 57.1, "drawProb": 26.2, "awayProb": 16.7, "topScores": [], "valueBets": [{"label": "主胜", "odds": 1.55, "ev": -11.5, "score": 1.5, "market_prob": 57.1, "model_prob": 57.1, "value_gap": 0, "is_value": false}, {"label": "平局", "odds": 3.38, "ev": -11.5, "score": 1.5, "market_prob": 26.2, "model_prob": 26.2, "value_gap": 0, "is_value": false}, {"label": "客胜", "odds": 5.3, "ev": -11.5, "score": 1.5, "market_prob": 16.7, "model_prob": 16.7, "value_gap": 0, "is_value": false}]}, {"homeTeam": "法国", "awayTeam": "塞内加尔", "homeProb": 67.6, "drawProb": 20.9, "awayProb": 11.5, "topScores": [], "valueBets": [{"label": "主胜", "odds": 1.31, "ev": -11.5, "score": 1.5, "market_prob": 67.6, "model_prob": 67.6, "value_gap": 0, "is_value": false}, {"label": "平局", "odds": 4.23, "ev": -11.5, "score": 1.5, "market_prob": 20.9, "model_prob": 20.9, "value_gap": 0, "is_value": false}, {"label": "客胜", "odds": 7.7, "ev": -11.5, "score": 1.5, "market_prob": 11.5, "model_prob": 11.5, "value_gap": 0, "is_value": false}]}, {"homeTeam": "阿根廷", "awayTeam": "阿尔及利", "homeProb": 70.3, "drawProb": 20.1, "awayProb": 9.6, "topScores": [], "valueBets": [{"label": "主胜", "odds": 1.26, "ev": -11.5, "score": 1.5, "market_prob": 70.3, "model_prob": 70.3, "value_gap": 0, "is_value": false}, {"label": "平局", "odds": 4.4, "ev": -11.5, "score": 1.5, "market_prob": 20.1, "model_prob": 20.1, "value_gap": 0, "is_value": false}, {"label": "客胜", "odds": 9.2, "ev": -11.5, "score": 1.5, "market_prob": 9.6, "model_prob": 9.6, "value_gap": 0, "is_value": false}]}, {"homeTeam": "奥地利", "awayTeam": "约旦", "homeProb": 73.2, "drawProb": 17.2, "awayProb": 9.6, "topScores": [], "valueBets": [{"label": "主胜", "odds": 1.21, "ev": -11.5, "score": 1.5, "market_prob": 73.2, "model_prob": 73.2, "value_gap": 0, "is_value": false}, {"label": "平局", "odds": 5.15, "ev": -11.5, "score": 1.5, "market_prob": 17.2, "model_prob": 17.2, "value_gap": 0, "is_value": false}, {"label": "客胜", "odds": 9.2, "ev": -11.5, "score": 1.5, "market_prob": 9.6, "model_prob": 9.6, "value_gap": 0, "is_value": false}]}, {"homeTeam": "葡萄牙", "awayTeam": "刚果金", "homeProb": 78.3, "drawProb": 15.1, "awayProb": 6.6, "topScores": [], "valueBets": [{"label": "主胜", "odds": 1.13, "ev": -11.5, "score": 1.5, "market_prob": 78.3, "model_prob": 78.3, "value_gap": 0, "is_value": false}, {"label": "平局", "odds": 5.86, "ev": -11.5, "score": 1.5, "market_prob": 15.1, "model_prob": 15.1, "value_gap": 0, "is_value": false}, {"label": "客胜", "odds": 13.5, "ev": -11.5, "score": 1.5, "market_prob": 6.6, "model_prob": 6.6, "value_gap": 0, "is_value": false}]}], "posEvCount": 0, "valueBetCount": 0, "poissonDataAvailable": false, "dataSource": {"odds": "webapi.sporttery.cn", "teamData": "api.football-data.org (排名+阵容+比赛)", "model": "Poisson Distribution (泊松分布)", "poissonTeams": 0}};
+// ===== 嵌入数据 =====
+var MATCHES = [
+{"match":"周日010","home":"荷兰","away":"日本","date":"2026-06-15","time":"04:00","had":[1.86,3.33,3.43],"hhad":[4.0,3.4,1.71],"gl":"-1.00"},
+{"match":"周日011","home":"科特迪瓦","away":"厄瓜多尔","date":"2026-06-15","time":"07:00","had":[3.15,2.65,2.3],"hhad":[1.45,3.8,5.65],"gl":"+1.00"},
+{"match":"周日012","home":"瑞典","away":"突尼斯","date":"2026-06-15","time":"10:00","had":[1.67,3.35,4.3],"hhad":[3.32,3.17,1.95],"gl":"-1.00"},
+{"match":"周一014","home":"比利时","away":"埃及","date":"2026-06-16","time":"03:00","had":[1.43,3.84,5.9],"hhad":[2.56,3.2,2.35],"gl":"-1.00"},
+{"match":"周一015","home":"沙特","away":"乌拉圭","date":"2026-06-16","time":"06:00","had":[7.65,4.25,1.31],"hhad":[2.84,3.3,2.11],"gl":"+1.00"},
+{"match":"周一016","home":"伊朗","away":"新西兰","date":"2026-06-16","time":"09:00","had":[1.56,3.3,5.4],"hhad":[3.1,3.1,2.07],"gl":"-1.00"},
+{"match":"周二017","home":"法国","away":"塞内加尔","date":"2026-06-17","time":"03:00","had":[1.35,4.02,7.15],"hhad":[2.23,3.22,2.7],"gl":"-1.00"},
+{"match":"周二019","home":"阿根廷","away":"阿尔及利","date":"2026-06-17","time":"09:00","had":[1.26,4.4,9.2],"hhad":[1.95,3.35,3.15],"gl":"-1.00"},
+{"match":"周二020","home":"奥地利","away":"约旦","date":"2026-06-17","time":"12:00","had":[1.21,5.15,9.2],"hhad":[1.79,3.56,3.45],"gl":"-1.00"},
+{"match":"周三021","home":"葡萄牙","away":"刚果金","date":"2026-06-18","time":"01:00","had":[1.14,5.7,13.0],"hhad":[2.7,3.93,1.98],"gl":"-2.00"},
+{"match":"周三022","home":"英格兰","away":"克罗地亚","date":"2026-06-18","time":"04:00","had":[1.53,3.5,5.25],"hhad":[2.84,3.2,2.15],"gl":"-1.00"},
+{"match":"周三023","home":"加纳","away":"巴拿马","date":"2026-06-18","time":"07:00","had":[1.96,3.0,3.5],"hhad":[4.25,3.52,1.64],"gl":"-1.00"},
+{"match":"周三024","home":"乌兹别克","away":"哥伦比亚","date":"2026-06-18","time":"10:00","had":[9.1,4.55,1.25],"hhad":[3.12,3.44,1.93],"gl":"+1.00"}
+];
 
-function renderData(data) {
-  var ml = document.getElementById('matchList');
-  var ld = document.getElementById('loadingIndicator');
-  var em = document.getElementById('emptyMessage');
-  var ut = document.getElementById('jcUpdateTime');
-  
-  ld.style.display = 'none';
-  if (ut) ut.textContent = '· 更新于 ' + data.date + ' ' + data.updateTime;
-  
+// ===== 泊松 =====
+function poisson(k, lam) {
+  if (k > 150 || lam <= 0) return 0;
+  var r = Math.exp(-lam);
+  for (var i = 1; i <= k; i++) r *= lam / i;
+  return r;
+}
+
+function analyze(m) {
+  var h = m.had, hh = m.hhad, gl = parseFloat(m.gl);
+  // HAD去水
+  var hs = 1/h[0]+1/h[1]+1/h[2];
+  var ph = 1/h[0]/hs, pd = 1/h[1]/hs, pa = 1/h[2]/hs;
+  // HHAD去水
+  var hhs = 1/hh[0]+1/hh[1]+1/hh[2];
+  var phc = 1/hh[0]/hhs, php = 1/hh[1]/hhs, pac = 1/hh[2]/hhs;
+
+  // 泊松拟合
+  var bestErr = 999, bl = 1, bu = 1, agl = Math.abs(gl);
+
+  if (gl < 0) {
+    for (var lh = 0.5; lh <= 4; lh += 0.1) {
+      for (var la = 0; la <= 2; la += 0.1) {
+        var p1 = 0, p2 = 0, p3 = 0;
+        for (var h0 = 0; h0 < 11; h0++) for (var a0 = 0; a0 < 7; a0++) {
+          var prob = poisson(h0,lh)*poisson(a0,la);
+          if (h0-a0 >= agl+1) p1 += prob;
+          else if (h0-a0 === agl) p2 += prob;
+          else p3 += prob;
+        }
+        var err = Math.abs(p1-phc)+Math.abs(p2-php)+Math.abs(p3-pac);
+        if (err < bestErr) { bestErr = err; bl = lh; bu = la; }
+      }
+    }
+    // 概率
+    var by1 = 0, by2p = 0;
+    for (var h0=0;h0<11;h0++) for(var a0=0;a0<7;a0++) {
+      var prob = poisson(h0,bl)*poisson(a0,bu);
+      if (h0>a0 && h0-a0===1) by1 += prob;
+      else if (h0>a0 && h0-a0>=2) by2p += prob;
+    }
+    var pd2 = 0; for (var s=0;s<11;s++) pd2 += poisson(s,bl)*poisson(s,bu);
+    var pa2 = 1 - by1 - by2p - pd2;
+    // 双盘: 主胜HAD + 客受让HHAD  
+    var ev = by1*(h[0]+hh[2]) + by2p*h[0] + (pd2+pa2)*hh[2];
+    return {
+      roi: Math.round((ev-2)/2*1000)/10,
+      ev: ev.toFixed(2),
+      hWin: Math.round((by1+by2p)*1000)/10,
+      draw: Math.round(pd2*1000)/10,
+      aWin: Math.round(pa2*1000)/10,
+      err: Math.round(bestErr*1000)/10,
+      lam: bl+'/'+bu,
+      strategy: '主队胜('+h[0].toFixed(2)+') + 客队+'+Math.abs(gl)+'('+hh[2].toFixed(2)+')',
+      bet: 'HAD主胜@'+h[0]+' + HHAD客受让@'+hh[2]
+    };
+  } else { // gl > 0
+    for (var lh = 0; lh <= 2; lh += 0.1) {
+      for (var la = 0.5; la <= 4; la += 0.1) {
+        var p1 = 0, p2 = 0, p3 = 0;
+        for (var h0 = 0; h0 < 11; h0++) for (var a0 = 0; a0 < 7; a0++) {
+          var prob = poisson(h0,lh)*poisson(a0,la);
+          var diff = h0 - a0;
+          if (diff >= -1) p1 += prob;
+          else if (diff === -2) p2 += prob;
+          else p3 += prob;
+        }
+        var err = Math.abs(p1-phc)+Math.abs(p2-php)+Math.abs(p3-pac);
+        if (err < bestErr) { bestErr = err; bl = lh; bu = la; }
+      }
+    }
+    var awBy1 = 0, awBy2p = 0;
+    for (var h0=0;h0<11;h0++) for(var a0=0;a0<7;a0++) {
+      var prob = poisson(h0,bl)*poisson(a0,bu);
+      if (a0>h0 && a0-h0===1) awBy1 += prob;
+      else if (a0>h0 && a0-h0>=2) awBy2p += prob;
+    }
+    var pd2 = 0; for (var s=0;s<11;s++) pd2 += poisson(s,bl)*poisson(s,bu);
+    var ph2 = 0; for (var h0=1;h0<11;h0++) for(var a0=0;a0<h0;a0++) ph2 += poisson(h0,bl)*poisson(a0,bu);
+    // 双盘: 客胜HAD + 主受让HHAD
+    var ev = awBy1*(h[2]+hh[0]) + awBy2p*h[2] + (ph2+pd2)*hh[0];
+    return {
+      roi: Math.round((ev-2)/2*1000)/10,
+      ev: ev.toFixed(2),
+      hWin: Math.round(ph2*1000)/10,
+      draw: Math.round(pd2*1000)/10,
+      aWin: Math.round((awBy1+awBy2p)*1000)/10,
+      err: Math.round(bestErr*1000)/10,
+      lam: bl+'/'+bu,
+      strategy: '客队胜('+h[2].toFixed(2)+') + 主队+'+Math.abs(gl)+'('+hh[0].toFixed(2)+')',
+      bet: 'HAD客胜@'+h[2]+' + HHAD主受让@'+hh[0]
+    };
+  }
+}
+
+// 判断是否已过
+function isPassed(m) {
+  var dt = new Date(m.date + 'T' + m.time + ':00+08:00');
+  return dt < new Date();
+}
+
+// 渲染
+function render(filterMode) {
   var html = '';
-  var recs = data.recommendations || [];
+  var now = new Date();
+  var today = now.toISOString().slice(0,10);
   
-  // 顶部统计
-  html += '<div class="card" style="text-align:center">';
-  html += '<div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">今日数据</div>';
-  html += '<div style="display:flex;gap:8px;justify-content:center">';
-  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;color:var(--red)">' + data.totalMatches + '</div><div style="font-size:10px;color:#999">比赛场次</div></div>';
-  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;color:var(--red)">' + recs.length + '</div><div style="font-size:10px;color:#999">推荐场次</div></div>';
-  html += '<div style="flex:1;padding:6px;background:#fafafa;border-radius:8px"><div style="font-size:18px;font-weight:700;' + (data.posEvCount > 0 ? 'color:#4caf50' : 'color:#999') + '">' + (data.posEvCount||0) + '</div><div style="font-size:10px;color:#999">正EV场次</div></div>';
-  html += '</div></div>';
-  
-  // 2串1推荐
-  // ===== 期望值风险提示 =====
-  html += '<div class="card" style="border:1.5px solid #c62828;background:#fff5f5;margin-top:8px">';
-  html += '<div style="display:flex;align-items:center;gap:8px">';
-  html += '<span style="font-size:20px">⚠️</span>';
-  html += '<div style="flex:1">';
-  html += '<div style="font-weight:700;color:#c62828;font-size:13px;margin-bottom:2px">长期期望值警告</div>';
-  html += '<div style="font-size:11px;color:#b71c1c;line-height:1.5">本页面所有方案的赔率已扣除约11%-13%体彩抽水。<br><strong>所有方案长期期望值均为负数（-11.4%），长期购买必定亏损。</strong><br>推荐仅作为娱乐参考，不建议实际投注。倍投将加速亏损。';
-  // 从数据中查找是否有正EV场次
-  var posEvCount = data.posEvCount || 0;
-  if (posEvCount > 0) {
-    html += '<br><span style="color:#2e7d32;font-weight:600">本日有 ' + posEvCount + ' 场正EV比赛（下方特别标注）</span>';
-  }
-  html += '</div></div></div></div>';
-  
-  // ===== 价值投注专区（正EV推荐）=====
-  if (data.valueBets && data.valueBets.length > 0) {
-    html += '<div class="card" style="border:2px solid #2e7d32;background:#e8f5e9;margin-top:8px">';
-    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">';
-    html += '<span style="font-size:18px">💰</span>';
-    html += '<span style="font-weight:700;color:#2e7d32;font-size:14px">价值投注专区</span>';
-    html += '<span style="font-size:11px;color:#2e7d32;margin-left:auto">EV>0 具有长期正期望</span>';
-    html += '</div>';
-    html += '<div style="font-size:11px;color:#1b5e20;margin-bottom:6px;line-height:1.5">以下比赛通过独立概率模型评估，发现市场赔率存在价值缺口：</div>';
-    data.valueBets.forEach(function(vb, vi) {
-      html += '<div style="display:flex;align-items:center;padding:6px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border-left:3px solid #2e7d32;font-size:12px">';
-      html += '<div style="flex:1"><strong>' + vb.homeTeam + ' vs ' + vb.awayTeam + '</strong><br>';
-      html += '<span style="color:#2e7d32;font-weight:600">' + vb.recommend + ' @' + vb.odds + '</span>';
-      if (vb.reasons && vb.reasons.length) html += ' <span style="color:#888">| ' + vb.reasons.join(', ') + '</span>';
-      html += '</div>';
-      html += '<div style="text-align:right;white-space:nowrap">';
-      html += '<div style="font-weight:700;color:#2e7d32">EV+' + vb.ev + '%</div>';
-      if (vb.market_prob && vb.fair_prob) {
-        html += '<div style="font-size:10px;color:#888">市场' + vb.market_prob + '% → 模型' + vb.fair_prob + '%</div>';
-      }
-      html += '</div></div>';
-    });
-    html += '</div>';
-  } else if (data.valueBetCount !== undefined) {
-    // 说明今日无正EV
-    html += '<div class="card" style="border:1px solid #e0e0e0;background:#fafafa;margin-top:8px">';
-    html += '<div style="text-align:center;padding:4px 0">';
-    html += '<span style="font-size:14px">📊</span> ';
-    html += '<span style="font-size:12px;color:#888">今日无正EV比赛（世界杯开赛后模型数据更完善会开始输出）</span>';
-    html += '</div></div>';
-  }
-  
-  if (data.s2recommend) {
-    var s2 = data.s2recommend;
-    html += '<div class="match-card" style="border-left:3px solid #ff9800">';
-    html += '<div class="match-top"><span class="match-star">🔗</span><span class="match-league" style="color:#e65100;font-weight:700">2串1推荐</span><span class="match-time" style="color:#e65100">两场全中才中奖</span></div>';
-    html += '<div class="match-body" style="padding:8px 12px">';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#fafafa;border-radius:6px;font-size:12px">';
-    html += '<div style="font-weight:700;margin-bottom:2px">' + s2.match1 + '</div>';
-    html += '<div style="color:#c62828;font-weight:700">' + s2.match1_rec + '</div>';
-    if (s2.match1_ev) html += '<div style="color:#4caf50;font-size:10px">EV' + s2.match1_ev + '</div>';
-    html += '</div>';
-    html += '<span style="font-size:18px;color:#999;font-weight:700">×</span>';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#fafafa;border-radius:6px;font-size:12px">';
-    html += '<div style="font-weight:700;margin-bottom:2px">' + s2.match2 + '</div>';
-    html += '<div style="color:#c62828;font-weight:700">' + s2.match2_rec + '</div>';
-    if (s2.match2_ev) html += '<div style="color:#4caf50;font-size:10px">EV' + s2.match2_ev + '</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '<div style="text-align:center;padding:4px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:6px;font-size:14px;font-weight:700;color:#e65100">总赔率: ' + s2.combined_odds;
-    if (s2.combined_ev !== undefined) {
-      var evCls = s2.combined_ev > 0 ? 'color:#2e7d32' : 'color:#c62828';
-      html += ' <span style="font-size:12px;' + evCls + '">| 综合EV: ' + (s2.combined_ev > 0 ? '+' : '') + s2.combined_ev + '%</span>';
-    }
-    html += '</div>';
-    html += '<div style="font-size:10px;color:#999;margin-top:4px;text-align:center">' + (s2.note||'') + '</div>';
-    html += '</div></div>';
-  }
-  
-  // 让球盘双关2串1
-  if (data.s2hhad) {
-    var sh = data.s2hhad;
-    html += '<div class="match-card" style="border-left:3px solid #1565c0;margin-top:2px">';
-    html += '<div class="match-top"><span class="match-star" style="font-size:14px">🔒</span><span class="match-league" style="color:#1565c0;font-weight:700">让球盘双关 2串1</span><span class="match-time" style="color:#1565c0">两场全中概率 ' + sh.combined_prob + '%</span></div>';
-    html += '<div class="match-body" style="padding:8px 12px">';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#e3f2fd;border-radius:6px;font-size:12px">';
-    html += '<div style="font-size:10px;color:#1565c0">让球' + (sh.match1_goalLine > 0 ? '+' : '') + sh.match1_goalLine + '</div>';
-    html += '<div style="font-weight:700;margin-bottom:2px">' + sh.match1 + '</div>';
-    html += '<div style="color:#1565c0;font-weight:700">' + sh.match1_rec + '</div>';
-    html += '<div style="color:#4caf50;font-size:10px">概率' + sh.match1_prob + '%</div>';
-    html += '</div>';
-    html += '<span style="font-size:18px;color:#999;font-weight:700">×</span>';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#e3f2fd;border-radius:6px;font-size:12px">';
-    html += '<div style="font-size:10px;color:#1565c0">让球' + (sh.match2_goalLine > 0 ? '+' : '') + sh.match2_goalLine + '</div>';
-    html += '<div style="font-weight:700;margin-bottom:2px">' + sh.match2 + '</div>';
-    html += '<div style="color:#1565c0;font-weight:700">' + sh.match2_rec + '</div>';
-    html += '<div style="color:#4caf50;font-size:10px">概率' + sh.match2_prob + '%</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '<div style="text-align:center;padding:4px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:6px;font-size:14px;font-weight:700;color:#1565c0">组合赔率: ' + sh.combined_odds + ' | 全中概率: ' + sh.combined_prob + '%';
-    if (sh.combined_ev !== undefined) {
-      var evCls2 = sh.combined_ev > 0 ? 'color:#2e7d32' : 'color:#c62828';
-      html += '<br><span style="font-size:11px;' + evCls2 + '">综合EV: ' + (sh.combined_ev > 0 ? '+' : '') + sh.combined_ev + '%</span>';
-    }
-    html += '</div>';
-    html += '<div style="font-size:10px;color:#999;margin-top:4px;text-align:center">' + (sh.note||'') + '</div>';
-    html += '</div></div>';
-  }
-  
-  // 双选双关2串1（每场选2个让球结果）
-  if (data.s2hhad_double) {
-    var sd = data.s2hhad_double;
-    html += '<div class="match-card" style="border-left:3px solid #00695c;margin-top:2px">';
-    html += '<div class="match-top"><span class="match-star" style="font-size:14px">🛡️</span><span class="match-league" style="color:#00695c;font-weight:700">双选双关 2串1</span><span class="match-time" style="color:#00695c">两场全中概率 ' + sd.combined_prob + '%</span></div>';
-    html += '<div class="match-body" style="padding:8px 12px">';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#e0f2f1;border-radius:6px;font-size:11px">';
-    html += '<div style="font-size:10px;color:#00695c">让球' + (sd.match1_goalLine > 0 ? '+' : '') + sd.match1_goalLine + '</div>';
-    html += '<div style="font-weight:700;margin-bottom:2px;font-size:13px">' + sd.match1 + '</div>';
-    html += '<div style="color:#00695c;font-weight:600;font-size:11px">' + sd.match1_detail + '</div>';
-    html += '<div style="color:#4caf50;font-size:10px">中奖概率 ' + sd.match1_prob + '%</div>';
-    html += '</div>';
-    html += '<span style="font-size:18px;color:#999;font-weight:700">×</span>';
-    html += '<div style="flex:1;text-align:center;padding:6px;background:#e0f2f1;border-radius:6px;font-size:11px">';
-    html += '<div style="font-size:10px;color:#00695c">让球' + (sd.match2_goalLine > 0 ? '+' : '') + sd.match2_goalLine + '</div>';
-    html += '<div style="font-weight:700;margin-bottom:2px;font-size:13px">' + sd.match2 + '</div>';
-    html += '<div style="color:#00695c;font-weight:600;font-size:11px">' + sd.match2_detail + '</div>';
-    html += '<div style="color:#4caf50;font-size:10px">中奖概率 ' + sd.match2_prob + '%</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '<div style="text-align:center;padding:4px;background:linear-gradient(135deg,#e0f2f1,#b2dfdb);border-radius:6px;font-size:13px;font-weight:700;color:#00695c">两场全中概率 ' + sd.combined_prob + '%（约每' + Math.round(100/sd.combined_prob) + '次中1次）<br><span style="font-size:10px;color:#c62828">注意: 即使中奖也可能亏损，长期期望值为负（约-21%）</span></div>';
-    html += '<div style="font-size:10px;color:#999;margin-top:4px;text-align:center">' + (sd.note||'') + '</div>';
-    html += '</div></div>';
-  }
-  
-  // 串关推荐（支持新旧格式）
-  if (data.bigOddsParlays) {
-    html += '<div class="card" style="border-left:3px solid #e65100;margin-top:12px">';
-    html += '<div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:8px">🔥 正EV组合 · 串关推荐</div>';
-    data.bigOddsParlays.forEach(function(p, pi) {
-      var bgColors = ['#fff3e0','#fff8e1','#fce4ec','#f3e5f5','#e8f5e9'];
-      html += '<div style="padding:8px 10px;margin-bottom:6px;background:' + bgColors[pi % bgColors.length] + ';border-radius:8px;font-size:12px">';
-      html += '<div style="font-weight:700;color:#c62828;margin-bottom:3px">' + (pi+1) + '. ' + p.name + '</div>';
-      html += '<div style="color:#666;line-height:1.6;margin-bottom:3px;font-size:11px">' + p.matches + '</div>';
-      html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
-      html += '<span style="background:#c62828;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">' + (p.type||'串关') + ' ' + p.cost + '元</span>';
-      if (p.maxPayout) html += '<span style="background:#e65100;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">' + p.maxPayout + '</span>';
-      html += '</div>';
-      if (p.note) html += '<div style="color:#999;font-size:10px;margin-top:2px">' + p.note + '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-  }
-  
-  // 推荐列表
-  recs.forEach(function(r, idx) {
-    var isTop = (idx === 0);
-    html += '<div class="match-card">';
-    html += '<div class="match-top">';
-    if (isTop) html += '<span class="match-star">🏆</span>';
-    html += '<span class="match-league">' + (r.league||'竞彩') + '</span>';
-    if (r.matchNum) html += '<span style="font-size:10px;color:#bbb">' + r.matchNum + '</span>';
-    html += '<span class="match-time">' + (r.matchDate||'') + ' ' + (r.matchTime||'') + '</span>';
-    html += '</div>';
-    html += '<div class="match-body">';
-    html += '<div class="match-teams">' + r.homeTeam + ' <span class="match-vs">vs</span> ' + r.awayTeam + '</div>';
-    html += '<div class="match-odds">';
-    var items = [
-      {label:'主胜', val:r.had_h, pick:r.recommend==='主胜'},
-      {label:'平局', val:r.had_d, pick:r.recommend==='平局'},
-      {label:'客胜', val:r.had_a, pick:r.recommend==='客胜'}
-    ];
-    items.forEach(function(oi) {
-      html += '<div class="odds-box' + (oi.pick?' pick':'') + '">';
-      html += '<div class="odds-label">' + oi.label + '</div>';
-      html += '<div class="odds-val">' + (oi.val ? oi.val.toFixed(2) : '-') + '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-    html += '<div class="match-rec">🏆 推荐 ' + r.recommend + ' @ ' + r.best_odds + ' <span class="match-conf">' + (r.confidence||'⭐') + '</span></div>';
+  MATCHES.forEach(function(m) {
+    var r = analyze(m);
+    var passed = isPassed(m);
     
-    var detailId = 'detail_' + idx;
-    var hasReasons = r.reasons && r.reasons.length > 0;
-    html += '<div class="detail-btn" onclick="toggleDetail(\'' + detailId + '\')">' + (hasReasons ? '📊 查看分析理由 ▼' : '📊 价值评分: ' + r.score) + '</div>';
-    html += '<div class="match-detail" id="' + detailId + '">';
-    if (hasReasons) {
-      html += '<div style="padding:8px 0;font-size:12px;color:#666;line-height:1.8">';
-      r.reasons.forEach(function(reason) { html += '• ' + reason + '<br>'; });
-      html += '</div>';
-    }
-    // 阵容深度展示
-    if (r.home_players || r.away_players) {
-      html += '<div style="margin:8px 0;padding:8px;background:#f8f9fa;border-radius:8px;font-size:11px;line-height:1.6">';
-      if (r.home_players) {
-        var hc = r.home_coach && r.home_coach !== '—' ? ' ' + r.home_coach : '';
-        html += '<div style="font-weight:600;margin-bottom:4px">' + r.homeTeam + ': ' + (r.home_player_count||'?') + '人' + hc + (r.home_avg_age ? ' 均龄' + r.home_avg_age + '岁' : '') + '</div>';
-        html += '<div style="color:#888">' + r.home_players.slice(0,5).join(', ') + '</div>';
-      }
-      if (r.away_players) {
-        var ac = r.away_coach && r.away_coach !== '—' ? ' ' + r.away_coach : '';
-        html += '<div style="font-weight:600;margin:4px 0 4px 0">' + r.awayTeam + ': ' + (r.away_player_count||'?') + '人' + ac + (r.away_avg_age ? ' 均龄' + r.away_avg_age + '岁' : '') + '</div>';
-        html += '<div style="color:#888">' + r.away_players.slice(0,5).join(', ') + '</div>';
-      }
-      html += '</div>';
-    }
-    html += '<div style="font-size:11px;color:#999;padding:4px 0;border-top:1px solid #f5f5f5">';
-    html += '评分: ' + r.score;
-    if (r.ev !== undefined) html += ' | EV: ' + (r.ev > 0 ? '<span style="color:#4caf50">' : '') + (r.ev > 0 ? '+' : '') + r.ev + '%' + (r.ev > 0 ? '</span>' : '');
-    html += ' | 抽水: ' + r.juice + '%';
-    // 价值重叠分析：市场隐含概率 vs 模型公平概率
-    if (r.value_overlay && r.value_overlay.length > 0) {
-      var vo = r.value_overlay;
-      html += '<div style="margin-top:4px;font-size:10px;border-top:1px dashed #eee;padding-top:4px">';
-      html += '<span style="font-weight:600">价值对标:</span> ';
-      vo.forEach(function(v, vi) {
-        var cls = '';
-        if (v.label === r.recommend) cls = ' style="color:#c62828;font-weight:700"';
-        html += '<span' + cls + '>' + v.label + ' 市场' + v.market_prob + '% vs 模型' + v.fair_prob + '%' + (v.value_gap > 0 ? ' ▲' : '') + (v.value_gap < 0 ? ' ▼' : '') + '</span>';
-        if (vi < vo.length - 1) html += ' | ';
-      });
-      html += '</div>';
-    }
-    // 球队状态（当有数据时显示）
-    if (r.home_form && r.away_form) {
-      html += '<div style="font-size:10px;color:#666;margin-top:2px">';
-      html += r.homeTeam + ' ' + r.home_form + ' | ' + r.awayTeam + ' ' + r.away_form;
-      html += '</div>';
-    }
-    // 凯利建议
-    if (r.kelly_advice && r.kelly_advice.suggest_stake > 0) {
-      html += '<br>💰 ' + r.kelly_advice.note;
-    }
-    if (r.home_group) html += '<br>📌 ' + r.home_group + ' | ' + r.homeTeam + ' 实力:' + (r.home_strength||'?') + ' ' + r.awayTeam + ' 实力:' + (r.away_strength||'?');
-    html += '</div></div>';
-    html += '</div></div>';
+    // 根据匹配筛选
+    var matchDay = m.date;
+    if (filterMode === 'today' && (passed || matchDay < today)) return;
+
+    var roiClass = r.roi > 10 ? 'roi-high' : (r.roi > 0 ? 'roi-mid' : 'roi-low');
+    var boxClass = r.roi < 0 ? 'negative' : '';
+    var statusTag = passed ? '<span style="color:#999;font-size:11px">已结束</span>' 
+      : (matchDay === today ? '<span style="color:#e65100;font-size:11px;font-weight:700">🔥 今天</span>' 
+        : '<span style="color:#1565c0;font-size:11px">即将</span>');
+
+    html += '<div class="card' + (passed ? ' passed' : '') + '">';
+    html += '<div class="match-header">';
+    html += '<div class="match-teams">' + m.match + ' ' + m.home + ' vs ' + m.away + '</div>';
+    html += '<div class="match-time">' + m.date.slice(5) + ' ' + m.time + ' ' + statusTag + '</div>';
+    html += '</div>';
+    
+    html += '<div class="odds-row">';
+    html += '<span class="odds-tag">HAD</span>';
+    html += '<span>' + m.had[0].toFixed(2) + ' / ' + m.had[1].toFixed(2) + ' / ' + m.had[2].toFixed(2) + '</span>';
+    html += '</div>';
+    html += '<div class="odds-row">';
+    html += '<span class="odds-tag">HHAD ' + m.gl + '</span>';
+    html += '<span>' + m.hhad[0].toFixed(2) + ' / ' + m.hhad[1].toFixed(2) + ' / ' + m.hhad[2].toFixed(2) + '</span>';
+    html += '</div>';
+
+    html += '<div class="strategy-box ' + boxClass + '">';
+    html += '<span class="roi-badge ' + roiClass + '">' + (r.roi > 0 ? '+' : '') + r.roi.toFixed(1) + '%</span>';
+    html += '<span style="margin-left:6px;font-size:13px;font-weight:700">' + r.strategy + '</span>';
+    html += '<div class="bet-detail">';
+    html += '📊 泊松λ=' + r.lam + ' | 主' + r.hWin + '% 平' + r.draw + '% 客' + r.aWin + '% | 拟合误差' + r.err + '%';
+    html += '<br>💰 ' + r.bet + ' | 预期回报 ' + r.ev + '元/2元';
+    html += '</div></div></div>';
   });
-  
-  ml.innerHTML = html;
-  ml.style.display = 'block';
-  
-  if (recs.length === 0) { ml.style.display = 'none'; em.style.display = 'block'; }
+
+  document.getElementById('matchList').innerHTML = html || '<div class="card" style="text-align:center;color:#999;padding:30px">没有符合条件的比赛</div>';
+  document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
 }
 
-function init() {
-  var ml = document.getElementById('matchList');
-  var ld = document.getElementById('loadingIndicator');
-  var em = document.getElementById('emptyMessage');
-  
-  // 先用内嵌数据渲染
-  if (JC_DATA && JC_DATA.recommendations && JC_DATA.recommendations.length > 0) {
-    renderData(JC_DATA);
-  } else {
-    ld.style.display = 'none';
-    em.style.display = 'block';
-  }
-  
-  // 同时尝试fetch最新数据（如果成功则覆盖）
-  fetch('jc_recommend.json?_t=' + Date.now())
-    .then(function(r) {
-      if (!r.ok) throw new Error('No remote data');
-      return r.json();
-    })
-    .then(function(data) {
-      if (data && data.recommendations && data.recommendations.length > 0) {
-        renderData(data);
-      }
-    })
-    .catch(function() {
-      // 静默失败，已用内嵌数据展示
-    });
+function filter(mode) {
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  event.target.classList.add('active');
+  render(mode);
 }
 
-function toggleDetail(id) {
-  var el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-
-window.addEventListener('DOMContentLoaded', init);
+render('all');
 </script>
-</body></html>
+</body>
+</html>
