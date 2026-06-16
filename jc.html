@@ -38,13 +38,13 @@ table td,table th{border-bottom:1px solid #eee}
 <body>
 
 <div class="header">
-  <h1>⚽ 竞彩足球 · 双盘分析</h1>
-  <p>泊松模型 + HAD×HHAD 双盘ROI | 数据更新: <span id="updateTime">—</span></p>
+  <h1>⚽ 竞彩足球 · 单选推荐</h1>
+  <p>泊松模型 最优期望值 | 数据更新: <span id="updateTime">—</span></p>
 </div>
 
 <div class="filter-bar" id="filterBar">
-  <button class="filter-btn active" onclick="filter('all')">全部</button>
-  <button class="filter-btn" onclick="filter('today')">今天可买</button>
+  <button class="filter-btn active" onclick="filter('all',event)">全部</button>
+  <button class="filter-btn" onclick="filter('today',event)">今天可买</button>
 </div>
 
 <div id="matchList"></div>
@@ -120,7 +120,9 @@ function analyze(m) {
     
     return {
       pick: pick,
-      label: pick === 'had' ? ('主胜 HAD @'+h[0].toFixed(2)) : ('客+'+Math.abs(gl)+' HHAD @'+hh[2].toFixed(2)),
+      market: pick === 'had' ? '胜平负' : '让球('+m.gl+')胜平负',
+      sel: pick === 'had' ? '胜' : '负',
+      desc: pick === 'had' ? (m.home+'赢') : (m.away+'+'+Math.abs(gl)+'球不败'),
       odds: pick === 'had' ? h[0] : hh[2],
       ev: Math.max(ev_had, ev_hhad),
       roi: Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
@@ -129,7 +131,10 @@ function analyze(m) {
       aWin: Math.round(pa2*1000)/10,
       err: Math.round(bestErr*1000)/10,
       lam: bl+'/'+bu,
-      alt: pick === 'had' ? ('备选: 客+'+Math.abs(gl)+' HHAD @'+hh[2].toFixed(2)) : ('备选: 主胜 HAD @'+h[0].toFixed(2))
+      altMarket: pick === 'had' ? '让球('+m.gl+')胜平负' : '胜平负',
+      altSel: pick === 'had' ? '负' : '胜',
+      altDesc: pick === 'had' ? (m.away+'+'+Math.abs(gl)+'球不败') : (m.home+'赢'),
+      altOdds: pick === 'had' ? hh[2] : h[0]
     };
   } else { // gl > 0
     for (var lh = 0; lh <= 2; lh += 0.1) {
@@ -162,7 +167,9 @@ function analyze(m) {
     
     return {
       pick: pick,
-      label: pick === 'had' ? ('客胜 HAD @'+h[2].toFixed(2)) : ('主+'+Math.abs(gl)+' HHAD @'+hh[0].toFixed(2)),
+      market: pick === 'had' ? '胜平负' : '让球(+'+Math.abs(gl)+')胜平负',
+      sel: pick === 'had' ? '负' : '胜',
+      desc: pick === 'had' ? (m.away+'赢') : (m.home+'+'+Math.abs(gl)+'球不败'),
       odds: pick === 'had' ? h[2] : hh[0],
       ev: Math.max(ev_had, ev_hhad),
       roi: Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
@@ -171,7 +178,10 @@ function analyze(m) {
       aWin: Math.round((awBy1+awBy2p)*1000)/10,
       err: Math.round(bestErr*1000)/10,
       lam: bl+'/'+bu,
-      alt: pick === 'had' ? ('备选: 主+'+Math.abs(gl)+' HHAD @'+hh[0].toFixed(2)) : ('备选: 客胜 HAD @'+h[2].toFixed(2))
+      altMarket: pick === 'had' ? '让球(+'+Math.abs(gl)+')胜平负' : '胜平负',
+      altSel: pick === 'had' ? '胜' : '负',
+      altDesc: pick === 'had' ? (m.home+'+'+Math.abs(gl)+'球不败') : (m.away+'赢'),
+      altOdds: pick === 'had' ? hh[0] : h[2]
     };
   }
 }
@@ -215,10 +225,17 @@ function render(filterMode) {
     html += '</div>';
 
     // 单选推荐
-    html += '<div class="strategy-box ' + boxClass + '" style="padding:10px">';
+    html += '<div class="strategy-box ' + boxClass + '" style="padding:12px">';
     html += '<span class="roi-badge ' + roiClass + '">期望' + (r.roi > 0 ? '+' : '') + r.roi.toFixed(0) + '%</span>';
-    html += ' <b style="font-size:15px">买' + r.label + '</b>';
-    html += '<div style="font-size:11px;color:#888;margin-top:4px">' + r.alt + ' | 1元 → ' + r.ev.toFixed(2) + '元</div>';
+    html += '<div style="font-size:13px;color:#888;margin-top:2px">' + m.home + ' vs ' + m.away + '</div>';
+    html += '<div style="font-size:15px;font-weight:700;margin:6px 0">';
+    html += '📌 [' + r.market + '] 选 <b style="color:#e65100;font-size:17px">「' + r.sel + '」</b>';
+    html += ' <span style="color:#e65100">@' + r.odds.toFixed(2) + '</span>';
+    html += '</div>';
+    html += '<div style="font-size:12px;color:#666">' + r.desc + ' 即中奖 | 1元→' + r.ev.toFixed(2) + '元</div>';
+    html += '<div style="font-size:11px;color:#999;margin-top:6px;border-top:1px dashed #ddd;padding-top:6px">';
+    html += '备选: [' + r.altMarket + '] 选「' + r.altSel + '」(' + r.altDesc + ') @' + r.altOdds.toFixed(2);
+    html += '</div>';
     html += '</div></div>';
   });
 
@@ -226,9 +243,9 @@ function render(filterMode) {
   document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
 }
 
-function filter(mode) {
+function filter(mode, e) {
   document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-  event.target.classList.add('active');
+  e.target.classList.add('active');
   render(mode);
 }
 
