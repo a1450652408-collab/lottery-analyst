@@ -1,8 +1,8 @@
 {
-  "date": "2026-06-15",
-  "updateTime": "08:54",
+  "date": "2026-06-16",
+  "updateTime": "08:58",
   "modelVersion": "V5 (Poisson + 泊松模型)",
-  "totalMatches": 11,
+  "totalMatches": 8,
   "topRecommend": {
     "matchId": 2040184,
     "matchNum": "周三023",
@@ -39,53 +39,13 @@
       "form": null,
       "has_data": false
     },
-    "home_coach": "Carlos Queiroz",
-    "home_player_count": 26,
-    "home_avg_age": 26.5,
-    "home_pos_dist": {
-      "GK": 3,
-      "DF": 9,
-      "MF": 5,
-      "FW": 9
-    },
-    "home_players": [
-      "GK Lawrence Ati-Zigi(29)",
-      "GK Joseph Anang(26)",
-      "GK Benjamin Asare(33)",
-      "DF Abdul Rahman Baba(31)",
-      "DF Derrick Luckassen(30)",
-      "DF Gideon Mensah(27)",
-      "DF Abdul Mumin(28)",
-      "DF Jerome Opoku(27)"
-    ],
-    "away_coach": "Thomas Christiansen",
-    "away_player_count": 26,
-    "away_avg_age": 30.0,
-    "away_pos_dist": {
-      "GK": 3,
-      "DF": 10,
-      "MF": 9,
-      "FW": 4
-    },
-    "away_players": [
-      "GK Luis Mejía(35)",
-      "GK Orlando Mosquera(31)",
-      "GK Cesar Samudio(32)",
-      "DF Roderick Miller(34)",
-      "DF Fidel Escobar(31)",
-      "DF Éric Davis(35)",
-      "DF Andrés Andrade(27)",
-      "DF César Blackman(28)"
-    ],
     "recommend": "主胜",
     "best_odds": 1.96,
     "best_value": 1.5,
     "ev": -11.4,
-    "score": 1.0,
-    "confidence": "★★",
-    "reasons": [
-      "均龄年轻"
-    ],
+    "score": 0.5,
+    "confidence": "★",
+    "reasons": [],
     "poisson_source": "odds_only",
     "home_prob": 45.2,
     "draw_prob": 29.5,
@@ -162,53 +122,13 @@
         "form": null,
         "has_data": false
       },
-      "home_coach": "Carlos Queiroz",
-      "home_player_count": 26,
-      "home_avg_age": 26.5,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 5,
-        "FW": 9
-      },
-      "home_players": [
-        "GK Lawrence Ati-Zigi(29)",
-        "GK Joseph Anang(26)",
-        "GK Benjamin Asare(33)",
-        "DF Abdul Rahman Baba(31)",
-        "DF Derrick Luckassen(30)",
-        "DF Gideon Mensah(27)",
-        "DF Abdul Mumin(28)",
-        "DF Jerome Opoku(27)"
-      ],
-      "away_coach": "Thomas Christiansen",
-      "away_player_count": 26,
-      "away_avg_age": 30.0,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 10,
-        "MF": 9,
-        "FW": 4
-      },
-      "away_players": [
-        "GK Luis Mejía(35)",
-        "GK Orlando Mosquera(31)",
-        "GK Cesar Samudio(32)",
-        "DF Roderick Miller(34)",
-        "DF Fidel Escobar(31)",
-        "DF Éric Davis(35)",
-        "DF Andrés Andrade(27)",
-        "DF César Blackman(28)"
-      ],
       "recommend": "主胜",
       "best_odds": 1.96,
       "best_value": 1.5,
       "ev": -11.4,
-      "score": 1.0,
-      "confidence": "★★",
-      "reasons": [
-        "均龄年轻"
-      ],
+      "score": 0.5,
+      "confidence": "★",
+      "reasons": [],
       "poisson_source": "odds_only",
       "home_prob": 45.2,
       "draw_prob": 29.5,
@@ -249,126 +169,6 @@
       }
     },
     {
-      "matchId": 2040175,
-      "matchNum": "周一014",
-      "league": "世界杯",
-      "homeTeam": "比利时",
-      "awayTeam": "埃及",
-      "matchDate": "2026-06-16",
-      "matchTime": "03:00",
-      "had_h": 1.43,
-      "had_d": 3.84,
-      "had_a": 5.9,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 2.56,
-      "hhad_d": 3.2,
-      "hhad_a": 2.35,
-      "home_strength": 50,
-      "away_strength": 50,
-      "strength_diff": 0,
-      "home_detail": {
-        "eng_name": "Belgium",
-        "position": 1,
-        "group": "Group G",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "away_detail": {
-        "eng_name": "Egypt",
-        "position": 1,
-        "group": "Group G",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "home_coach": "Rudi Garcia",
-      "home_player_count": 26,
-      "home_avg_age": 27.2,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 10,
-        "FW": 4
-      },
-      "home_players": [
-        "GK Thibaut Courtois(34)",
-        "GK Senne Lammens(23)",
-        "GK Mike Penders(20)",
-        "DF Timothy Castagne(30)",
-        "DF Thomas Meunier(34)",
-        "DF Brandon Mechele(33)",
-        "DF Maxim De Cuyper(25)",
-        "DF Arthur Theate(26)"
-      ],
-      "away_coach": "Hossam Hassan",
-      "away_player_count": 26,
-      "away_avg_age": 28.7,
-      "away_pos_dist": {
-        "GK": 4,
-        "DF": 8,
-        "MF": 9,
-        "FW": 5
-      },
-      "away_players": [
-        "GK Mohamed El Shenawy(37)",
-        "GK Mohamed Alaa(26)",
-        "GK Oufa Shobeir(26)",
-        "GK El Mahdi Soliman(39)",
-        "DF Karim Hafez(30)",
-        "DF Mohamed Hany(30)",
-        "DF Yasser Ibrahim(33)",
-        "DF Ahmed El Fotouh(28)"
-      ],
-      "recommend": "主胜",
-      "best_odds": 1.43,
-      "best_value": 1.4,
-      "ev": -11.4,
-      "score": 0.5,
-      "confidence": "★",
-      "reasons": [],
-      "poisson_source": "odds_only",
-      "home_prob": 61.9,
-      "draw_prob": 23.1,
-      "away_prob": 15.0,
-      "all_options": [
-        {
-          "label": "主胜",
-          "odds": 1.43,
-          "model_prob": 61.9,
-          "market_prob": 61.9,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 3.84,
-          "model_prob": 23.1,
-          "market_prob": 23.1,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 5.9,
-          "model_prob": 15.0,
-          "market_prob": 15.0,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        }
-      ],
-      "kelly_advice": {
-        "suggest_stake": 0,
-        "kelly_pct": 0,
-        "note": "无正EV，不建议投注"
-      }
-    },
-    {
       "matchId": 2040177,
       "matchNum": "周一016",
       "league": "世界杯",
@@ -376,19 +176,19 @@
       "awayTeam": "新西兰",
       "matchDate": "2026-06-16",
       "matchTime": "09:00",
-      "had_h": 1.56,
-      "had_d": 3.3,
-      "had_a": 5.4,
+      "had_h": 1.55,
+      "had_d": 3.38,
+      "had_a": 5.3,
       "hhad_goalLine": -1.0,
-      "hhad_h": 3.1,
-      "hhad_d": 3.1,
-      "hhad_a": 2.07,
+      "hhad_h": 2.87,
+      "hhad_d": 3.3,
+      "hhad_a": 2.09,
       "home_strength": 50,
       "away_strength": 50,
       "strength_diff": 0,
       "home_detail": {
         "eng_name": "Iran",
-        "position": 1,
+        "position": 3,
         "group": "Group G",
         "points": 0,
         "played": 0,
@@ -397,32 +197,13 @@
       },
       "away_detail": {
         "eng_name": "New Zealand",
-        "position": 1,
+        "position": 3,
         "group": "Group G",
         "points": 0,
         "played": 0,
         "form": null,
         "has_data": false
       },
-      "home_coach": "Amir Ghalenoei",
-      "home_player_count": 26,
-      "home_avg_age": 29.8,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 6,
-        "FW": 8
-      },
-      "home_players": [
-        "GK Hossein Hosseini(33)",
-        "GK Payam Niazmand(31)",
-        "GK Alireza Beiranvand(33)",
-        "DF Ehsan Hajsafi(36)",
-        "DF Ramin Rezaeian(36)",
-        "DF Milad Mohammadi(32)",
-        "DF Hossein Kanaanizadegan(32)",
-        "DF Shojae Khalilzadeh(37)"
-      ],
       "away_coach": "Darren Bazeley",
       "away_player_count": 26,
       "away_avg_age": 27.7,
@@ -443,280 +224,40 @@
         "DF Callan Elliot(26)"
       ],
       "recommend": "主胜",
-      "best_odds": 1.56,
-      "best_value": 1.5,
-      "ev": -11.4,
-      "score": 0.5,
-      "confidence": "★",
-      "reasons": [],
-      "poisson_source": "odds_only",
-      "home_prob": 56.8,
-      "draw_prob": 26.8,
-      "away_prob": 16.4,
-      "all_options": [
-        {
-          "label": "主胜",
-          "odds": 1.56,
-          "model_prob": 56.8,
-          "market_prob": 56.8,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 3.3,
-          "model_prob": 26.8,
-          "market_prob": 26.8,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 5.4,
-          "model_prob": 16.4,
-          "market_prob": 16.4,
-          "value_gap": 0,
-          "ev": -11.4,
-          "is_value": false
-        }
-      ],
-      "kelly_advice": {
-        "suggest_stake": 0,
-        "kelly_pct": 0,
-        "note": "无正EV，不建议投注"
-      }
-    },
-    {
-      "matchId": 2040173,
-      "matchNum": "周日012",
-      "league": "世界杯",
-      "homeTeam": "瑞典",
-      "awayTeam": "突尼斯",
-      "matchDate": "2026-06-15",
-      "matchTime": "10:00",
-      "had_h": 1.67,
-      "had_d": 3.35,
-      "had_a": 4.3,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 3.32,
-      "hhad_d": 3.17,
-      "hhad_a": 1.95,
-      "home_strength": 50,
-      "away_strength": 50,
-      "strength_diff": 0,
-      "home_detail": {
-        "eng_name": "Sweden",
-        "position": 3,
-        "group": "Group F",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "away_detail": {
-        "eng_name": "Tunisia",
-        "position": 3,
-        "group": "Group F",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "home_coach": "Graham Potter",
-      "home_player_count": 26,
-      "home_avg_age": 27.0,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 10,
-        "MF": 7,
-        "FW": 6
-      },
-      "home_players": [
-        "GK Kristoffer Nordfeldt(36)",
-        "GK Viktor Johansson(27)",
-        "GK Jacob Widell Zetterström(27)",
-        "DF Victor Nilsson-Lindelöf(31)",
-        "DF Carl Starfelt(31)",
-        "DF Gabriel Gudmundsson(27)",
-        "DF Hjalmar Ekdal(27)",
-        "DF Eric Smith(29)"
-      ],
-      "away_coach": "Sabri Lamouchi",
-      "away_player_count": 26,
-      "away_avg_age": 26.2,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 10,
-        "MF": 7,
-        "FW": 6
-      },
-      "away_players": [
-        "GK Aymen Dahmen(29)",
-        "GK Sabri Ben Hessen(30)",
-        "GK Abdelmouhib Chamakh(24)",
-        "DF Dylan Bronn(30)",
-        "DF Ali El Abdi(32)",
-        "DF Yan Valery(27)",
-        "DF Mortadha Ben Ouanes(31)",
-        "DF Omar Rekik(24)"
-      ],
-      "recommend": "主胜",
-      "best_odds": 1.67,
+      "best_odds": 1.55,
       "best_value": 1.5,
       "ev": -11.5,
       "score": 0.5,
       "confidence": "★",
       "reasons": [],
       "poisson_source": "odds_only",
-      "home_prob": 53.0,
-      "draw_prob": 26.4,
-      "away_prob": 20.6,
+      "home_prob": 57.1,
+      "draw_prob": 26.2,
+      "away_prob": 16.7,
       "all_options": [
         {
           "label": "主胜",
-          "odds": 1.67,
-          "model_prob": 53.0,
-          "market_prob": 53.0,
+          "odds": 1.55,
+          "model_prob": 57.1,
+          "market_prob": 57.1,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
         },
         {
           "label": "平局",
-          "odds": 3.35,
-          "model_prob": 26.4,
-          "market_prob": 26.4,
+          "odds": 3.38,
+          "model_prob": 26.2,
+          "market_prob": 26.2,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
         },
         {
           "label": "客胜",
-          "odds": 4.3,
-          "model_prob": 20.6,
-          "market_prob": 20.6,
-          "value_gap": 0,
-          "ev": -11.5,
-          "is_value": false
-        }
-      ],
-      "kelly_advice": {
-        "suggest_stake": 0,
-        "kelly_pct": 0,
-        "note": "无正EV，不建议投注"
-      }
-    },
-    {
-      "matchId": 2040176,
-      "matchNum": "周一015",
-      "league": "世界杯",
-      "homeTeam": "沙特",
-      "awayTeam": "乌拉圭",
-      "matchDate": "2026-06-16",
-      "matchTime": "06:00",
-      "had_h": 7.65,
-      "had_d": 4.25,
-      "had_a": 1.31,
-      "hhad_goalLine": 1.0,
-      "hhad_h": 2.84,
-      "hhad_d": 3.3,
-      "hhad_a": 2.11,
-      "home_strength": 50,
-      "away_strength": 50,
-      "strength_diff": 0,
-      "home_detail": {
-        "eng_name": "Saudi Arabia",
-        "position": 1,
-        "group": "Group H",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "away_detail": {
-        "eng_name": "Uruguay",
-        "position": 1,
-        "group": "Group H",
-        "points": 0,
-        "played": 0,
-        "form": null,
-        "has_data": false
-      },
-      "home_coach": "Giorgios Donis",
-      "home_player_count": 26,
-      "home_avg_age": 28.0,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 9,
-        "FW": 5
-      },
-      "home_players": [
-        "GK Mohammed Al Owais(34)",
-        "GK Nawaf Al Aqidi(26)",
-        "GK Ahmed Al Kassar(35)",
-        "DF Abdulelah Al Amri(29)",
-        "DF Saud Abdulhamid(26)",
-        "DF Ali Lajami(30)",
-        "DF Hassan Al Tambakti(27)",
-        "DF Hassan Kadesh(33)"
-      ],
-      "away_coach": "Marcelo Bielsa",
-      "away_player_count": 26,
-      "away_avg_age": 28.2,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 10,
-        "FW": 4
-      },
-      "away_players": [
-        "GK Fernando Muslera(39)",
-        "GK Santiago Mele(28)",
-        "GK Sergio Rochet(33)",
-        "DF Guillermo Varela(33)",
-        "DF Ronald Araújo(27)",
-        "DF Sebastían Cáceres(26)",
-        "DF Matías Viña(28)",
-        "DF Joaquín Piquerez(27)"
-      ],
-      "recommend": "主胜",
-      "best_odds": 7.65,
-      "best_value": 1.7,
-      "ev": -11.5,
-      "score": 0.5,
-      "confidence": "★",
-      "reasons": [],
-      "poisson_source": "odds_only",
-      "home_prob": 11.6,
-      "draw_prob": 20.8,
-      "away_prob": 67.6,
-      "all_options": [
-        {
-          "label": "主胜",
-          "odds": 7.65,
-          "model_prob": 11.6,
-          "market_prob": 11.6,
-          "value_gap": 0,
-          "ev": -11.5,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 4.25,
-          "model_prob": 20.8,
-          "market_prob": 20.8,
-          "value_gap": 0,
-          "ev": -11.5,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 1.31,
-          "model_prob": 67.6,
-          "market_prob": 67.6,
+          "odds": 5.3,
+          "model_prob": 16.7,
+          "market_prob": 16.7,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
@@ -736,13 +277,13 @@
       "awayTeam": "塞内加尔",
       "matchDate": "2026-06-17",
       "matchTime": "03:00",
-      "had_h": 1.35,
-      "had_d": 4.02,
-      "had_a": 7.15,
+      "had_h": 1.31,
+      "had_d": 4.23,
+      "had_a": 7.7,
       "hhad_goalLine": -1.0,
-      "hhad_h": 2.23,
-      "hhad_d": 3.22,
-      "hhad_a": 2.7,
+      "hhad_h": 2.12,
+      "hhad_d": 3.37,
+      "hhad_a": 2.77,
       "home_strength": 50,
       "away_strength": 50,
       "strength_diff": 0,
@@ -783,60 +324,281 @@
         "DF Jules Koundé(27)",
         "DF Dayot Upamecano(27)"
       ],
-      "away_coach": null,
-      "away_player_count": 27,
-      "away_avg_age": 27.3,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 7,
-        "MF": 10,
-        "FW": 6
-      },
-      "away_players": [
-        "GK Edouard Mendy(34)",
-        "GK Yehvann Diouf(26)",
-        "GK Mory Diaw(32)",
-        "DF Ismail Jakobs(26)",
-        "DF Kalidou Koulibaly(34)",
-        "DF Moussa Niakhaté(30)",
-        "DF Abdoulaye Seck(34)",
-        "DF Antoine Mendy(22)"
-      ],
       "recommend": "主胜",
-      "best_odds": 1.35,
+      "best_odds": 1.31,
       "best_value": 1.5,
       "ev": -11.5,
       "score": 0.5,
       "confidence": "★",
       "reasons": [],
       "poisson_source": "odds_only",
-      "home_prob": 65.6,
-      "draw_prob": 22.0,
-      "away_prob": 12.4,
+      "home_prob": 67.6,
+      "draw_prob": 20.9,
+      "away_prob": 11.5,
       "all_options": [
         {
           "label": "主胜",
-          "odds": 1.35,
-          "model_prob": 65.6,
-          "market_prob": 65.6,
+          "odds": 1.31,
+          "model_prob": 67.6,
+          "market_prob": 67.6,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
         },
         {
           "label": "平局",
-          "odds": 4.02,
-          "model_prob": 22.0,
-          "market_prob": 22.0,
+          "odds": 4.23,
+          "model_prob": 20.9,
+          "market_prob": 20.9,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
         },
         {
           "label": "客胜",
-          "odds": 7.15,
-          "model_prob": 12.4,
-          "market_prob": 12.4,
+          "odds": 7.7,
+          "model_prob": 11.5,
+          "market_prob": 11.5,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        }
+      ],
+      "kelly_advice": {
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "note": "无正EV，不建议投注"
+      }
+    },
+    {
+      "matchId": 2040180,
+      "matchNum": "周二019",
+      "league": "世界杯",
+      "homeTeam": "阿根廷",
+      "awayTeam": "阿尔及利",
+      "matchDate": "2026-06-17",
+      "matchTime": "09:00",
+      "had_h": 1.26,
+      "had_d": 4.4,
+      "had_a": 9.2,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 1.9,
+      "hhad_d": 3.5,
+      "hhad_a": 3.15,
+      "home_strength": 50,
+      "away_strength": 50,
+      "strength_diff": 0,
+      "home_detail": {
+        "eng_name": "Argentina",
+        "position": 1,
+        "group": "Group J",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "away_detail": {
+        "note": "未找到映射: 阿尔及利"
+      },
+      "recommend": "主胜",
+      "best_odds": 1.26,
+      "best_value": 1.5,
+      "ev": -11.5,
+      "score": 0.5,
+      "confidence": "★",
+      "reasons": [],
+      "poisson_source": "odds_only",
+      "home_prob": 70.3,
+      "draw_prob": 20.1,
+      "away_prob": 9.6,
+      "all_options": [
+        {
+          "label": "主胜",
+          "odds": 1.26,
+          "model_prob": 70.3,
+          "market_prob": 70.3,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 4.4,
+          "model_prob": 20.1,
+          "market_prob": 20.1,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 9.2,
+          "model_prob": 9.6,
+          "market_prob": 9.6,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        }
+      ],
+      "kelly_advice": {
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "note": "无正EV，不建议投注"
+      }
+    },
+    {
+      "matchId": 2040181,
+      "matchNum": "周二020",
+      "league": "世界杯",
+      "homeTeam": "奥地利",
+      "awayTeam": "约旦",
+      "matchDate": "2026-06-17",
+      "matchTime": "12:00",
+      "had_h": 1.21,
+      "had_d": 5.15,
+      "had_a": 9.2,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 1.79,
+      "hhad_d": 3.56,
+      "hhad_a": 3.45,
+      "home_strength": 50,
+      "away_strength": 50,
+      "strength_diff": 0,
+      "home_detail": {
+        "eng_name": "Austria",
+        "position": 1,
+        "group": "Group J",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "away_detail": {
+        "eng_name": "Jordan",
+        "position": 1,
+        "group": "Group J",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "recommend": "主胜",
+      "best_odds": 1.21,
+      "best_value": 1.5,
+      "ev": -11.5,
+      "score": 0.5,
+      "confidence": "★",
+      "reasons": [],
+      "poisson_source": "odds_only",
+      "home_prob": 73.2,
+      "draw_prob": 17.2,
+      "away_prob": 9.6,
+      "all_options": [
+        {
+          "label": "主胜",
+          "odds": 1.21,
+          "model_prob": 73.2,
+          "market_prob": 73.2,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 5.15,
+          "model_prob": 17.2,
+          "market_prob": 17.2,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 9.2,
+          "model_prob": 9.6,
+          "market_prob": 9.6,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        }
+      ],
+      "kelly_advice": {
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "note": "无正EV，不建议投注"
+      }
+    },
+    {
+      "matchId": 2040183,
+      "matchNum": "周三022",
+      "league": "世界杯",
+      "homeTeam": "英格兰",
+      "awayTeam": "克罗地亚",
+      "matchDate": "2026-06-18",
+      "matchTime": "04:00",
+      "had_h": 1.53,
+      "had_d": 3.5,
+      "had_a": 5.25,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 2.84,
+      "hhad_d": 3.2,
+      "hhad_a": 2.15,
+      "home_strength": 50,
+      "away_strength": 50,
+      "strength_diff": 0,
+      "home_detail": {
+        "eng_name": "England",
+        "position": 1,
+        "group": "Group L",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "away_detail": {
+        "eng_name": "Croatia",
+        "position": 1,
+        "group": "Group L",
+        "points": 0,
+        "played": 0,
+        "form": null,
+        "has_data": false
+      },
+      "recommend": "主胜",
+      "best_odds": 1.53,
+      "best_value": 1.6,
+      "ev": -11.5,
+      "score": 0.5,
+      "confidence": "★",
+      "reasons": [],
+      "poisson_source": "odds_only",
+      "home_prob": 57.9,
+      "draw_prob": 25.3,
+      "away_prob": 16.9,
+      "all_options": [
+        {
+          "label": "主胜",
+          "odds": 1.53,
+          "model_prob": 57.9,
+          "market_prob": 57.9,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 3.5,
+          "model_prob": 25.3,
+          "market_prob": 25.3,
+          "value_gap": 0,
+          "ev": -11.5,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 5.25,
+          "model_prob": 16.9,
+          "market_prob": 16.9,
           "value_gap": 0,
           "ev": -11.5,
           "is_value": false
@@ -853,160 +615,40 @@
   "valueBets": [],
   "scorePredictions": [
     {
-      "homeTeam": "瑞典",
-      "awayTeam": "突尼斯",
-      "homeProb": 53.0,
-      "drawProb": 26.4,
-      "awayProb": 20.6,
-      "topScores": [],
-      "valueBets": [
-        {
-          "label": "主胜",
-          "odds": 1.67,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 53.0,
-          "model_prob": 53.0,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 3.35,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 26.4,
-          "model_prob": 26.4,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 4.3,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 20.6,
-          "model_prob": 20.6,
-          "value_gap": 0,
-          "is_value": false
-        }
-      ]
-    },
-    {
-      "homeTeam": "比利时",
-      "awayTeam": "埃及",
-      "homeProb": 61.9,
-      "drawProb": 23.1,
-      "awayProb": 15.0,
-      "topScores": [],
-      "valueBets": [
-        {
-          "label": "主胜",
-          "odds": 1.43,
-          "ev": -11.4,
-          "score": 1.5,
-          "market_prob": 61.9,
-          "model_prob": 61.9,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 3.84,
-          "ev": -11.4,
-          "score": 1.5,
-          "market_prob": 23.1,
-          "model_prob": 23.1,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 5.9,
-          "ev": -11.4,
-          "score": 1.5,
-          "market_prob": 15.0,
-          "model_prob": 15.0,
-          "value_gap": 0,
-          "is_value": false
-        }
-      ]
-    },
-    {
-      "homeTeam": "沙特",
-      "awayTeam": "乌拉圭",
-      "homeProb": 11.6,
-      "drawProb": 20.8,
-      "awayProb": 67.6,
-      "topScores": [],
-      "valueBets": [
-        {
-          "label": "主胜",
-          "odds": 7.65,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 11.6,
-          "model_prob": 11.6,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 4.25,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 20.8,
-          "model_prob": 20.8,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 1.31,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 67.6,
-          "model_prob": 67.6,
-          "value_gap": 0,
-          "is_value": false
-        }
-      ]
-    },
-    {
       "homeTeam": "伊朗",
       "awayTeam": "新西兰",
-      "homeProb": 56.8,
-      "drawProb": 26.8,
-      "awayProb": 16.4,
+      "homeProb": 57.1,
+      "drawProb": 26.2,
+      "awayProb": 16.7,
       "topScores": [],
       "valueBets": [
         {
           "label": "主胜",
-          "odds": 1.56,
-          "ev": -11.4,
+          "odds": 1.55,
+          "ev": -11.5,
           "score": 1.5,
-          "market_prob": 56.8,
-          "model_prob": 56.8,
+          "market_prob": 57.1,
+          "model_prob": 57.1,
           "value_gap": 0,
           "is_value": false
         },
         {
           "label": "平局",
-          "odds": 3.3,
-          "ev": -11.4,
+          "odds": 3.38,
+          "ev": -11.5,
           "score": 1.5,
-          "market_prob": 26.8,
-          "model_prob": 26.8,
+          "market_prob": 26.2,
+          "model_prob": 26.2,
           "value_gap": 0,
           "is_value": false
         },
         {
           "label": "客胜",
-          "odds": 5.4,
-          "ev": -11.4,
+          "odds": 5.3,
+          "ev": -11.5,
           "score": 1.5,
-          "market_prob": 16.4,
-          "model_prob": 16.4,
+          "market_prob": 16.7,
+          "model_prob": 16.7,
           "value_gap": 0,
           "is_value": false
         }
@@ -1015,38 +657,158 @@
     {
       "homeTeam": "法国",
       "awayTeam": "塞内加尔",
-      "homeProb": 65.6,
-      "drawProb": 22.0,
-      "awayProb": 12.4,
+      "homeProb": 67.6,
+      "drawProb": 20.9,
+      "awayProb": 11.5,
       "topScores": [],
       "valueBets": [
         {
           "label": "主胜",
-          "odds": 1.35,
+          "odds": 1.31,
           "ev": -11.5,
           "score": 1.5,
-          "market_prob": 65.6,
-          "model_prob": 65.6,
+          "market_prob": 67.6,
+          "model_prob": 67.6,
           "value_gap": 0,
           "is_value": false
         },
         {
           "label": "平局",
-          "odds": 4.02,
+          "odds": 4.23,
           "ev": -11.5,
           "score": 1.5,
-          "market_prob": 22.0,
-          "model_prob": 22.0,
+          "market_prob": 20.9,
+          "model_prob": 20.9,
           "value_gap": 0,
           "is_value": false
         },
         {
           "label": "客胜",
-          "odds": 7.15,
+          "odds": 7.7,
           "ev": -11.5,
           "score": 1.5,
-          "market_prob": 12.4,
-          "model_prob": 12.4,
+          "market_prob": 11.5,
+          "model_prob": 11.5,
+          "value_gap": 0,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "阿根廷",
+      "awayTeam": "阿尔及利",
+      "homeProb": 70.3,
+      "drawProb": 20.1,
+      "awayProb": 9.6,
+      "topScores": [],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 1.26,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 70.3,
+          "model_prob": 70.3,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 4.4,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 20.1,
+          "model_prob": 20.1,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 9.2,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 9.6,
+          "model_prob": 9.6,
+          "value_gap": 0,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "奥地利",
+      "awayTeam": "约旦",
+      "homeProb": 73.2,
+      "drawProb": 17.2,
+      "awayProb": 9.6,
+      "topScores": [],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 1.21,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 73.2,
+          "model_prob": 73.2,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 5.15,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 17.2,
+          "model_prob": 17.2,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 9.2,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 9.6,
+          "model_prob": 9.6,
+          "value_gap": 0,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "葡萄牙",
+      "awayTeam": "刚果金",
+      "homeProb": 78.3,
+      "drawProb": 15.1,
+      "awayProb": 6.6,
+      "topScores": [],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 1.13,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 78.3,
+          "model_prob": 78.3,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "平局",
+          "odds": 5.86,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 15.1,
+          "model_prob": 15.1,
+          "value_gap": 0,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 13.5,
+          "ev": -11.5,
+          "score": 1.5,
+          "market_prob": 6.6,
+          "model_prob": 6.6,
           "value_gap": 0,
           "is_value": false
         }
@@ -1055,11 +817,11 @@
   ],
   "posEvCount": 0,
   "valueBetCount": 0,
-  "poissonDataAvailable": true,
+  "poissonDataAvailable": false,
   "dataSource": {
     "odds": "webapi.sporttery.cn",
     "teamData": "api.football-data.org (排名+阵容+比赛)",
     "model": "Poisson Distribution (泊松分布)",
-    "poissonTeams": 20
+    "poissonTeams": 0
   }
 }
