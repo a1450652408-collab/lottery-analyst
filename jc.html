@@ -54,22 +54,20 @@ table td,table th{border-bottom:1px solid #eee}
 </div>
 
 <script>
-// ===== 嵌入数据 =====
-var MATCHES = [
-{"match":"周日010","home":"荷兰","away":"日本","date":"2026-06-15","time":"04:00","had":[1.86,3.33,3.43],"hhad":[4.0,3.4,1.71],"gl":"-1.00"},
-{"match":"周日011","home":"科特迪瓦","away":"厄瓜多尔","date":"2026-06-15","time":"07:00","had":[3.15,2.65,2.3],"hhad":[1.45,3.8,5.65],"gl":"+1.00"},
-{"match":"周日012","home":"瑞典","away":"突尼斯","date":"2026-06-15","time":"10:00","had":[1.67,3.35,4.3],"hhad":[3.32,3.17,1.95],"gl":"-1.00"},
-{"match":"周一014","home":"比利时","away":"埃及","date":"2026-06-16","time":"03:00","had":[1.43,3.84,5.9],"hhad":[2.56,3.2,2.35],"gl":"-1.00"},
-{"match":"周一015","home":"沙特","away":"乌拉圭","date":"2026-06-16","time":"06:00","had":[7.65,4.25,1.31],"hhad":[2.84,3.3,2.11],"gl":"+1.00"},
-{"match":"周一016","home":"伊朗","away":"新西兰","date":"2026-06-16","time":"09:00","had":[1.56,3.3,5.4],"hhad":[3.1,3.1,2.07],"gl":"-1.00"},
-{"match":"周二017","home":"法国","away":"塞内加尔","date":"2026-06-17","time":"03:00","had":[1.35,4.02,7.15],"hhad":[2.23,3.22,2.7],"gl":"-1.00"},
-{"match":"周二019","home":"阿根廷","away":"阿尔及利","date":"2026-06-17","time":"09:00","had":[1.26,4.4,9.2],"hhad":[1.95,3.35,3.15],"gl":"-1.00"},
-{"match":"周二020","home":"奥地利","away":"约旦","date":"2026-06-17","time":"12:00","had":[1.21,5.15,9.2],"hhad":[1.79,3.56,3.45],"gl":"-1.00"},
-{"match":"周三021","home":"葡萄牙","away":"刚果金","date":"2026-06-18","time":"01:00","had":[1.14,5.7,13.0],"hhad":[2.7,3.93,1.98],"gl":"-2.00"},
-{"match":"周三022","home":"英格兰","away":"克罗地亚","date":"2026-06-18","time":"04:00","had":[1.53,3.5,5.25],"hhad":[2.84,3.2,2.15],"gl":"-1.00"},
-{"match":"周三023","home":"加纳","away":"巴拿马","date":"2026-06-18","time":"07:00","had":[1.96,3.0,3.5],"hhad":[4.25,3.52,1.64],"gl":"-1.00"},
-{"match":"周三024","home":"乌兹别克","away":"哥伦比亚","date":"2026-06-18","time":"10:00","had":[9.1,4.55,1.25],"hhad":[3.12,3.44,1.93],"gl":"+1.00"}
-];
+// ===== 动态加载数据 =====
+var MATCHES = [];
+var DATA_READY = false;
+
+fetch('data/jc_matches.json?' + Date.now())
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    MATCHES = data;
+    DATA_READY = true;
+    render('all');
+  })
+  .catch(function(e) {
+    document.getElementById('matchList').innerHTML = '<div class="card" style="text-align:center;color:#e53935;padding:30px">数据加载失败: ' + e.message + '<br><small>请刷新重试</small></div>';
+  });
 
 // ===== 泊松 =====
 function poisson(k, lam) {
@@ -261,7 +259,6 @@ function filter(mode) {
   render(mode);
 }
 
-render('all');
 </script>
 </body>
 </html>
