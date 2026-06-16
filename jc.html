@@ -180,6 +180,7 @@ function render(filterMode) {
   
   MATCHES.forEach(function(m) {
     var r = analyze(m);
+    var h = m.had, hh = m.hhad, gl = parseFloat(m.gl);
     var passed = isPassed(m);
     
     // 根据匹配筛选
