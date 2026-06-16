@@ -4407,7 +4407,7 @@ function renderRecommend(type, data) {
             if(!seen2[k]){seen2[k]=true;top2.push(scored[m].combo);}
           }
           if(top2.length>0){
-            _reHtml+='<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb)"><div class="rec-header"><span style="display:inline-block;background:#1565c0;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 V3</span>排列五·五不同推荐（'+top2.length+'组×120注='+(top2.length*120)+'注/'+(top2.length*240)+'元）</div>';
+            _reHtml+='<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb);margin-top:4px"><div class="rec-header"><span style="display:inline-block;background:#1565c0;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 V3</span>排列五·五不同推荐（'+top2.length+'组×120注='+(top2.length*120)+'注/'+(top2.length*240)+'元）</div>';
             for(var g=0;g<top2.length;g++){
               var gc=top2[g].slice().sort(function(a,b){return a-b;});
               _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#1565c0;width:20px">'+(g+1)+'</span><div class="dt-balls">';
@@ -4463,12 +4463,12 @@ function renderRecommend(type, data) {
             top2et.push(c2);
           }
           if(top2et.length>0){
-            _reHtml+='<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)"><div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 V3</span>排列五·二同推荐（'+top2et.length+'组×60注='+(top2et.length*60)+'注/'+(top2et.length*120)+'元）</div>';
+            _reHtml+='<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2);margin-top:2px"><div class="rec-header"><span style="display:inline-block;background:#e65100;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 V3</span>排列五·二同推荐（'+top2et.length+'组×60注='+(top2et.length*60)+'注/'+(top2et.length*120)+'元）</div>';
             for(var g=0;g<top2et.length;g++){
               var gc2=top2et[g].combo.slice().sort(function(a,b){return a-b;});
               _reHtml+='<div class="dt-row"><span class="dt-label" style="font-size:10px;color:#e65100;width:20px">'+(g+1)+'</span><div class="dt-balls">';
-              gc2.forEach(function(n){_reHtml+='<span class="dt-ball dan">'+String(n).padStart(2,'0')+'</span>';});
-              _reHtml+='<span class="dt-ball tuo" style="background:linear-gradient(135deg,#ffab91,#ff7043);color:#fff">重'+String(top2et[g].repeat).padStart(2,'0')+'</span></div></div>';
+              gc2.forEach(function(n){_reHtml+='<span class="dt-ball dan" style="width:22px;height:22px;font-size:10px">'+String(n).padStart(2,'0')+'</span>';});
+              _reHtml+='<span class="dt-ball tuo" style="width:26px;height:22px;border-radius:6px;font-size:10px;background:linear-gradient(135deg,#ff5722,#d84315);color:#fff">重'+String(top2et[g].repeat).padStart(2,'0')+'</span></div></div>';
             }
             _reHtml+='<div class="rec-reason">V3优化: 杀最冷号+EMA评分+胆码独立推荐 | 仅推Top2组(240元) | 原V2推5组(600元)</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
           }
