@@ -2830,6 +2830,12 @@ function renderRecommend(type, data) {
     return;
   }
 
+  // 重置类型专属section（防止切换彩种时上一类型的section残留）
+  var _x1Sec = document.getElementById("xuan1Section");
+  if (_x1Sec) _x1Sec.style.display = "none";
+  var _enhSec = document.getElementById("enhancedSection");
+  if (_enhSec) _enhSec.style.display = "none";
+
   // 基本推荐 → basicRecs
   var basicHtml = "";
   if (rec.basic && rec.basic.length > 0) {
