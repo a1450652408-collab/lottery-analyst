@@ -120,7 +120,7 @@ function analyze(m) {
     var pick = ev_had > ev_hhad ? 'had' : 'hhad';
     // 碾压保护: 强队打弱队首轮易打穿，HAD主胜<1.35时强制买HAD
     var crushed = false;
-    if (h[0] < 1.35 && pick === 'hhad') { pick = 'had'; crushed = true; }
+    if (h[0] <= 1.35 && pick === 'hhad') { pick = 'had'; crushed = true; }
     
     return {
       pick: pick,
@@ -170,7 +170,7 @@ function analyze(m) {
     var pick = ev_had > ev_hhad ? 'had' : 'hhad';
     // 碾压保护: 强队打弱队首轮易打穿，HAD客胜<1.35时强制买HAD
     var crushed2 = false;
-    if (h[2] < 1.35 && pick === 'hhad') { pick = 'had'; crushed2 = true; }
+    if (h[2] <= 1.35 && pick === 'hhad') { pick = 'had'; crushed2 = true; }
     
     return {
       pick: pick,
