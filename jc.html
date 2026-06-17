@@ -118,15 +118,18 @@ function analyze(m) {
     var ev_had = (by1+by2p)*h[0];           // 只买HAD主胜
     var ev_hhad = (by1+pd2+pa2)*hh[2];      // 只买HHAD客受让
     var pick = ev_had > ev_hhad ? 'had' : 'hhad';
+    // 碾压保护: 强队打弱队首轮易打穿，HAD主胜<1.35时强制买HAD
+    var crushed = false;
+    if (h[0] < 1.35 && pick === 'hhad') { pick = 'had'; crushed = true; }
     
     return {
       pick: pick,
       market: pick === 'had' ? '胜平负' : '让球('+m.gl+')胜平负',
       sel: pick === 'had' ? '胜' : '负',
-      desc: pick === 'had' ? (m.home+'赢') : (m.away+'+'+Math.abs(gl)+'球不败'),
+      desc: crushed ? (m.home+'赢（碾压保护）') : (pick === 'had' ? (m.home+'赢') : (m.away+'+'+Math.abs(gl)+'球不败')),
       odds: pick === 'had' ? h[0] : hh[2],
-      ev: Math.max(ev_had, ev_hhad),
-      roi: Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
+      ev: crushed ? ev_had : Math.max(ev_had, ev_hhad),
+      roi: crushed ? Math.round((ev_had-1)*1000)/10 : Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
       hWin: Math.round((by1+by2p)*1000)/10,
       draw: Math.round(pd2*1000)/10,
       aWin: Math.round(pa2*1000)/10,
@@ -165,15 +168,18 @@ function analyze(m) {
     var ev_had = (awBy1+awBy2p)*h[2];      // 只买HAD客胜
     var ev_hhad = (awBy1+ph2+pd2)*hh[0];   // 只买HHAD主受让
     var pick = ev_had > ev_hhad ? 'had' : 'hhad';
+    // 碾压保护: 强队打弱队首轮易打穿，HAD客胜<1.35时强制买HAD
+    var crushed2 = false;
+    if (h[2] < 1.35 && pick === 'hhad') { pick = 'had'; crushed2 = true; }
     
     return {
       pick: pick,
       market: pick === 'had' ? '胜平负' : '让球(+'+Math.abs(gl)+')胜平负',
       sel: pick === 'had' ? '负' : '胜',
-      desc: pick === 'had' ? (m.away+'赢') : (m.home+'+'+Math.abs(gl)+'球不败'),
+      desc: crushed2 ? (m.away+'赢（碾压保护）') : (pick === 'had' ? (m.away+'赢') : (m.home+'+'+Math.abs(gl)+'球不败')),
       odds: pick === 'had' ? h[2] : hh[0],
-      ev: Math.max(ev_had, ev_hhad),
-      roi: Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
+      ev: crushed2 ? ev_had : Math.max(ev_had, ev_hhad),
+      roi: crushed2 ? Math.round((ev_had-1)*1000)/10 : Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
       hWin: Math.round(ph2*1000)/10,
       draw: Math.round(pd2*1000)/10,
       aWin: Math.round((awBy1+awBy2p)*1000)/10,
