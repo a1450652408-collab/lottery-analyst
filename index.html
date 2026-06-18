@@ -3845,8 +3845,8 @@ function renderRecommend(type, data) {
         _rmHtml += '<span style="display:inline-block;background:#4caf50;color:#fff;width:20px;height:20px;line-height:20px;border-radius:50%;text-align:center;font-weight:600;font-size:9px;margin:0 1px">' + String(n).padStart(2,"0") + '</span>';
       });
       _rmHtml += '</div>';
-      _rmHtml += '<div style="font-size:10px;color:#2e7d32;margin-bottom:4px"><strong>📊 回测1974期: ROI +43.7% | 净利+Y622,190 | 18/18月全部盈利 | 0亏损期 | 中7保4兑现100%</strong></div>';
-      _rmHtml += '<div style="font-size:10px;color:#666;margin-bottom:6px">中7=Y10,000 | 中6=Y288 | 中5=Y28 | 中4=Y4 | 中0退回Y2 | 每年约351期=Y253,422投入</div>';
+      _rmHtml += '<div style="font-size:10px;color:#2e7d32;margin-bottom:4px"><strong>📊 回测1974期: ROI -29.7% | 净利-Y424,232 | 14/69月盈利 | 中7保4兑现100%</strong></div>';
+      _rmHtml += '<div style="font-size:10px;color:#666;margin-bottom:6px">⚠️ 修正: 之前因中3/2/1误计Y2导致ROI虚高 | 实际回测1980期ROI -29.7% | 仅供参考</div>';
 
       // Show first 20 combos as preview
       _rmHtml += '<div style="max-height:300px;overflow-y:auto;font-size:9px;font-family:monospace;background:#fff;border-radius:4px;padding:4px;margin-bottom:4px" id="_rmTable">';
@@ -3884,7 +3884,7 @@ function renderRecommend(type, data) {
       _rmHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _allStr.replace(/'/g,"\\'").replace(/\n/g,'\\n') + '\')">📋复制全部361注</span>';
       _rmHtml += '</div>';
 
-      _rmHtml += '<div class="rec-reason">⚠️ 风险提示: 回测盈利不代表未来保赚。日均投入Y722(月约Y21,660)，最大回撤按1974期数据为Y6,148。请评估个人承受能力后使用。固定矩阵·每天照打即可，无需每日选号。</div>';
+      _rmHtml += '<div class="rec-reason">⚠️ 重要: 该策略1980期回测ROI -29.7%，月均亏损Y6,148。已确认存在负期望值。仅供研究参考，不构成投资建议。</div>';
       _rmHtml += '</div>';
 
       _reHtml += _rmHtml;
