@@ -1,8 +1,8 @@
 {
-  "date": "2026-06-18",
-  "updateTime": "08:58",
+  "date": "2026-06-19",
+  "updateTime": "09:06",
   "modelVersion": "V5 (Poisson + 泊松模型)",
-  "totalMatches": 9,
+  "totalMatches": 6,
   "topRecommend": {
     "matchId": 2040240,
     "matchNum": "周五030",
@@ -11,13 +11,13 @@
     "awayTeam": "摩洛哥",
     "matchDate": "2026-06-20",
     "matchTime": "06:00",
-    "had_h": 4.9,
-    "had_d": 3.25,
-    "had_a": 1.62,
+    "had_h": 5.1,
+    "had_d": 3.28,
+    "had_a": 1.59,
     "hhad_goalLine": 1.0,
-    "hhad_h": 2.0,
-    "hhad_d": 3.25,
-    "hhad_a": 3.12,
+    "hhad_h": 2.07,
+    "hhad_d": 3.2,
+    "hhad_a": 3.0,
     "home_strength": 100.0,
     "away_strength": 10.0,
     "strength_diff": 90.0,
@@ -78,53 +78,53 @@
       "DF Anass Salah-Eddine(24)"
     ],
     "recommend": "主胜",
-    "best_odds": 4.9,
-    "best_value": 289.2,
-    "ev": 276.2,
-    "score": 5.0,
-    "confidence": "★★★★",
+    "best_odds": 5.1,
+    "best_value": 220.0,
+    "ev": 207.0,
+    "score": 5.5,
+    "confidence": "★★★★★",
     "reasons": [
-      "高价值(EV+276%)",
-      "模型看好+59%"
+      "高价值(EV+207%)",
+      "模型看好+43%"
     ],
-    "poisson_source": "strength_estimate",
-    "home_prob": 76.8,
-    "draw_prob": 15.3,
-    "away_prob": 7.9,
+    "poisson_source": "poisson_historical",
+    "home_prob": 60.2,
+    "draw_prob": 23.8,
+    "away_prob": 16.0,
     "all_options": [
       {
         "label": "主胜",
-        "odds": 4.9,
-        "model_prob": 76.8,
-        "market_prob": 18.1,
-        "value_gap": 58.7,
-        "ev": 276.2,
+        "odds": 5.1,
+        "model_prob": 60.2,
+        "market_prob": 17.4,
+        "value_gap": 42.8,
+        "ev": 207.0,
         "is_value": true
       },
       {
         "label": "平局",
-        "odds": 3.25,
-        "model_prob": 15.3,
-        "market_prob": 27.3,
-        "value_gap": -11.9,
-        "ev": -50.2,
+        "odds": 3.28,
+        "model_prob": 23.8,
+        "market_prob": 27.0,
+        "value_gap": -3.2,
+        "ev": -22.0,
         "is_value": false
       },
       {
         "label": "客胜",
-        "odds": 1.62,
-        "model_prob": 7.9,
-        "market_prob": 54.7,
-        "value_gap": -46.8,
-        "ev": -87.2,
+        "odds": 1.59,
+        "model_prob": 16.0,
+        "market_prob": 55.7,
+        "value_gap": -39.6,
+        "ev": -74.5,
         "is_value": false
       }
     ],
     "kelly_advice": {
-      "suggest_stake": 17713,
-      "kelly_pct": 17.7,
+      "suggest_stake": 12623,
+      "kelly_pct": 12.6,
       "bankroll_ref": 100000,
-      "note": "1/4凯利建议投17713元"
+      "note": "1/4凯利建议投12623元"
     }
   },
   "recommendations": [
@@ -136,13 +136,13 @@
       "awayTeam": "摩洛哥",
       "matchDate": "2026-06-20",
       "matchTime": "06:00",
-      "had_h": 4.9,
-      "had_d": 3.25,
-      "had_a": 1.62,
+      "had_h": 5.1,
+      "had_d": 3.28,
+      "had_a": 1.59,
       "hhad_goalLine": 1.0,
-      "hhad_h": 2.0,
-      "hhad_d": 3.25,
-      "hhad_a": 3.12,
+      "hhad_h": 2.07,
+      "hhad_d": 3.2,
+      "hhad_a": 3.0,
       "home_strength": 100.0,
       "away_strength": 10.0,
       "strength_diff": 90.0,
@@ -203,237 +203,361 @@
         "DF Anass Salah-Eddine(24)"
       ],
       "recommend": "主胜",
-      "best_odds": 4.9,
-      "best_value": 289.2,
-      "ev": 276.2,
-      "score": 5.0,
-      "confidence": "★★★★",
+      "best_odds": 5.1,
+      "best_value": 220.0,
+      "ev": 207.0,
+      "score": 5.5,
+      "confidence": "★★★★★",
       "reasons": [
-        "高价值(EV+276%)",
-        "模型看好+59%"
+        "高价值(EV+207%)",
+        "模型看好+43%"
       ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 76.8,
-      "draw_prob": 15.3,
-      "away_prob": 7.9,
+      "poisson_source": "poisson_historical",
+      "home_prob": 60.2,
+      "draw_prob": 23.8,
+      "away_prob": 16.0,
       "all_options": [
         {
           "label": "主胜",
-          "odds": 4.9,
-          "model_prob": 76.8,
-          "market_prob": 18.1,
-          "value_gap": 58.7,
-          "ev": 276.2,
+          "odds": 5.1,
+          "model_prob": 60.2,
+          "market_prob": 17.4,
+          "value_gap": 42.8,
+          "ev": 207.0,
           "is_value": true
         },
         {
           "label": "平局",
-          "odds": 3.25,
-          "model_prob": 15.3,
-          "market_prob": 27.3,
-          "value_gap": -11.9,
-          "ev": -50.2,
+          "odds": 3.28,
+          "model_prob": 23.8,
+          "market_prob": 27.0,
+          "value_gap": -3.2,
+          "ev": -22.0,
           "is_value": false
         },
         {
           "label": "客胜",
-          "odds": 1.62,
-          "model_prob": 7.9,
-          "market_prob": 54.7,
-          "value_gap": -46.8,
-          "ev": -87.2,
+          "odds": 1.59,
+          "model_prob": 16.0,
+          "market_prob": 55.7,
+          "value_gap": -39.6,
+          "ev": -74.5,
           "is_value": false
         }
       ],
       "kelly_advice": {
-        "suggest_stake": 17713,
-        "kelly_pct": 17.7,
+        "suggest_stake": 12623,
+        "kelly_pct": 12.6,
         "bankroll_ref": 100000,
-        "note": "1/4凯利建议投17713元"
+        "note": "1/4凯利建议投12623元"
       }
     },
     {
-      "matchId": 2040237,
-      "matchNum": "周四027",
+      "matchId": 2040246,
+      "matchNum": "周六036",
       "league": "世界杯",
-      "homeTeam": "加拿大",
-      "awayTeam": "卡塔尔",
-      "matchDate": "2026-06-19",
-      "matchTime": "06:00",
-      "had_h": 1.24,
-      "had_d": 4.7,
-      "had_a": 9.1,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 1.87,
-      "hhad_d": 3.45,
-      "hhad_a": 3.28,
-      "home_strength": 10.0,
+      "homeTeam": "突尼斯",
+      "awayTeam": "日本",
+      "matchDate": "2026-06-21",
+      "matchTime": "12:00",
+      "had_h": 5.75,
+      "had_d": 3.7,
+      "had_a": 1.46,
+      "hhad_goalLine": 1.0,
+      "hhad_h": 2.3,
+      "hhad_d": 3.25,
+      "hhad_a": 2.59,
+      "home_strength": 0.0,
       "away_strength": 10.0,
-      "strength_diff": 0.0,
+      "strength_diff": -10.0,
       "home_detail": {
-        "eng_name": "Canada",
-        "position": 2,
-        "group": "Group B",
-        "points": 1,
+        "eng_name": "Tunisia",
+        "position": 4,
+        "group": "Group F",
+        "points": 0,
         "played": 1,
         "form": null,
         "has_data": true
       },
       "away_detail": {
-        "eng_name": "Qatar",
-        "position": 3,
-        "group": "Group B",
+        "eng_name": "Japan",
+        "position": 2,
+        "group": "Group F",
         "points": 1,
         "played": 1,
         "form": null,
         "has_data": true
       },
-      "home_coach": "Jesse Marsch",
+      "home_coach": "Hervé Renard",
       "home_player_count": 26,
-      "home_avg_age": 26.5,
+      "home_avg_age": 26.3,
       "home_pos_dist": {
         "GK": 3,
-        "DF": 8,
-        "MF": 9,
+        "DF": 10,
+        "MF": 7,
         "FW": 6
       },
       "home_players": [
-        "GK Maxime Crépeau(32)",
-        "GK Dayne St. Clair(29)",
-        "GK Owen Goodman(22)",
-        "DF Alphonso Davies(25)",
-        "DF Richie Laryea(31)",
-        "DF Alfie Jones(28)",
-        "DF Joel Waterman(30)",
-        "DF Derek Cornelius(28)"
+        "GK Aymen Dahmen(29)",
+        "GK Sabri Ben Hessen(30)",
+        "GK Abdelmouhib Chamakh(24)",
+        "DF Dylan Bronn(31)",
+        "DF Ali El Abdi(32)",
+        "DF Yan Valery(27)",
+        "DF Mortadha Ben Ouanes(31)",
+        "DF Omar Rekik(24)"
       ],
-      "away_coach": "Julen Lopetegui",
+      "away_coach": "Hajime Moriyasu",
       "away_player_count": 26,
-      "away_avg_age": 28.9,
+      "away_avg_age": 27.2,
       "away_pos_dist": {
         "GK": 3,
         "DF": 9,
-        "MF": 8,
-        "FW": 6
+        "MF": 7,
+        "FW": 7
       },
       "away_players": [
-        "GK Salah Zakaria(27)",
-        "GK Meshaal Barsham(28)",
-        "GK Mahmoud Abunada(26)",
-        "DF Boualem Khoukhi(35)",
-        "DF Jassem Gaber Abdulsallam(24)",
-        "DF Homam Ahmed(26)",
-        "DF Ró-Ró(35)",
-        "DF Lucas Mendes(35)"
+        "GK Keisuke Ōsako(26)",
+        "GK Zion Suzuki(23)",
+        "GK Tomoki Hayakawa(27)",
+        "DF Yūto Nagatomo(39)",
+        "DF Takehiro Tomiyasu(27)",
+        "DF Hiroki Ito(27)",
+        "DF Yukinari Sugawara(25)",
+        "DF Ko Itakura(29)"
       ],
-      "recommend": "客胜",
-      "best_odds": 9.1,
-      "best_value": 189.6,
-      "ev": 176.3,
-      "score": 5.0,
-      "confidence": "★★★★",
+      "recommend": "主胜",
+      "best_odds": 5.75,
+      "best_value": 161.3,
+      "ev": 148.2,
+      "score": 5.5,
+      "confidence": "★★★★★",
       "reasons": [
-        "高价值(EV+176%)",
-        "模型看好+21%"
+        "高价值(EV+148%)",
+        "模型看好+28%"
       ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 44.1,
-      "draw_prob": 25.5,
-      "away_prob": 30.4,
+      "poisson_source": "poisson_historical",
+      "home_prob": 43.2,
+      "draw_prob": 21.3,
+      "away_prob": 35.6,
       "all_options": [
         {
-          "label": "客胜",
-          "odds": 9.1,
-          "model_prob": 30.4,
-          "market_prob": 9.7,
-          "value_gap": 20.6,
-          "ev": 176.3,
+          "label": "主胜",
+          "odds": 5.75,
+          "model_prob": 43.2,
+          "market_prob": 15.4,
+          "value_gap": 27.8,
+          "ev": 148.2,
           "is_value": true
         },
         {
           "label": "平局",
-          "odds": 4.7,
-          "model_prob": 25.5,
-          "market_prob": 18.8,
-          "value_gap": 6.6,
-          "ev": 19.8,
-          "is_value": true
+          "odds": 3.7,
+          "model_prob": 21.3,
+          "market_prob": 23.9,
+          "value_gap": -2.7,
+          "ev": -21.3,
+          "is_value": false
         },
         {
-          "label": "主胜",
-          "odds": 1.24,
-          "model_prob": 44.1,
-          "market_prob": 71.4,
-          "value_gap": -27.3,
-          "ev": -45.3,
+          "label": "客胜",
+          "odds": 1.46,
+          "model_prob": 35.6,
+          "market_prob": 60.7,
+          "value_gap": -25.1,
+          "ev": -48.1,
           "is_value": false
         }
       ],
       "kelly_advice": {
-        "suggest_stake": 5452,
-        "kelly_pct": 5.5,
+        "suggest_stake": 7811,
+        "kelly_pct": 7.8,
         "bankroll_ref": 100000,
-        "note": "1/4凯利建议投5452元"
+        "note": "1/4凯利建议投7811元"
       }
     },
     {
-      "matchId": 2040236,
-      "matchNum": "周四026",
+      "matchId": 2040243,
+      "matchNum": "周六033",
       "league": "世界杯",
-      "homeTeam": "瑞士",
-      "awayTeam": "波黑",
-      "matchDate": "2026-06-19",
-      "matchTime": "03:00",
-      "had_h": 1.35,
-      "had_d": 4.1,
-      "had_a": 6.9,
+      "homeTeam": "荷兰",
+      "awayTeam": "瑞典",
+      "matchDate": "2026-06-21",
+      "matchTime": "01:00",
+      "had_h": 1.59,
+      "had_d": 3.58,
+      "had_a": 4.52,
       "hhad_goalLine": -1.0,
-      "hhad_h": 2.23,
-      "hhad_d": 3.35,
-      "hhad_a": 2.62,
+      "hhad_h": 2.86,
+      "hhad_d": 3.45,
+      "hhad_a": 2.04,
       "home_strength": 10.0,
-      "away_strength": 10.0,
-      "strength_diff": 0.0,
+      "away_strength": 100.0,
+      "strength_diff": -90.0,
       "home_detail": {
-        "eng_name": "Switzerland",
-        "position": 1,
-        "group": "Group B",
+        "eng_name": "Netherlands",
+        "position": 2,
+        "group": "Group F",
         "points": 1,
         "played": 1,
         "form": null,
         "has_data": true
       },
       "away_detail": {
-        "eng_name": "Bosnia-Herzegovina",
-        "position": 4,
-        "group": "Group B",
-        "points": 1,
+        "eng_name": "Sweden",
+        "position": 1,
+        "group": "Group F",
+        "points": 3,
         "played": 1,
         "form": null,
         "has_data": true
       },
-      "home_coach": "Murat Yakin",
+      "home_coach": "Ronald Koeman",
       "home_player_count": 26,
-      "home_avg_age": 27.8,
+      "home_avg_age": 27.4,
       "home_pos_dist": {
         "GK": 3,
-        "DF": 8,
-        "MF": 10,
+        "DF": 7,
+        "MF": 11,
         "FW": 5
       },
       "home_players": [
-        "GK Gregor Kobel(28)",
-        "GK Yvon Mvogo(32)",
-        "GK Marvin Keller(23)",
-        "DF Manuel Akanji(30)",
-        "DF Ricardo Rodriguez(33)",
-        "DF Silvan Widmer(33)",
-        "DF Nico Elvedi(29)",
-        "DF Eray Cömert(28)"
+        "GK Mark Flekken(33)",
+        "GK Bart Verbruggen(23)",
+        "GK Robin Roefs(23)",
+        "DF Denzel Dumfries(30)",
+        "DF Virgil van Dijk(34)",
+        "DF Nathan Aké(31)",
+        "DF Jan Paul van Hecke(26)",
+        "DF Jurrien Timber(25)"
       ],
-      "away_coach": "Sergej Barbarez",
+      "away_coach": "Graham Potter",
       "away_player_count": 26,
-      "away_avg_age": 25.9,
+      "away_avg_age": 27.0,
+      "away_pos_dist": {
+        "GK": 3,
+        "DF": 10,
+        "MF": 7,
+        "FW": 6
+      },
+      "away_players": [
+        "GK Kristoffer Nordfeldt(36)",
+        "GK Viktor Johansson(27)",
+        "GK Jacob Widell Zetterström(27)",
+        "DF Victor Nilsson-Lindelöf(31)",
+        "DF Carl Starfelt(31)",
+        "DF Gabriel Gudmundsson(27)",
+        "DF Hjalmar Ekdal(27)",
+        "DF Eric Smith(29)"
+      ],
+      "recommend": "客胜",
+      "best_odds": 4.52,
+      "best_value": 73.9,
+      "ev": 60.8,
+      "score": 5.5,
+      "confidence": "★★★★★",
+      "reasons": [
+        "高价值(EV+61%)",
+        "模型看好+16%"
+      ],
+      "poisson_source": "poisson_historical",
+      "home_prob": 43.2,
+      "draw_prob": 21.3,
+      "away_prob": 35.6,
+      "all_options": [
+        {
+          "label": "客胜",
+          "odds": 4.52,
+          "model_prob": 35.6,
+          "market_prob": 19.6,
+          "value_gap": 16.0,
+          "ev": 60.8,
+          "is_value": true
+        },
+        {
+          "label": "平局",
+          "odds": 3.58,
+          "model_prob": 21.3,
+          "market_prob": 24.7,
+          "value_gap": -3.5,
+          "ev": -23.9,
+          "is_value": false
+        },
+        {
+          "label": "主胜",
+          "odds": 1.59,
+          "model_prob": 43.2,
+          "market_prob": 55.7,
+          "value_gap": -12.5,
+          "ev": -31.4,
+          "is_value": false
+        }
+      ],
+      "kelly_advice": {
+        "suggest_stake": 4326,
+        "kelly_pct": 4.3,
+        "bankroll_ref": 100000,
+        "note": "1/4凯利建议投4326元"
+      }
+    },
+    {
+      "matchId": 2040242,
+      "matchNum": "周五032",
+      "league": "世界杯",
+      "homeTeam": "土耳其",
+      "awayTeam": "巴拉圭",
+      "matchDate": "2026-06-20",
+      "matchTime": "11:00",
+      "had_h": 1.92,
+      "had_d": 3.1,
+      "had_a": 3.5,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 4.1,
+      "hhad_d": 3.4,
+      "hhad_a": 1.69,
+      "home_strength": 0.0,
+      "away_strength": 0.0,
+      "strength_diff": 0.0,
+      "home_detail": {
+        "eng_name": "Turkey",
+        "position": 3,
+        "group": "Group D",
+        "points": 0,
+        "played": 1,
+        "form": null,
+        "has_data": true
+      },
+      "away_detail": {
+        "eng_name": "Paraguay",
+        "position": 4,
+        "group": "Group D",
+        "points": 0,
+        "played": 1,
+        "form": null,
+        "has_data": true
+      },
+      "home_coach": "Vincenzo Montella",
+      "home_player_count": 26,
+      "home_avg_age": 27.2,
+      "home_pos_dist": {
+        "GK": 3,
+        "DF": 10,
+        "MF": 8,
+        "FW": 5
+      },
+      "home_players": [
+        "GK Mert Günok(37)",
+        "GK Altay Bayındır(28)",
+        "GK Uğurcan Çakır(30)",
+        "DF Çağlar Söyüncü(30)",
+        "DF Kaan Ayhan(31)",
+        "DF Ferdi Kadıoğlu(26)",
+        "DF Mert Müldür(27)",
+        "DF Zeki Çelik(29)"
+      ],
+      "away_coach": "Gustavo Alfaro",
+      "away_player_count": 26,
+      "away_avg_age": 28.6,
       "away_pos_dist": {
         "GK": 3,
         "DF": 8,
@@ -441,63 +565,186 @@
         "FW": 7
       },
       "away_players": [
-        "GK Martin Zlomislić(27)",
-        "GK Nikola Vasilj(30)",
-        "GK Mladen Jurkas(18)",
-        "DF Sead Kolašinac(32)",
-        "DF Dennis Hadžikadunić(27)",
-        "DF Nihad Mujakić(28)",
-        "DF Nikola Katić(29)",
-        "DF Stjepan Radeljić(28)"
+        "GK Gastón Olveira(33)",
+        "GK Roberto Fernández(38)",
+        "GK Orlando Gill(26)",
+        "DF Fabián Balbuena(34)",
+        "DF Gustavo Gómez(33)",
+        "DF Júnior Alonso(33)",
+        "DF Omar Alderete(29)",
+        "DF Juan Cáceres(26)"
       ],
-      "recommend": "客胜",
-      "best_odds": 6.9,
-      "best_value": 122.7,
-      "ev": 109.5,
-      "score": 5.0,
+      "recommend": "主胜",
+      "best_odds": 1.92,
+      "best_value": 31.8,
+      "ev": 18.9,
+      "score": 4.5,
       "confidence": "★★★★",
       "reasons": [
-        "高价值(EV+110%)",
-        "模型看好+18%"
+        "正价值(EV+19%)",
+        "模型看好+16%"
       ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 44.1,
-      "draw_prob": 25.5,
-      "away_prob": 30.4,
+      "poisson_source": "poisson_historical",
+      "home_prob": 61.9,
+      "draw_prob": 20.2,
+      "away_prob": 17.9,
       "all_options": [
         {
-          "label": "客胜",
-          "odds": 6.9,
-          "model_prob": 30.4,
-          "market_prob": 12.8,
-          "value_gap": 17.5,
-          "ev": 109.5,
+          "label": "主胜",
+          "odds": 1.92,
+          "model_prob": 61.9,
+          "market_prob": 46.1,
+          "value_gap": 15.8,
+          "ev": 18.9,
           "is_value": true
         },
         {
           "label": "平局",
-          "odds": 4.1,
-          "model_prob": 25.5,
-          "market_prob": 21.6,
-          "value_gap": 3.9,
-          "ev": 4.5,
-          "is_value": true
+          "odds": 3.1,
+          "model_prob": 20.2,
+          "market_prob": 28.6,
+          "value_gap": -8.4,
+          "ev": -37.4,
+          "is_value": false
         },
         {
-          "label": "主胜",
-          "odds": 1.35,
-          "model_prob": 44.1,
-          "market_prob": 65.6,
-          "value_gap": -21.4,
-          "ev": -40.4,
+          "label": "客胜",
+          "odds": 3.5,
+          "model_prob": 17.9,
+          "market_prob": 25.3,
+          "value_gap": -7.4,
+          "ev": -37.5,
           "is_value": false
         }
       ],
       "kelly_advice": {
-        "suggest_stake": 4651,
-        "kelly_pct": 4.7,
+        "suggest_stake": 5122,
+        "kelly_pct": 5.1,
         "bankroll_ref": 100000,
-        "note": "1/4凯利建议投4651元"
+        "note": "1/4凯利建议投5122元"
+      }
+    },
+    {
+      "matchId": 2040244,
+      "matchNum": "周六034",
+      "league": "世界杯",
+      "homeTeam": "德国",
+      "awayTeam": "科特迪瓦",
+      "matchDate": "2026-06-21",
+      "matchTime": "04:00",
+      "had_h": 1.4,
+      "had_d": 4.15,
+      "had_a": 5.75,
+      "hhad_goalLine": -1.0,
+      "hhad_h": 2.27,
+      "hhad_d": 3.55,
+      "hhad_a": 2.46,
+      "home_strength": 100.0,
+      "away_strength": 100.0,
+      "strength_diff": 0.0,
+      "home_detail": {
+        "eng_name": "Germany",
+        "position": 1,
+        "group": "Group E",
+        "points": 3,
+        "played": 1,
+        "form": null,
+        "has_data": true
+      },
+      "away_detail": {
+        "eng_name": "Ivory Coast",
+        "position": 2,
+        "group": "Group E",
+        "points": 3,
+        "played": 1,
+        "form": null,
+        "has_data": true
+      },
+      "home_coach": "Julian Nagelsmann",
+      "home_player_count": 26,
+      "home_avg_age": 27.7,
+      "home_pos_dist": {
+        "GK": 3,
+        "DF": 7,
+        "MF": 10,
+        "FW": 6
+      },
+      "home_players": [
+        "GK Oliver Baumann(36)",
+        "GK Manuel Neuer(40)",
+        "GK Alexander Nübel(29)",
+        "DF Jonathan Tah(30)",
+        "DF Waldemar Anton(29)",
+        "DF Antonio Rüdiger(33)",
+        "DF David Raum(28)",
+        "DF Nico Schlotterbeck(26)"
+      ],
+      "away_coach": "Emerse Faé",
+      "away_player_count": 26,
+      "away_avg_age": 25.4,
+      "away_pos_dist": {
+        "GK": 3,
+        "DF": 8,
+        "MF": 7,
+        "FW": 8
+      },
+      "away_players": [
+        "GK Yahia Fofana(25)",
+        "GK Alban Lafont(27)",
+        "GK Mohamed Kone(24)",
+        "DF Evan N'Dicka(26)",
+        "DF Christopher Operi(29)",
+        "DF Ghislain Konan(30)",
+        "DF Wilfried Singo(25)",
+        "DF Guela Doué(23)"
+      ],
+      "recommend": "主胜",
+      "best_odds": 1.4,
+      "best_value": 21.7,
+      "ev": 8.7,
+      "score": 3.5,
+      "confidence": "★★★",
+      "reasons": [
+        "微价值(EV+9%)"
+      ],
+      "poisson_source": "poisson_historical",
+      "home_prob": 77.7,
+      "draw_prob": 13.5,
+      "away_prob": 8.9,
+      "all_options": [
+        {
+          "label": "主胜",
+          "odds": 1.4,
+          "model_prob": 77.7,
+          "market_prob": 63.3,
+          "value_gap": 14.4,
+          "ev": 8.7,
+          "is_value": true
+        },
+        {
+          "label": "平局",
+          "odds": 4.15,
+          "model_prob": 13.5,
+          "market_prob": 21.3,
+          "value_gap": -7.9,
+          "ev": -44.1,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 5.75,
+          "model_prob": 8.9,
+          "market_prob": 15.4,
+          "value_gap": -6.5,
+          "ev": -49.0,
+          "is_value": false
+        }
+      ],
+      "kelly_advice": {
+        "suggest_stake": 5488,
+        "kelly_pct": 5.5,
+        "bankroll_ref": 100000,
+        "note": "1/4凯利建议投5488元"
       }
     },
     {
@@ -508,13 +755,13 @@
       "awayTeam": "澳大利亚",
       "matchDate": "2026-06-20",
       "matchTime": "03:00",
-      "had_h": 1.47,
-      "had_d": 3.7,
+      "had_h": 1.45,
+      "had_d": 3.83,
       "had_a": 5.6,
       "hhad_goalLine": -1.0,
-      "hhad_h": 2.56,
-      "hhad_d": 3.3,
-      "hhad_a": 2.3,
+      "hhad_h": 2.51,
+      "hhad_d": 3.25,
+      "hhad_a": 2.36,
       "home_strength": 100.0,
       "away_strength": 100.0,
       "strength_diff": 0.0,
@@ -576,297 +823,48 @@
       ],
       "recommend": "客胜",
       "best_odds": 5.6,
-      "best_value": 83.2,
-      "ev": 70.0,
-      "score": 4.5,
-      "confidence": "★★★★",
-      "reasons": [
-        "高价值(EV+70%)"
-      ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 44.1,
-      "draw_prob": 25.5,
-      "away_prob": 30.4,
+      "best_value": 13.2,
+      "ev": 0.0,
+      "score": 1.0,
+      "confidence": "★★",
+      "reasons": [],
+      "poisson_source": "poisson_historical",
+      "home_prob": 61.9,
+      "draw_prob": 20.2,
+      "away_prob": 17.9,
       "all_options": [
         {
           "label": "客胜",
           "odds": 5.6,
-          "model_prob": 30.4,
+          "model_prob": 17.9,
           "market_prob": 15.8,
-          "value_gap": 14.5,
-          "ev": 70.0,
-          "is_value": true
-        },
-        {
-          "label": "平局",
-          "odds": 3.7,
-          "model_prob": 25.5,
-          "market_prob": 23.9,
-          "value_gap": 1.6,
-          "ev": -5.7,
-          "is_value": false
-        },
-        {
-          "label": "主胜",
-          "odds": 1.47,
-          "model_prob": 44.1,
-          "market_prob": 60.2,
-          "value_gap": -16.1,
-          "ev": -35.1,
-          "is_value": false
-        }
-      ],
-      "kelly_advice": {
-        "suggest_stake": 3817,
-        "kelly_pct": 3.8,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投3817元"
-      }
-    },
-    {
-      "matchId": 2040235,
-      "matchNum": "周四025",
-      "league": "世界杯",
-      "homeTeam": "捷克",
-      "awayTeam": "南非",
-      "matchDate": "2026-06-19",
-      "matchTime": "00:00",
-      "had_h": 1.69,
-      "had_d": 3.25,
-      "had_a": 4.35,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 3.25,
-      "hhad_d": 3.32,
-      "hhad_a": 1.92,
-      "home_strength": 0.0,
-      "away_strength": 0.0,
-      "strength_diff": 0.0,
-      "home_detail": {
-        "eng_name": "Czechia",
-        "position": 3,
-        "group": "Group A",
-        "points": 0,
-        "played": 1,
-        "form": null,
-        "has_data": true
-      },
-      "away_detail": {
-        "eng_name": "South Africa",
-        "position": 4,
-        "group": "Group A",
-        "points": 0,
-        "played": 1,
-        "form": null,
-        "has_data": true
-      },
-      "home_coach": "Miroslav Koubek",
-      "home_player_count": 26,
-      "home_avg_age": 27.2,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 7,
-        "MF": 11,
-        "FW": 5
-      },
-      "home_players": [
-        "GK Jindřich Staněk(30)",
-        "GK Matej Kovar(26)",
-        "GK Lukáš Horníček(23)",
-        "DF Jaroslav Zelený(33)",
-        "DF Vladimir Coufal(33)",
-        "DF Tomáš Holeš(33)",
-        "DF David Zima(25)",
-        "DF David Jurásek(25)"
-      ],
-      "away_coach": "Hugo Broos",
-      "away_player_count": 26,
-      "away_avg_age": 26.3,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 10,
-        "MF": 7,
-        "FW": 6
-      },
-      "away_players": [
-        "GK Ronwen Williams(34)",
-        "GK Sipho Chaine(29)",
-        "GK Ricardo Goss(32)",
-        "DF Aubrey Modiba(30)",
-        "DF Nkosinathi Sibisi(30)",
-        "DF Khuliso Mudau(31)",
-        "DF Olwethu Makhanya(22)",
-        "DF Bradley Cross(25)"
-      ],
-      "recommend": "客胜",
-      "best_odds": 4.35,
-      "best_value": 45.2,
-      "ev": 32.1,
-      "score": 4.5,
-      "confidence": "★★★★",
-      "reasons": [
-        "高价值(EV+32%)"
-      ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 44.1,
-      "draw_prob": 25.5,
-      "away_prob": 30.4,
-      "all_options": [
-        {
-          "label": "客胜",
-          "odds": 4.35,
-          "model_prob": 30.4,
-          "market_prob": 20.4,
-          "value_gap": 10.0,
-          "ev": 32.1,
-          "is_value": true
-        },
-        {
-          "label": "平局",
-          "odds": 3.25,
-          "model_prob": 25.5,
-          "market_prob": 27.2,
-          "value_gap": -1.8,
-          "ev": -17.1,
-          "is_value": false
-        },
-        {
-          "label": "主胜",
-          "odds": 1.69,
-          "model_prob": 44.1,
-          "market_prob": 52.4,
-          "value_gap": -8.3,
-          "ev": -25.4,
-          "is_value": false
-        }
-      ],
-      "kelly_advice": {
-        "suggest_stake": 2406,
-        "kelly_pct": 2.4,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投2406元"
-      }
-    },
-    {
-      "matchId": 2040238,
-      "matchNum": "周四028",
-      "league": "世界杯",
-      "homeTeam": "墨西哥",
-      "awayTeam": "韩国",
-      "matchDate": "2026-06-19",
-      "matchTime": "09:00",
-      "had_h": 1.86,
-      "had_d": 3.0,
-      "had_a": 3.87,
-      "hhad_goalLine": -1.0,
-      "hhad_h": 3.78,
-      "hhad_d": 3.45,
-      "hhad_a": 1.74,
-      "home_strength": 100.0,
-      "away_strength": 93.3,
-      "strength_diff": 6.7,
-      "home_detail": {
-        "eng_name": "Mexico",
-        "position": 1,
-        "group": "Group A",
-        "points": 3,
-        "played": 1,
-        "form": null,
-        "has_data": true
-      },
-      "away_detail": {
-        "eng_name": "South Korea",
-        "position": 2,
-        "group": "Group A",
-        "points": 3,
-        "played": 1,
-        "form": null,
-        "has_data": true
-      },
-      "home_coach": "Javier Aguirre",
-      "home_player_count": 26,
-      "home_avg_age": 27.5,
-      "home_pos_dist": {
-        "GK": 3,
-        "DF": 6,
-        "MF": 9,
-        "FW": 8
-      },
-      "home_players": [
-        "GK Guillermo Ochoa(40)",
-        "GK Carlos Acevedo(30)",
-        "GK José Rangel(26)",
-        "DF Jesús Gallardo(31)",
-        "DF César Montes(29)",
-        "DF Johan Vásquez(27)",
-        "DF Jorge Sánchez(28)",
-        "DF Israel Reyes(26)"
-      ],
-      "away_coach": "Hong Myungbo",
-      "away_player_count": 26,
-      "away_avg_age": 27.5,
-      "away_pos_dist": {
-        "GK": 3,
-        "DF": 9,
-        "MF": 8,
-        "FW": 6
-      },
-      "away_players": [
-        "GK Seung-Gyu Kim(35)",
-        "GK Bum-keun Song(28)",
-        "GK Hyeon-woo Jo(34)",
-        "DF Min-Jae Kim(29)",
-        "DF Moon-hwan Kim(30)",
-        "DF Han-bum Lee(24)",
-        "DF Young-woo Seol(27)",
-        "DF Jin-seob Park(30)"
-      ],
-      "recommend": "客胜",
-      "best_odds": 3.87,
-      "best_value": 21.7,
-      "ev": 8.8,
-      "score": 2.0,
-      "confidence": "★★",
-      "reasons": [
-        "微价值(EV+9%)"
-      ],
-      "poisson_source": "strength_estimate",
-      "home_prob": 46.7,
-      "draw_prob": 25.1,
-      "away_prob": 28.1,
-      "all_options": [
-        {
-          "label": "客胜",
-          "odds": 3.87,
-          "model_prob": 28.1,
-          "market_prob": 22.9,
-          "value_gap": 5.2,
-          "ev": 8.8,
+          "value_gap": 2.1,
+          "ev": 0.0,
           "is_value": true
         },
         {
           "label": "主胜",
-          "odds": 1.86,
-          "model_prob": 46.7,
-          "market_prob": 47.6,
-          "value_gap": -0.9,
-          "ev": -13.0,
+          "odds": 1.45,
+          "model_prob": 61.9,
+          "market_prob": 61.1,
+          "value_gap": 0.9,
+          "ev": -10.2,
           "is_value": false
         },
         {
           "label": "平局",
-          "odds": 3.0,
-          "model_prob": 25.1,
-          "market_prob": 29.5,
-          "value_gap": -4.4,
-          "ev": -24.6,
+          "odds": 3.83,
+          "model_prob": 20.2,
+          "market_prob": 23.1,
+          "value_gap": -2.9,
+          "ev": -22.7,
           "is_value": false
         }
       ],
       "kelly_advice": {
-        "suggest_stake": 762,
-        "kelly_pct": 0.8,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投762元"
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "note": "无正EV，不建议投注"
       }
     }
   ],
@@ -878,64 +876,107 @@
       "homeTeam": "苏格兰",
       "awayTeam": "摩洛哥",
       "recommend": "主胜",
-      "odds": 4.9,
-      "ev": 276.2,
-      "market_prob": 18.1,
-      "fair_prob": 76.8,
-      "value_gap": 58.7,
+      "odds": 5.1,
+      "ev": 207.0,
+      "market_prob": 17.4,
+      "fair_prob": 60.2,
+      "value_gap": 42.8,
       "reasons": [
-        "高价值(EV+276%)",
-        "模型看好+59%"
+        "高价值(EV+207%)",
+        "模型看好+43%"
       ],
       "kelly_advice": {
-        "suggest_stake": 17713,
-        "kelly_pct": 17.7,
+        "suggest_stake": 12623,
+        "kelly_pct": 12.6,
         "bankroll_ref": 100000,
-        "note": "1/4凯利建议投17713元"
+        "note": "1/4凯利建议投12623元"
       }
     },
     {
       "league": "世界杯",
-      "matchNum": "周四027",
-      "homeTeam": "加拿大",
-      "awayTeam": "卡塔尔",
-      "recommend": "客胜",
-      "odds": 9.1,
-      "ev": 176.3,
-      "market_prob": 9.7,
-      "fair_prob": 30.4,
-      "value_gap": 20.6,
+      "matchNum": "周六036",
+      "homeTeam": "突尼斯",
+      "awayTeam": "日本",
+      "recommend": "主胜",
+      "odds": 5.75,
+      "ev": 148.2,
+      "market_prob": 15.4,
+      "fair_prob": 43.2,
+      "value_gap": 27.8,
       "reasons": [
-        "高价值(EV+176%)",
-        "模型看好+21%"
+        "高价值(EV+148%)",
+        "模型看好+28%"
       ],
       "kelly_advice": {
-        "suggest_stake": 5452,
+        "suggest_stake": 7811,
+        "kelly_pct": 7.8,
+        "bankroll_ref": 100000,
+        "note": "1/4凯利建议投7811元"
+      }
+    },
+    {
+      "league": "世界杯",
+      "matchNum": "周六033",
+      "homeTeam": "荷兰",
+      "awayTeam": "瑞典",
+      "recommend": "客胜",
+      "odds": 4.52,
+      "ev": 60.8,
+      "market_prob": 19.6,
+      "fair_prob": 35.6,
+      "value_gap": 16.0,
+      "reasons": [
+        "高价值(EV+61%)",
+        "模型看好+16%"
+      ],
+      "kelly_advice": {
+        "suggest_stake": 4326,
+        "kelly_pct": 4.3,
+        "bankroll_ref": 100000,
+        "note": "1/4凯利建议投4326元"
+      }
+    },
+    {
+      "league": "世界杯",
+      "matchNum": "周五032",
+      "homeTeam": "土耳其",
+      "awayTeam": "巴拉圭",
+      "recommend": "主胜",
+      "odds": 1.92,
+      "ev": 18.9,
+      "market_prob": 46.1,
+      "fair_prob": 61.9,
+      "value_gap": 15.8,
+      "reasons": [
+        "正价值(EV+19%)",
+        "模型看好+16%"
+      ],
+      "kelly_advice": {
+        "suggest_stake": 5122,
+        "kelly_pct": 5.1,
+        "bankroll_ref": 100000,
+        "note": "1/4凯利建议投5122元"
+      }
+    },
+    {
+      "league": "世界杯",
+      "matchNum": "周六034",
+      "homeTeam": "德国",
+      "awayTeam": "科特迪瓦",
+      "recommend": "主胜",
+      "odds": 1.4,
+      "ev": 8.7,
+      "market_prob": 63.3,
+      "fair_prob": 77.7,
+      "value_gap": 14.4,
+      "reasons": [
+        "微价值(EV+9%)"
+      ],
+      "kelly_advice": {
+        "suggest_stake": 5488,
         "kelly_pct": 5.5,
         "bankroll_ref": 100000,
-        "note": "1/4凯利建议投5452元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周四026",
-      "homeTeam": "瑞士",
-      "awayTeam": "波黑",
-      "recommend": "客胜",
-      "odds": 6.9,
-      "ev": 109.5,
-      "market_prob": 12.8,
-      "fair_prob": 30.4,
-      "value_gap": 17.5,
-      "reasons": [
-        "高价值(EV+110%)",
-        "模型看好+18%"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 4651,
-        "kelly_pct": 4.7,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投4651元"
+        "note": "1/4凯利建议投5488元"
       }
     },
     {
@@ -945,375 +986,317 @@
       "awayTeam": "澳大利亚",
       "recommend": "客胜",
       "odds": 5.6,
-      "ev": 70.0,
+      "ev": 0.0,
       "market_prob": 15.8,
-      "fair_prob": 30.4,
-      "value_gap": 14.5,
-      "reasons": [
-        "高价值(EV+70%)"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 3817,
-        "kelly_pct": 3.8,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投3817元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周四025",
-      "homeTeam": "捷克",
-      "awayTeam": "南非",
-      "recommend": "客胜",
-      "odds": 4.35,
-      "ev": 32.1,
-      "market_prob": 20.4,
-      "fair_prob": 30.4,
-      "value_gap": 10.0,
-      "reasons": [
-        "高价值(EV+32%)"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 2406,
-        "kelly_pct": 2.4,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投2406元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周四027",
-      "homeTeam": "加拿大",
-      "awayTeam": "卡塔尔",
-      "recommend": "平局",
-      "odds": 4.7,
-      "ev": 19.8,
-      "market_prob": 18.8,
-      "fair_prob": 25.5,
-      "value_gap": 6.6,
-      "reasons": [
-        "高价值(EV+176%)",
-        "模型看好+21%"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 5452,
-        "kelly_pct": 5.5,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投5452元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周四028",
-      "homeTeam": "墨西哥",
-      "awayTeam": "韩国",
-      "recommend": "客胜",
-      "odds": 3.87,
-      "ev": 8.8,
-      "market_prob": 22.9,
-      "fair_prob": 28.1,
-      "value_gap": 5.2,
-      "reasons": [
-        "微价值(EV+9%)"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 762,
-        "kelly_pct": 0.8,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投762元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周四026",
-      "homeTeam": "瑞士",
-      "awayTeam": "波黑",
-      "recommend": "平局",
-      "odds": 4.1,
-      "ev": 4.5,
-      "market_prob": 21.6,
-      "fair_prob": 25.5,
-      "value_gap": 3.9,
-      "reasons": [
-        "高价值(EV+110%)",
-        "模型看好+18%"
-      ],
-      "kelly_advice": {
-        "suggest_stake": 4651,
-        "kelly_pct": 4.7,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投4651元"
-      }
-    },
-    {
-      "league": "世界杯",
-      "matchNum": "周五032",
-      "homeTeam": "土耳其",
-      "awayTeam": "巴拉圭",
-      "recommend": "客胜",
-      "odds": 3.43,
-      "ev": 4.1,
-      "market_prob": 25.8,
-      "fair_prob": 30.4,
-      "value_gap": 4.6,
+      "fair_prob": 17.9,
+      "value_gap": 2.1,
       "reasons": [],
       "kelly_advice": {
-        "suggest_stake": 440,
-        "kelly_pct": 0.4,
-        "bankroll_ref": 100000,
-        "note": "1/4凯利建议投440元"
+        "suggest_stake": 0,
+        "kelly_pct": 0,
+        "note": "无正EV，不建议投注"
       }
     }
   ],
   "scorePredictions": [
     {
-      "homeTeam": "乌兹别克",
-      "awayTeam": "哥伦比亚",
-      "homeProb": 9.2,
-      "drawProb": 18.3,
-      "awayProb": 72.6,
-      "topScores": [],
-      "valueBets": [
-        {
-          "label": "主胜",
-          "odds": 9.65,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 9.2,
-          "model_prob": 9.2,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "平局",
-          "odds": 4.85,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 18.3,
-          "model_prob": 18.3,
-          "value_gap": 0,
-          "is_value": false
-        },
-        {
-          "label": "客胜",
-          "odds": 1.22,
-          "ev": -11.5,
-          "score": 1.5,
-          "market_prob": 72.6,
-          "model_prob": 72.6,
-          "value_gap": 0,
-          "is_value": false
-        }
-      ]
-    },
-    {
-      "homeTeam": "捷克",
-      "awayTeam": "南非",
-      "homeProb": 44.1,
-      "drawProb": 25.5,
-      "awayProb": 30.4,
+      "homeTeam": "美国",
+      "awayTeam": "澳大利亚",
+      "homeProb": 61.9,
+      "drawProb": 20.2,
+      "awayProb": 17.9,
       "topScores": [
         [
+          "2-1",
+          9.9
+        ],
+        [
+          "2-0",
+          9.4
+        ],
+        [
           "1-1",
-          12.1
+          9.3
         ],
         [
           "1-0",
-          10.1
+          8.8
         ],
         [
-          "2-1",
-          9.1
+          "3-1",
+          7.0
         ]
       ],
       "valueBets": [
         {
           "label": "客胜",
-          "odds": 4.35,
-          "model_prob": 30.4,
-          "market_prob": 20.4,
-          "value_gap": 10.0,
-          "ev": 32.1,
+          "odds": 5.6,
+          "model_prob": 17.9,
+          "market_prob": 15.8,
+          "value_gap": 2.1,
+          "ev": 0.0,
           "is_value": true
         },
         {
-          "label": "平局",
-          "odds": 3.25,
-          "model_prob": 25.5,
-          "market_prob": 27.2,
-          "value_gap": -1.8,
-          "ev": -17.1,
+          "label": "主胜",
+          "odds": 1.45,
+          "model_prob": 61.9,
+          "market_prob": 61.1,
+          "value_gap": 0.9,
+          "ev": -10.2,
           "is_value": false
         },
         {
-          "label": "主胜",
-          "odds": 1.69,
-          "model_prob": 44.1,
-          "market_prob": 52.4,
-          "value_gap": -8.3,
-          "ev": -25.4,
+          "label": "平局",
+          "odds": 3.83,
+          "model_prob": 20.2,
+          "market_prob": 23.1,
+          "value_gap": -2.9,
+          "ev": -22.7,
           "is_value": false
         }
       ]
     },
     {
-      "homeTeam": "瑞士",
-      "awayTeam": "波黑",
-      "homeProb": 44.1,
-      "drawProb": 25.5,
-      "awayProb": 30.4,
+      "homeTeam": "苏格兰",
+      "awayTeam": "摩洛哥",
+      "homeProb": 60.2,
+      "drawProb": 23.8,
+      "awayProb": 16.0,
       "topScores": [
         [
-          "1-1",
-          12.1
-        ],
-        [
           "1-0",
-          10.1
+          14.9
         ],
         [
-          "2-1",
-          9.1
-        ]
-      ],
-      "valueBets": [
-        {
-          "label": "客胜",
-          "odds": 6.9,
-          "model_prob": 30.4,
-          "market_prob": 12.8,
-          "value_gap": 17.5,
-          "ev": 109.5,
-          "is_value": true
-        },
-        {
-          "label": "平局",
-          "odds": 4.1,
-          "model_prob": 25.5,
-          "market_prob": 21.6,
-          "value_gap": 3.9,
-          "ev": 4.5,
-          "is_value": true
-        },
-        {
-          "label": "主胜",
-          "odds": 1.35,
-          "model_prob": 44.1,
-          "market_prob": 65.6,
-          "value_gap": -21.4,
-          "ev": -40.4,
-          "is_value": false
-        }
-      ]
-    },
-    {
-      "homeTeam": "加拿大",
-      "awayTeam": "卡塔尔",
-      "homeProb": 44.1,
-      "drawProb": 25.5,
-      "awayProb": 30.4,
-      "topScores": [
+          "2-0",
+          12.6
+        ],
         [
           "1-1",
-          12.1
-        ],
-        [
-          "1-0",
-          10.1
-        ],
-        [
-          "2-1",
-          9.1
-        ]
-      ],
-      "valueBets": [
-        {
-          "label": "客胜",
-          "odds": 9.1,
-          "model_prob": 30.4,
-          "market_prob": 9.7,
-          "value_gap": 20.6,
-          "ev": 176.3,
-          "is_value": true
-        },
-        {
-          "label": "平局",
-          "odds": 4.7,
-          "model_prob": 25.5,
-          "market_prob": 18.8,
-          "value_gap": 6.6,
-          "ev": 19.8,
-          "is_value": true
-        },
-        {
-          "label": "主胜",
-          "odds": 1.24,
-          "model_prob": 44.1,
-          "market_prob": 71.4,
-          "value_gap": -27.3,
-          "ev": -45.3,
-          "is_value": false
-        }
-      ]
-    },
-    {
-      "homeTeam": "墨西哥",
-      "awayTeam": "韩国",
-      "homeProb": 46.7,
-      "drawProb": 25.1,
-      "awayProb": 28.1,
-      "topScores": [
-        [
-          "1-1",
-          11.9
-        ],
-        [
-          "1-0",
-          10.4
+          11.0
         ],
         [
           "2-1",
           9.3
+        ],
+        [
+          "0-0",
+          8.8
+        ]
+      ],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 5.1,
+          "model_prob": 60.2,
+          "market_prob": 17.4,
+          "value_gap": 42.8,
+          "ev": 207.0,
+          "is_value": true
+        },
+        {
+          "label": "平局",
+          "odds": 3.28,
+          "model_prob": 23.8,
+          "market_prob": 27.0,
+          "value_gap": -3.2,
+          "ev": -22.0,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 1.59,
+          "model_prob": 16.0,
+          "market_prob": 55.7,
+          "value_gap": -39.6,
+          "ev": -74.5,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "土耳其",
+      "awayTeam": "巴拉圭",
+      "homeProb": 61.9,
+      "drawProb": 20.2,
+      "awayProb": 17.9,
+      "topScores": [
+        [
+          "2-1",
+          9.9
+        ],
+        [
+          "2-0",
+          9.4
+        ],
+        [
+          "1-1",
+          9.3
+        ],
+        [
+          "1-0",
+          8.8
+        ],
+        [
+          "3-1",
+          7.0
+        ]
+      ],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 1.92,
+          "model_prob": 61.9,
+          "market_prob": 46.1,
+          "value_gap": 15.8,
+          "ev": 18.9,
+          "is_value": true
+        },
+        {
+          "label": "平局",
+          "odds": 3.1,
+          "model_prob": 20.2,
+          "market_prob": 28.6,
+          "value_gap": -8.4,
+          "ev": -37.4,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 3.5,
+          "model_prob": 17.9,
+          "market_prob": 25.3,
+          "value_gap": -7.4,
+          "ev": -37.5,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "荷兰",
+      "awayTeam": "瑞典",
+      "homeProb": 43.2,
+      "drawProb": 21.3,
+      "awayProb": 35.6,
+      "topScores": [
+        [
+          "1-1",
+          8.1
+        ],
+        [
+          "2-1",
+          8.1
+        ],
+        [
+          "1-2",
+          7.3
+        ],
+        [
+          "2-2",
+          7.2
+        ],
+        [
+          "3-1",
+          5.3
         ]
       ],
       "valueBets": [
         {
           "label": "客胜",
-          "odds": 3.87,
-          "model_prob": 28.1,
-          "market_prob": 22.9,
-          "value_gap": 5.2,
-          "ev": 8.8,
+          "odds": 4.52,
+          "model_prob": 35.6,
+          "market_prob": 19.6,
+          "value_gap": 16.0,
+          "ev": 60.8,
           "is_value": true
         },
         {
-          "label": "主胜",
-          "odds": 1.86,
-          "model_prob": 46.7,
-          "market_prob": 47.6,
-          "value_gap": -0.9,
-          "ev": -13.0,
+          "label": "平局",
+          "odds": 3.58,
+          "model_prob": 21.3,
+          "market_prob": 24.7,
+          "value_gap": -3.5,
+          "ev": -23.9,
           "is_value": false
         },
         {
+          "label": "主胜",
+          "odds": 1.59,
+          "model_prob": 43.2,
+          "market_prob": 55.7,
+          "value_gap": -12.5,
+          "ev": -31.4,
+          "is_value": false
+        }
+      ]
+    },
+    {
+      "homeTeam": "德国",
+      "awayTeam": "科特迪瓦",
+      "homeProb": 77.7,
+      "drawProb": 13.5,
+      "awayProb": 8.9,
+      "topScores": [
+        [
+          "2-0",
+          9.5
+        ],
+        [
+          "3-0",
+          9.1
+        ],
+        [
+          "2-1",
+          8.6
+        ],
+        [
+          "3-1",
+          8.2
+        ],
+        [
+          "1-0",
+          6.7
+        ]
+      ],
+      "valueBets": [
+        {
+          "label": "主胜",
+          "odds": 1.4,
+          "model_prob": 77.7,
+          "market_prob": 63.3,
+          "value_gap": 14.4,
+          "ev": 8.7,
+          "is_value": true
+        },
+        {
           "label": "平局",
-          "odds": 3.0,
-          "model_prob": 25.1,
-          "market_prob": 29.5,
-          "value_gap": -4.4,
-          "ev": -24.6,
+          "odds": 4.15,
+          "model_prob": 13.5,
+          "market_prob": 21.3,
+          "value_gap": -7.9,
+          "ev": -44.1,
+          "is_value": false
+        },
+        {
+          "label": "客胜",
+          "odds": 5.75,
+          "model_prob": 8.9,
+          "market_prob": 15.4,
+          "value_gap": -6.5,
+          "ev": -49.0,
           "is_value": false
         }
       ]
     }
   ],
-  "posEvCount": 7,
-  "valueBetCount": 9,
-  "poissonDataAvailable": false,
+  "posEvCount": 5,
+  "valueBetCount": 6,
+  "poissonDataAvailable": true,
   "dataSource": {
     "odds": "webapi.sporttery.cn",
     "teamData": "api.football-data.org (排名+阵容+比赛)",
     "model": "Poisson Distribution (泊松分布)",
-    "poissonTeams": 0
+    "poissonTeams": 48
   }
 }
