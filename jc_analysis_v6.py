@@ -1,25 +1,23 @@
 """
-竞彩足球 V6 — ELO + 市场赔率混合策略
-========================================
+竞彩足球 V6 — 反被高估热门策略
+================================
 
-放弃纯泊松模型（世界杯数据量不足），改用:
-  1. 锦标赛ELO（从实际赛果滚动训练）
-  2. 市场隐含概率（赔率反推）
-  3. 加权混合: 70%市场 + 30% ELO
-  4. 仅在模型与市场分歧显著时产生推荐
+策略: 市场强烈看好某队(低赔率)，但该队在WC实际表现匹配不上
+      → 市场高估了该队 → 推荐下盘/平局
+
+核心逻辑:
+  1. 从赔率找热门: 某方向赔率 < 1.60
+  2. 从WC赛果验证: 该队在已经踢过的比赛中表现如何?
+  3. 表现不匹配 = 信号: 推荐平局(下盘)
 
 数据源:
-  1. 竞彩网官方API: webapi.sporttery.cn (今日赔率)
-  2. jc_results.json (历史赛果 → ELO计算)
-  3. team_data.py (实力评分/积分榜)
-
-输出:
-  - jc_recommend_v6.json
-  - jc_analysis_report_v6.md
+  1. 竞彩网官方API (赔率)
+  2. jc_results.json (WC赛果)
+  3. team_data.py (积分榜)
 """
 
-import requests, json, os, math, sys, re
-from datetime import datetime, timedelta
+import requests, json, os, sys
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,24 +30,13 @@ HEADERS = {
 }
 OUTPUT_FILE = 'jc_recommend_v6.json'
 REPORT_FILE = 'jc_report_v6.md'
-RESULTS_FILE = 'data/jc_results.json'
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
-# ELO参数
-ELO_INIT = 1500
-ELO_K = 16  # 降低K值，避免2场比赛过度波动
-ELO_HOME_ADV = 80
+# 策略参数
+FAVORITE_MAX_ODDS = 1.60   # 热门赔率不超过此值
+MIN_GAMES = 1              # 至少踢过1场
 
-# 混合权重
-MARKET_WEIGHT = 0.70
-ELO_WEIGHT = 0.30
-
-# 推荐阈值 (新策略: ELO+市场一致优先)
-MIN_ODDS = 1.30        # 最低赔率
-MAX_ODDS = 5.00        # 最高赔率（超过则太冷门，不推荐）
-MIN_PROB_THRESHOLD = 35  # 混合概率至少35%才推荐
-
-# ===== 球队名称归一化 (简称 → 全名) =====
+# ===== 球队名称归一化 =====
 NAME_NORMALIZE = {
     '克罗地': '克罗地亚', '阿尔及利': '阿尔及利亚',
     '塞内': '塞内加尔', '新西': '新西兰', '佛得': '佛得角',
@@ -59,419 +46,318 @@ NAME_NORMALIZE = {
 }
 
 def normalize_name(name):
-    """统一队名"""
     if not name:
         return name
-    # 直接映射
     if name in NAME_NORMALIZE:
         return NAME_NORMALIZE[name]
-    # 部分匹配
     for short, full in NAME_NORMALIZE.items():
         if short in name:
             return full
     return name
 
 
-# ===== ELO 计算 =====
-def build_tournament_elo(results_file=None):
-    """从历史赛果构建锦标赛ELO"""
-    if results_file is None:
-        results_file = os.path.join(os.path.dirname(__file__), RESULTS_FILE)
-    
+# ===== WC表现数据库 =====
+def build_team_stats():
+    """从 jc_results.json 构建每队WC表现"""
+    results_file = os.path.join(DATA_DIR, 'jc_results.json')
     if not os.path.exists(results_file):
-        print(f'[ELO] ⚠️ 没有历史赛果: {results_file}')
-        return {}
+        return {}, {}
     
     with open(results_file, encoding='utf-8') as f:
         results = json.load(f)
     
-    elo = {}
-    
-    for r in reversed(results):  # 时间正序
+    team_stats = {}
+    for r in results:
         home = normalize_name(r['home'])
         away = normalize_name(r['away'])
         hs = r.get('home_score', 0)
         aws = r.get('away_score', 0)
         
-        if home not in elo:
-            elo[home] = ELO_INIT
-        if away not in elo:
-            elo[away] = ELO_INIT
-        
-        elo_h = elo[home] + ELO_HOME_ADV
-        elo_a = elo[away]
-        
-        e_h = 1 / (1 + 10 ** ((elo_a - elo_h) / 400))
-        e_a = 1 - e_h
-        
-        if hs > aws:
-            s_h, s_a = 1, 0
-        elif hs < aws:
-            s_h, s_a = 0, 1
-        else:
-            s_h, s_a = 0.5, 0.5
-        
-        elo[home] += ELO_K * (s_h - e_h)
-        elo[away] += ELO_K * (s_a - e_a)
+        for team, gf, ga, opp in [(home, hs, aws, away), (away, aws, hs, home)]:
+            if team not in team_stats:
+                team_stats[team] = {'played': 0, 'gf': 0, 'ga': 0, 'wins': 0, 'draws': 0, 'losses': 0,
+                                     'opponents': [], 'results': []}
+            s = team_stats[team]
+            s['played'] += 1
+            s['gf'] += gf
+            s['ga'] += ga
+            s['opponents'].append(opp)
+            if gf > ga:
+                s['wins'] += 1
+                s['results'].append('W')
+            elif gf == ga:
+                s['draws'] += 1
+                s['results'].append('D')
+            else:
+                s['losses'] += 1
+                s['results'].append('L')
     
-    print(f'[ELO] 从 {len(results)} 场比赛计算出 {len(elo)} 队ELO')
-    return elo
+    # 计算对手质量: 对手的平均净胜球
+    for team, s in team_stats.items():
+        opp_quality = 0
+        for opp in s['opponents']:
+            if opp in team_stats:
+                opp_quality += team_stats[opp]['gf'] - team_stats[opp]['ga']
+        s['opp_quality'] = opp_quality / max(1, len(s['opponents']))
+    
+    return team_stats
 
 
-def elo_win_prob(home_elo, away_elo):
-    """ELO → 胜平负概率 (使用经典公式 + 平局模型)"""
-    elo_diff = home_elo - away_elo + ELO_HOME_ADV
+
+def team_is_overrated(team_name, stats):
+    """基于胜负+对手质量判断"""
+    if team_name not in stats:
+        return False, '无数据'
     
-    # 主胜概率 (ELO基础)
-    p_home = 1 / (1 + 10 ** (-elo_diff / 400))
+    s = stats[team_name]
+    if s['played'] < MIN_GAMES:
+        return False, f'仅{s["played"]}场'
     
-    # 平局概率模型: 平局概率随elo差增大而减小
-    # 基于经验: 实力越接近，平局概率越高
-    abs_diff = abs(elo_diff)
-    p_draw_raw = max(0.15, 0.32 - abs_diff / 1200)  # 15%~32%范围
+    gf_pg = s['gf'] / s['played']
+    ga_pg = s['ga'] / s['played']
+    opp_q = s['opp_quality']
     
-    # 归一化
-    p_away = 1 - p_home
-    p_draw = p_draw_raw
-    p_home = p_home * (1 - p_draw_raw)
-    p_away = p_away * (1 - p_draw_raw)
+    # 确实强的证据 → 不触发
+    # 1. 至少赢过1场且净胜球>=2
+    if s['wins'] >= 1 and (s['gf'] - s['ga']) >= 2:
+        return False, f'已证明({s["wins"]}胜,净胜{s["gf"]-s["ga"]})'
     
-    total = p_home + p_draw + p_away
-    return p_home / total, p_draw / total, p_away / total
+    # 2. 场均进球>=3
+    if gf_pg >= 3.0:
+        return False, f'攻击强(场均{gf_pg:.1f}球)'
+    
+    # 被高估的证据 → 触发
+    reasons = []
+    
+    # A. 0胜
+    if s['wins'] == 0:
+        reasons.append(f'{s["played"]}场0胜')
+    
+    # B. 攻击弱 + 对手弱(虐菜都虐不动)
+    if gf_pg < 1.5 and opp_q <= 0:
+        reasons.append(f'场均{gf_pg:.1f}球(vs弱队)')
+    
+    # C. 防守差
+    if ga_pg >= 2.0:
+        reasons.append(f'场均失{ga_pg:.1f}球')
+    
+    # D. 净胜球很差
+    if s['gf'] - s['ga'] <= -2:
+        reasons.append(f'净胜{s["gf"]-s["ga"]}')
+    
+    if reasons:
+        return True, ', '.join(reasons)
+    
+    return False, f'合理({s["wins"]}W{s["draws"]}D{s["losses"]}L, GF{s["gf"]}GA{s["ga"]})'
 
 
-def calc_implied_prob(odds):
-    """从赔率反推市场隐含概率（去抽水）"""
-    if len(odds) != 3 or min(odds) <= 0:
-        return None, None, None
-    
-    implied = [1/o for o in odds]
-    total_imp = sum(implied)
-    juice = (total_imp - 1) * 100
-    
-    if juice > 15:
-        return None, None, None
-    
-    fair_probs = [i / total_imp for i in implied]
-    return implied, fair_probs, juice
-
-
-# ===== API 数据获取 =====
+# ===== API =====
 def fetch_today_matches():
-    """获取今日竞彩比赛列表"""
     r = requests.get(f'{BASE_URL}/getMatchListV1.qry?clientCode=3001', headers=HEADERS, timeout=15)
     data = r.json()
     if not data.get('success'):
-        print('API请求失败:', data.get('errorMessage'))
         return []
     matches = data['value']['matchInfoList']
     result = []
     for group in matches:
         for sm in group.get('subMatchList', []):
             had_odds = None
-            hhad_odds = None
             for odds in sm.get('oddsList', []):
                 if odds.get('poolCode') == 'HAD':
                     had_odds = odds
-                elif odds.get('poolCode') == 'HHAD':
-                    hhad_odds = odds
-            
             if not had_odds:
                 continue
             
-            try:
-                home = sm.get('homeTeamAbbName', '') or sm.get('homeTeamAllName', '')
-                away = sm.get('awayTeamAbbName', '') or sm.get('awayTeamAllName', '')
-                league = sm.get('leagueAbbName', '') or sm.get('leagueAllName', '')
-                match_time = sm.get('matchTime', '')
-            except:
+            home = sm.get('homeTeamAbbName', '') or sm.get('homeTeamAllName', '')
+            away = sm.get('awayTeamAbbName', '') or sm.get('awayTeamAllName', '')
+            league = sm.get('leagueAbbName', '') or sm.get('leagueAllName', '')
+            
+            if not home or not away:
                 continue
             
             result.append({
                 'homeTeam': home,
                 'awayTeam': away,
                 'league': league,
-                'matchTime': match_time,
+                'matchTime': sm.get('matchTime', ''),
                 'matchDate': sm.get('matchDate', ''),
                 'had_h': float(had_odds.get('h', 0)),
                 'had_d': float(had_odds.get('d', 0)),
                 'had_a': float(had_odds.get('a', 0)),
-                'hhad_h': float(hhad_odds.get('h', 0)) if hhad_odds else 0,
-                'hhad_d': float(hhad_odds.get('d', 0)) if hhad_odds else 0,
-                'hhad_a': float(hhad_odds.get('a', 0)) if hhad_odds else 0,
             })
     return result
 
 
-# ===== 混合分析 =====
-def analyze_match_hybrid(match, elo, standings=None):
-    """ELO + 市场赔率 混合分析"""
-    had_odds = [match['had_h'], match['had_d'], match['had_a']]
+# ===== 核心分析 =====
+def analyze_match(match, team_stats):
+    """反被高估热门分析"""
+    had = [match['had_h'], match['had_d'], match['had_a']]
+    labels = ['主胜', '平局', '客胜']
     
-    # 1. 市场隐含概率
-    _, fair_probs, juice = calc_implied_prob(had_odds)
-    if fair_probs is None:
+    # 找市场热门
+    fav_idx = min(range(3), key=lambda i: had[i])
+    fav_label = labels[fav_idx]
+    fav_odds = had[fav_idx]
+    
+    # 不是热门，不关注
+    if fav_odds >= FAVORITE_MAX_ODDS or fav_label == '平局':
         return None
     
-    market_h, market_d, market_a = fair_probs[0], fair_probs[1], fair_probs[2]
-    
-    # 2. ELO概率
-    home_en = normalize_name(match['homeTeam'])
-    away_en = normalize_name(match['awayTeam'])
-    
-    home_elo = elo.get(home_en, ELO_INIT)
-    away_elo = elo.get(away_en, ELO_INIT)
-    
-    elo_h, elo_d, elo_a = elo_win_prob(home_elo, away_elo)
-    
-    # 3. 混合概率
-    blend_h = MARKET_WEIGHT * market_h + ELO_WEIGHT * elo_h
-    blend_d = MARKET_WEIGHT * market_d + ELO_WEIGHT * elo_d
-    blend_a = MARKET_WEIGHT * market_a + ELO_WEIGHT * elo_a
-    
-    # 4. 计算各选项EV（用混合概率 × 赔率）
-    labels = ['主胜', '平局', '客胜']
-    blenders = [blend_h, blend_d, blend_a]
-    market_probs = [market_h, market_d, market_a]
-    elo_probs = [elo_h, elo_d, elo_a]
-    
-    options = []
-    for i in range(3):
-        bp = blenders[i]
-        mp = market_probs[i]
-        ep = elo_probs[i]
-        odds = had_odds[i]
-        
-        ev = odds * bp - 1
-        divergence = (ep - mp) * 100  # 正 = ELO比市场更看好
-        
-        options.append({
-            'label': labels[i],
-            'odds': odds,
-            'blend_prob': round(bp * 100, 1),
-            'market_prob': round(mp * 100, 1),
-            'elo_prob': round(ep * 100, 1),
-            'ev': round(ev * 100, 1),
-            'divergence': round(divergence, 1),
-            'abs_div': abs(divergence),
-        })
-    
-    options.sort(key=lambda x: (-x['ev'], -x['abs_div']))
-    
-    # 5. 评分 — ELO做方向过滤器，不调节概率
-    elo_best_idx = max(range(3), key=lambda i: elo_probs[i])
-    market_best_idx = max(range(3), key=lambda i: market_probs[i])
-    
-    elo_direction = labels[elo_best_idx]
-    market_direction = labels[market_best_idx]
-    
-    agree = (elo_best_idx == market_best_idx)
-    
-    # ELO差距（主队+主场优势 vs 客队）
-    elo_gap = abs(home_elo + ELO_HOME_ADV - away_elo)
-    market_strength = market_probs[market_best_idx] * 100  # 市场对热门的信心
-    
-    if agree:
-        fav_label = market_direction
-        fav_idx = market_best_idx
-        fav_odds = had_odds[fav_idx]
-        fav_market_pct = market_probs[fav_idx] * 100
-        
-        best = next((o for o in options if o['label'] == fav_label), options[0])
-        score = 2.0
-        reasons = [f'ELO+市场一致→{fav_label}']
-        
-        # ELO差距越大，信号越强
-        if elo_gap > 100:
-            score += 2.5
-            reasons.append(f'ELO差{elo_gap:.0f}点')
-        elif elo_gap > 60:
-            score += 1.5
-        elif elo_gap > 30:
-            score += 0.5
-        
-        # 市场强倾向
-        if fav_market_pct > 60:
-            score += 1.5
-            reasons.append('市场强信号')
-        elif fav_market_pct > 50:
-            score += 1.0
-        
-        # 赔率区间评分
-        if 1.50 <= fav_odds <= 2.20:
-            score += 2.0
-        elif 1.30 <= fav_odds < 1.50:
-            score += 1.0
-        elif fav_odds < 1.20:
-            score -= 1.0
-            reasons.append('赔率偏低')
-        
-        # 平局共识降权
-        if fav_label == '平局':
-            score -= 1.0
-        
-        # 推荐条件：赔率合理 + 不是纯平局
-        should_recommend = (fav_odds >= MIN_ODDS and fav_label != '平局')
+    # 确定热门是哪个队
+    if fav_label == '主胜':
+        fav_team = match['homeTeam']
+        underdog_team = match['awayTeam']
+        underdog_direction = '客胜' if had[2] >= had[1] else '平局'
     else:
-        # 不一致：检查ELO方向是否有价值
-        elo_fav_odds = had_odds[elo_best_idx]
-        elo_divergence = (elo_probs[elo_best_idx] - market_probs[elo_best_idx]) * 100
-        
-        best = next((o for o in options if o['label'] == elo_direction), options[0])
-        score = 0.5
-        reasons = [f'ELO→{elo_direction} ≠ 市场→{market_direction}']
-        
-        if abs(elo_divergence) > 15:
-            score += 1.5
-            reasons.append(f'大分歧{abs(elo_divergence):.0f}%')
-        
-        if 2.0 <= elo_fav_odds <= MAX_ODDS:
-            score += 1.0
-        elif elo_fav_odds > MAX_ODDS:
-            score -= 2.0
-        
-        # 仅在ELO强烈分歧且赔率合理时推荐ELO方向
-        should_recommend = (elo_divergence > 12 and 2.0 <= elo_fav_odds <= MAX_ODDS)
+        fav_team = match['awayTeam']
+        underdog_team = match['homeTeam']
+        underdog_direction = '主胜' if had[0] >= had[1] else '平局'
     
-    # 信心映射
+    fav_norm = normalize_name(fav_team)
+    overrated, reason = team_is_overrated(fav_norm, team_stats)
+    
+    if not overrated:
+        return None  # 热门表现合理，无信号
+    
+    # 热门被高估! → 推荐下盘/平局
+    # 优先推荐平局（赔率通常3~5倍），其次推荐下盘方向
+    draw_odds = had[1]
+    
+    if underdog_direction == '平局' or draw_odds <= 6.0:
+        recommend = '平局'
+        rec_odds = draw_odds
+    else:
+        # 推荐下盘方向
+        ud_idx = 0 if underdog_direction == '主胜' else 2
+        recommend = underdog_direction
+        rec_odds = had[ud_idx]
+    
+    # 评分
+    score = 0
+    reasons_list = [f'{fav_team}被高估: {reason}']
+    
+    # 被高估程度
+    if '场均仅' in reason and '场均失' in reason:
+        score += 3.0
+        reasons_list.append('攻防双弱')
+    elif '场均仅' in reason:
+        score += 1.5
+    elif '场均失' in reason:
+        score += 1.5
+    
+    # 赔率
+    if 3.0 <= rec_odds <= 6.0:
+        score += 2.0
+        reasons_list.append(f'{recommend}@{rec_odds}')
+    elif rec_odds > 6.0:
+        score += 1.0
+    
+    # 热门赔率越低+被高估 → 信号越强
+    if fav_odds < 1.30:
+        score += 2.0
+        reasons_list.append('极端热门')
+    elif fav_odds < 1.45:
+        score += 1.0
+    
+    # 信心
     if score >= 5.0:
-        confidence = '★★★★★'
-    elif score >= 3.5:
         confidence = '★★★★'
-    elif score >= 2.5:
+    elif score >= 3.0:
         confidence = '★★★'
-    elif score >= 1.5:
+    elif score >= 2.0:
         confidence = '★★'
     else:
         confidence = '★'
     
     return {
-        'options': options,
-        'best': best,
-        'score': round(score, 1),
+        'homeTeam': match['homeTeam'],
+        'awayTeam': match['awayTeam'],
+        'league': match.get('league', ''),
+        'matchDate': match.get('matchDate', ''),
+        'matchTime': match.get('matchTime', ''),
         'confidence': confidence,
-        'reasons': reasons,
-        'should_recommend': should_recommend,
-        'agree': agree,
-        'elo': {'home': round(home_elo, 1), 'away': round(away_elo, 1)},
-        'blend_probs': {'home': round(blend_h*100,1), 'draw': round(blend_d*100,1), 'away': round(blend_a*100,1)},
+        'score': round(score, 1),
+        'recommend': recommend,
+        'recommend_odds': rec_odds,
+        'fav_team': fav_team,
+        'fav_odds': fav_odds,
+        'fav_label': fav_label,
+        'overrated_reason': reason,
+        'reasons': reasons_list,
+        'team_stats': {
+            fav_team: team_stats.get(fav_norm, {}),
+        }
     }
 
 
-# ===== 报告生成 =====
-def generate_report(output, results):
+# ===== 报告 =====
+def generate_report(output):
     lines = [
-        f"# 竞彩 V6 混合分析报告 ({output['date']})",
+        f"# 竞彩 V6 反热门分析 ({output['date']})",
         f"",
-        f"> 生成时间: {output['updateTime']}",
-        f"> 策略: ELO(30%) + 市场赔率(70%) 混合，ELO+市场一致优先",
-        f"> ELO训练数据: {output['elo_info']['matches']}场比赛, {output['elo_info']['teams']}支球队",
-        f"> 推荐阈值: ELO+市场方向一致 且 赔率≥{MIN_ODDS}",
+        f"> 生成: {output['updateTime']}",
+        f"> 策略: 市场热门(赔率<{FAVORITE_MAX_ODDS}) + WC表现不匹配 → 推荐下盘",
+        f"> 数据: {output['stats_info']['teams']}队WC实际表现",
         f"",
         f"---",
         f"",
         f"## 今日概览",
         f"",
-        f"- 今日共 {output['totalMatches']} 场比赛",
-        f"- 产生推荐: {len(output['recommendations'])} 场",
-        f"- 无分歧不推荐: {output.get('no_signal', 0)} 场",
-        f"",
-        f"---",
+        f"- 比赛: {output['totalMatches']}场",
+        f"- 热门被高估信号: {len(output['recommendations'])}场",
+        f"- 无信号: {output.get('no_signal', 0)}场",
         f"",
     ]
     
     recs = output.get('recommendations', [])
     if recs:
         lines.extend([
-            f"## 📋 推荐列表",
+            f"## 🔴 反热门推荐",
             f"",
-            f"| 信心 | 比赛 | 推荐 | 赔率 | 混合概率 | 市场概率 | ELO概率 | EV | 分歧 |",
-            f"|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|",
+            f"| 信心 | 比赛 | 热门 | 赔率 | 被高估原因 | 推荐 | 赔率 |",
+            f"|:---:|:---|:---|:---:|:---|:---:|:---:|",
         ])
         for r in recs:
-            best = r['best']
-            bl = r['blend_probs']
-            opt = best
             lines.append(
                 f"| {r['confidence']} "
                 f"| {r['homeTeam']} vs {r['awayTeam']} "
-                f"| {best['label']} "
-                f"| {best['odds']} "
-                f"| {best['blend_prob']}% "
-                f"| {best['market_prob']}% "
-                f"| {best['elo_prob']}% "
-                f"| +{best['ev']}% "
-                f"| {best['divergence']:+.0f}% |"
+                f"| {r['fav_team']}({r['fav_label']}) "
+                f"| {r['fav_odds']} "
+                f"| {r['overrated_reason']} "
+                f"| {r['recommend']} "
+                f"| {r['recommend_odds']} |"
             )
         lines.append("")
     
-    # 无信号比赛
-    no_signal = output.get('no_signal_matches', [])
-    if no_signal:
-        lines.extend([
-            f"## 🔇 无信号比赛（不推荐）",
-            f"",
-            f"| 比赛 | 市场倾向 | ELO倾向 | 分歧度 | 说明 |",
-            f"|:---|:---:|:---:|:---:|:---|",
-        ])
-        for ns in no_signal:
-            lines.append(
-                f"| {ns['homeTeam']} vs {ns['awayTeam']} "
-                f"| {ns['market_favor']} "
-                f"| {ns['elo_favor']} "
-                f"| {ns['max_div']:.0f}% "
-                f"| {ns['reason']} |"
-            )
-        lines.append("")
-    
-    # ELO排名
     lines.extend([
-        f"## 📊 锦标赛ELO排名 (Top 15)",
-        f"",
-        f"| 排名 | 球队 | ELO | 变化 |",
-        f"|:---:|:---|:---:|:---:|",
-    ])
-    elo_rank = output.get('elo_rankings', [])
-    for i, (team, e) in enumerate(elo_rank[:15], 1):
-        delta = e - ELO_INIT
-        lines.append(f"| {i} | {team} | {e:.1f} | {delta:+.1f} |")
-    lines.append("")
-    
-    # 风险提示
-    lines.extend([
-        f"---",
-        f"",
         f"## ⚠️ 策略说明",
         f"",
-        f"1. **混合策略**: 70%跟随市场 + 30%锦标赛ELO，ELO与市场一致时才推荐",
-        f"2. **推荐条件**: ELO+市场指向同一方向 且 赔率≥{MIN_ODDS}"
-        f"（平局共识除外）",
-        f"3. **无信号**: 赔率过低或方向分歧的比赛不强行推荐",
-        f"4. **ELO限制**: 基于世界杯28场小组赛训练，纯WC表现",
-        f"5. 本报告仅供参考，请理性投注",
+        f"1. 找市场热门（某方向赔率<{FAVORITE_MAX_ODDS})",
+        f"2. 查WC表现：0胜+弱攻击+差防守+对手质量 → 高估"
+        f"3. 已证明的强队(净胜≥2 或 场均≥3球) → 不触发",
+        f"3. 被高估的热门 → 推荐平局/下盘",
+        f"4. 热门表现匹配则不推荐（无信号）",
+        f"5. 纯数据驱动，请理性参考",
         f"",
-        f"---",
-        f"",
-        f"*报告由 V6 ELO+市场混合模型自动生成*",
+        f"*V6 反被高估热门策略*",
     ])
     
     return '\n'.join(lines)
 
 
 def sync_jc_matches(output):
-    """同步到前端 jc.html"""
     data_path = os.path.join(DATA_DIR, 'jc_matches.json')
     matches_data = []
     for r in output.get('recommendations', []):
         matches_data.append({
             'homeTeam': r['homeTeam'],
             'awayTeam': r['awayTeam'],
-            'recommend': r['best']['label'],
-            'best_odds': r['best']['odds'],
+            'recommend': r['recommend'],
+            'recommend_odds': r['recommend_odds'],
             'confidence': r['confidence'],
-            'ev': r['best']['ev'],
-            'divergence': r['best']['divergence'],
-            'blend_prob': r['best']['blend_prob'],
+            'fav_team': r['fav_team'],
+            'fav_odds': r['fav_odds'],
+            'reason': r['overrated_reason'],
         })
     
     with open(data_path, 'w', encoding='utf-8') as f:
@@ -479,145 +365,78 @@ def sync_jc_matches(output):
             'date': output['date'],
             'updateTime': output['updateTime'],
             'matches': matches_data,
-            'summary': {
-                'total': len(matches_data),
-                'strategy': 'V6 ELO+Market Hybrid',
-            }
+            'summary': {'total': len(matches_data), 'strategy': 'V6 Fade Overrated Favorite'},
         }, f, ensure_ascii=False, indent=2)
     print(f'[同步] jc_matches.json ({len(matches_data)}场)')
 
 
+# ===== Main =====
 def main():
-    print(f'[{datetime.now().strftime("%H:%M:%S")}] === 竞彩V6 ELO+市场混合分析 ===')
+    print(f'[{datetime.now().strftime("%H:%M:%S")}] === 竞彩V6 反被高估热门 ===')
     
-    # 1. 构建ELO
-    elo = build_tournament_elo()
+    # 1. 构建WC球队表现
+    team_stats = build_team_stats()
+    print(f'[数据] {len(team_stats)}队WC表现')
+    for team, s in sorted(team_stats.items()):
+        if s['played'] > 0:
+            print(f'  {team}: {s["played"]}场 GF{s["gf"]} GA{s["ga"]}')
     
     # 2. 获取今日比赛
     matches = fetch_today_matches()
     if not matches:
         print('❌ 今日无比赛')
         return
-    print(f'✅ 获取到 {len(matches)} 场比赛')
+    print(f'\n[比赛] {len(matches)}场')
     
-    # 3. 混合分析
+    # 3. 分析
     recommendations = []
-    no_signal = []
+    no_signal_count = 0
     
     for m in matches:
-        result = analyze_match_hybrid(m, elo)
-        if not result:
-            continue
-        
-        if result['should_recommend']:
-            rec = {
-                'homeTeam': m['homeTeam'],
-                'awayTeam': m['awayTeam'],
-                'league': m.get('league', ''),
-                'matchTime': m.get('matchTime', ''),
-                'matchDate': m.get('matchDate', ''),
-                'confidence': result['confidence'],
-                'score': result['score'],
-                'best': result['best'],
-                'blend_probs': result['blend_probs'],
-                'elo': result['elo'],
-                'options': result['options'],
-                'reasons': result['reasons'],
-                'agree': result.get('agree', False),
-            }
-            recommendations.append(rec)
+        result = analyze_match(m, team_stats)
+        if result:
+            recommendations.append(result)
         else:
-            options = result['options']
-            market_favor = max(options, key=lambda x: x['market_prob'])['label']
-            elo_favor = max(options, key=lambda x: x['elo_prob'])['label']
-            max_div = max(o['abs_div'] for o in options)
-            
-            agree = result.get('agree', False)
-            if agree:
-                fav_idx = max(range(3), key=lambda i: {
-                    'home': result['blend_probs']['home'],
-                    'draw': result['blend_probs']['draw'],
-                    'away': result['blend_probs']['away']
-                }[['home', 'draw', 'away'][i]])
-                fav_label = ['主胜', '平局', '客胜'][fav_idx]
-                fav_odds = [match['had_h'], match['had_d'], match['had_a']][fav_idx]
-                if fav_odds < MIN_ODDS:
-                    reason = f'赔率过低 @{fav_odds}'
-                else:
-                    reason = f'混合概率不足 (ELO+市场一致{fav_label})'
-            else:
-                reason = 'ELO与市场方向分歧'
-            
-            no_signal.append({
-                'homeTeam': m['homeTeam'],
-                'awayTeam': m['awayTeam'],
-                'market_favor': market_favor,
-                'elo_favor': elo_favor,
-                'max_div': max_div,
-                'reason': reason,
-            })
+            no_signal_count += 1
     
-    # 4. 排序推荐 (按分数降序)
-    recommendations.sort(key=lambda x: (-x['score'], -x['best']['ev']))
+    recommendations.sort(key=lambda x: -x['score'])
     
-    # ELO排名
-    elo_rank = sorted(elo.items(), key=lambda x: -x[1])
-    
-    # 5. 输出
+    # 4. 输出
     now = datetime.now()
     output = {
         'date': now.strftime('%Y-%m-%d'),
         'updateTime': now.strftime('%Y-%m-%d %H:%M:%S'),
         'totalMatches': len(matches),
         'recommendations': recommendations,
-        'recommend_count': len(recommendations),
-        'no_signal': len(no_signal),
-        'no_signal_matches': no_signal,
-        'elo_info': {
-            'matches': sum(1 for _ in open(os.path.join(os.path.dirname(__file__), RESULTS_FILE), encoding='utf-8')),
-            'teams': len(elo),
-        },
-        'elo_rankings': elo_rank,
-        'strategy': f'V6 ELO({ELO_WEIGHT*100:.0f}%) + Market({MARKET_WEIGHT*100:.0f}%)',
-        'thresholds': {
-            'min_odds': MIN_ODDS,
-            'max_odds': MAX_ODDS,
-        },
+        'no_signal': no_signal_count,
+        'stats_info': {'teams': len(team_stats)},
+        'strategy': f'V6 Fade Overrated Favorite (odds<{FAVORITE_MAX_ODDS})',
     }
     
-    # 保存
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
     
-    # 同步到前端
     sync_jc_matches(output)
     
-    # 生成报告
-    report = generate_report(output, [])
+    report = generate_report(output)
     with open(REPORT_FILE, 'w', encoding='utf-8') as f:
         f.write(report)
     
-    # 6. 打印摘要
+    # 5. 打印
     print(f'\n{"="*60}')
-    print(f'  🏆 竞彩V6 混合分析 {output["date"]}')
-    print(f'  策略: {output["strategy"]}')
-    print(f'  ELO: {len(elo)}队 (基于{output["elo_info"]["matches"]}场比赛)')
-    print(f'  推荐: {len(recommendations)}场 | 无信号: {len(no_signal)}场')
+    print(f'  🔴 反热门推荐 ({len(recommendations)}场)')
     print(f'{"="*60}')
     
-    if recommendations:
-        print(f'\n📋 推荐列表:')
-        for i, r in enumerate(recommendations[:6], 1):
-            best = r['best']
-            div_str = f'ELO分歧{best["divergence"]:+.0f}%'
-            print(f'  {i}. [{r["confidence"]}] {r["homeTeam"]} vs {r["awayTeam"]} → {best["label"]} @{best["odds"]} (EV+{best["ev"]}%, {div_str})')
+    for i, r in enumerate(recommendations, 1):
+        print(f'  {i}. [{r["confidence"]}] {r["homeTeam"]} vs {r["awayTeam"]}')
+        print(f'     热门: {r["fav_team"]}({r["fav_label"]}) @{r["fav_odds"]}')
+        print(f'     原因: {r["overrated_reason"]}')
+        print(f'     推荐: {r["recommend"]} @{r["recommend_odds"]}')
     
-    if no_signal:
-        print(f'\n🔇 无信号比赛 ({len(no_signal)}场):')
-        for ns in no_signal:
-            print(f'  {ns["homeTeam"]} vs {ns["awayTeam"]}: {ns["reason"]}')
+    if no_signal_count > 0:
+        print(f'\n  ✓ 无信号: {no_signal_count}场')
     
-    print(f'\n✅ 输出: {OUTPUT_FILE}, {REPORT_FILE}')
+    print(f'\n✅ {OUTPUT_FILE}, {REPORT_FILE}')
 
 
 if __name__ == "__main__":
