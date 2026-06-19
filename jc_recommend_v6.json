@@ -1,14 +1,626 @@
 {
-  "date": "2026-06-15",
-  "updateTime": "02:54",
-  "modelVersion": "V6 (Elo + 实力泊松)",
-  "totalMatches": 22,
-  "posEvCount": 0,
-  "recommendations": [],
-  "topRecommend": null,
-  "dataSource": {
-    "odds": "webapi.sporttery.cn",
-    "strength": "team_data_cache.json (48队)",
-    "model": "Poisson + Strength-to-Coefficients"
+  "date": "2026-06-19",
+  "updateTime": "2026-06-19 14:14:56",
+  "totalMatches": 9,
+  "recommendations": [
+    {
+      "homeTeam": "荷兰",
+      "awayTeam": "瑞典",
+      "league": "世界杯",
+      "matchTime": "01:00",
+      "matchDate": "2026-06-21",
+      "confidence": "★★★★★",
+      "score": 6.5,
+      "best": {
+        "label": "主胜",
+        "odds": 1.59,
+        "blend_prob": 52.3,
+        "market_prob": 55.7,
+        "elo_prob": 44.6,
+        "ev": -16.8,
+        "divergence": -11.1,
+        "abs_div": 11.122565063832985
+      },
+      "blend_probs": {
+        "home": 52.3,
+        "draw": 25.1,
+        "away": 22.5
+      },
+      "elo": {
+        "home": 1498.2,
+        "away": 1506.2
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 4.52,
+          "blend_prob": 22.5,
+          "market_prob": 19.6,
+          "elo_prob": 29.4,
+          "ev": 1.9,
+          "divergence": 9.9,
+          "abs_div": 9.852956039931204
+        },
+        {
+          "label": "平局",
+          "odds": 3.58,
+          "blend_prob": 25.1,
+          "market_prob": 24.7,
+          "elo_prob": 26.0,
+          "ev": -10.1,
+          "divergence": 1.3,
+          "abs_div": 1.2696090239017799
+        },
+        {
+          "label": "主胜",
+          "odds": 1.59,
+          "blend_prob": 52.3,
+          "market_prob": 55.7,
+          "elo_prob": 44.6,
+          "ev": -16.8,
+          "divergence": -11.1,
+          "abs_div": 11.122565063832985
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜"
+      ],
+      "agree": true
+    },
+    {
+      "homeTeam": "美国",
+      "awayTeam": "澳大利亚",
+      "league": "世界杯",
+      "matchTime": "03:00",
+      "matchDate": "2026-06-20",
+      "confidence": "★★★★★",
+      "score": 6.0,
+      "best": {
+        "label": "主胜",
+        "odds": 1.45,
+        "blend_prob": 56.5,
+        "market_prob": 61.1,
+        "elo_prob": 45.8,
+        "ev": -18.1,
+        "divergence": -15.3,
+        "abs_div": 15.287124205041264
+      },
+      "blend_probs": {
+        "home": 56.5,
+        "draw": 23.8,
+        "away": 19.7
+      },
+      "elo": {
+        "home": 1506.2,
+        "away": 1506.2
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 5.6,
+          "blend_prob": 19.7,
+          "market_prob": 15.8,
+          "elo_prob": 28.9,
+          "ev": 10.5,
+          "divergence": 13.1,
+          "abs_div": 13.07353234060875
+        },
+        {
+          "label": "平局",
+          "odds": 3.83,
+          "blend_prob": 23.8,
+          "market_prob": 23.1,
+          "elo_prob": 25.3,
+          "ev": -8.9,
+          "divergence": 2.2,
+          "abs_div": 2.213591864432529
+        },
+        {
+          "label": "主胜",
+          "odds": 1.45,
+          "blend_prob": 56.5,
+          "market_prob": 61.1,
+          "elo_prob": 45.8,
+          "ev": -18.1,
+          "divergence": -15.3,
+          "abs_div": 15.287124205041264
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜",
+        "市场强信号"
+      ],
+      "agree": true
+    },
+    {
+      "homeTeam": "德国",
+      "awayTeam": "科特迪瓦",
+      "league": "世界杯",
+      "matchTime": "04:00",
+      "matchDate": "2026-06-21",
+      "confidence": "★★★★★",
+      "score": 6.0,
+      "best": {
+        "label": "主胜",
+        "odds": 1.4,
+        "blend_prob": 58.0,
+        "market_prob": 63.3,
+        "elo_prob": 45.8,
+        "ev": -18.8,
+        "divergence": -17.5,
+        "abs_div": 17.477119946956204
+      },
+      "blend_probs": {
+        "home": 58.0,
+        "draw": 22.5,
+        "away": 19.4
+      },
+      "elo": {
+        "home": 1506.2,
+        "away": 1506.2
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 5.75,
+          "blend_prob": 19.4,
+          "market_prob": 15.4,
+          "elo_prob": 28.9,
+          "ev": 11.8,
+          "divergence": 13.5,
+          "abs_div": 13.483835655971596
+        },
+        {
+          "label": "平局",
+          "odds": 4.15,
+          "blend_prob": 22.5,
+          "market_prob": 21.3,
+          "elo_prob": 25.3,
+          "ev": -6.5,
+          "divergence": 4.0,
+          "abs_div": 3.993284290984611
+        },
+        {
+          "label": "主胜",
+          "odds": 1.4,
+          "blend_prob": 58.0,
+          "market_prob": 63.3,
+          "elo_prob": 45.8,
+          "ev": -18.8,
+          "divergence": -17.5,
+          "abs_div": 17.477119946956204
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜",
+        "市场强信号"
+      ],
+      "agree": true
+    },
+    {
+      "homeTeam": "比利时",
+      "awayTeam": "伊朗",
+      "league": "世界杯",
+      "matchTime": "03:00",
+      "matchDate": "2026-06-22",
+      "confidence": "★★★★★",
+      "score": 6.0,
+      "best": {
+        "label": "主胜",
+        "odds": 1.33,
+        "blend_prob": 60.3,
+        "market_prob": 66.6,
+        "elo_prob": 45.8,
+        "ev": -19.8,
+        "divergence": -20.8,
+        "abs_div": 20.787858248017137
+      },
+      "blend_probs": {
+        "home": 60.3,
+        "draw": 22.1,
+        "away": 17.5
+      },
+      "elo": {
+        "home": 1498.2,
+        "away": 1498.2
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 7.0,
+          "blend_prob": 17.5,
+          "market_prob": 12.6,
+          "elo_prob": 28.9,
+          "ev": 22.6,
+          "divergence": 16.2,
+          "abs_div": 16.23772333953614
+        },
+        {
+          "label": "平局",
+          "odds": 4.26,
+          "blend_prob": 22.1,
+          "market_prob": 20.8,
+          "elo_prob": 25.3,
+          "ev": -5.6,
+          "divergence": 4.6,
+          "abs_div": 4.55013490848101
+        },
+        {
+          "label": "主胜",
+          "odds": 1.33,
+          "blend_prob": 60.3,
+          "market_prob": 66.6,
+          "elo_prob": 45.8,
+          "ev": -19.8,
+          "divergence": -20.8,
+          "abs_div": 20.787858248017137
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜",
+        "市场强信号"
+      ],
+      "agree": true
+    },
+    {
+      "homeTeam": "乌拉圭",
+      "awayTeam": "佛得角",
+      "league": "世界杯",
+      "matchTime": "06:00",
+      "matchDate": "2026-06-22",
+      "confidence": "★★★★★",
+      "score": 6.0,
+      "best": {
+        "label": "主胜",
+        "odds": 1.31,
+        "blend_prob": 61.0,
+        "market_prob": 67.6,
+        "elo_prob": 45.8,
+        "ev": -20.0,
+        "divergence": -21.8,
+        "abs_div": 21.794648800112874
+      },
+      "blend_probs": {
+        "home": 61.0,
+        "draw": 23.1,
+        "away": 15.9
+      },
+      "elo": {
+        "home": 1501.8,
+        "away": 1501.8
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 8.6,
+          "blend_prob": 15.9,
+          "market_prob": 10.3,
+          "elo_prob": 28.9,
+          "ev": 36.5,
+          "divergence": 18.6,
+          "abs_div": 18.592301990961367
+        },
+        {
+          "label": "平局",
+          "odds": 4.0,
+          "blend_prob": 23.1,
+          "market_prob": 22.1,
+          "elo_prob": 25.3,
+          "ev": -7.6,
+          "divergence": 3.2,
+          "abs_div": 3.2023468091515155
+        },
+        {
+          "label": "主胜",
+          "odds": 1.31,
+          "blend_prob": 61.0,
+          "market_prob": 67.6,
+          "elo_prob": 45.8,
+          "ev": -20.0,
+          "divergence": -21.8,
+          "abs_div": 21.794648800112874
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜",
+        "市场强信号"
+      ],
+      "agree": true
+    },
+    {
+      "homeTeam": "土耳其",
+      "awayTeam": "巴拉圭",
+      "league": "世界杯",
+      "matchTime": "11:00",
+      "matchDate": "2026-06-20",
+      "confidence": "★★★★★",
+      "score": 5.5,
+      "best": {
+        "label": "主胜",
+        "odds": 1.82,
+        "blend_prob": 47.8,
+        "market_prob": 48.7,
+        "elo_prob": 45.8,
+        "ev": -13.0,
+        "divergence": -2.9,
+        "abs_div": 2.893596891530381
+      },
+      "blend_probs": {
+        "home": 47.8,
+        "draw": 26.9,
+        "away": 25.3
+      },
+      "elo": {
+        "home": 1493.8,
+        "away": 1493.8
+      },
+      "options": [
+        {
+          "label": "客胜",
+          "odds": 3.72,
+          "blend_prob": 25.3,
+          "market_prob": 23.8,
+          "elo_prob": 28.9,
+          "ev": -5.8,
+          "divergence": 5.1,
+          "abs_div": 5.071925863351226
+        },
+        {
+          "label": "主胜",
+          "odds": 1.82,
+          "blend_prob": 47.8,
+          "market_prob": 48.7,
+          "elo_prob": 45.8,
+          "ev": -13.0,
+          "divergence": -2.9,
+          "abs_div": 2.893596891530381
+        },
+        {
+          "label": "平局",
+          "odds": 3.22,
+          "blend_prob": 26.9,
+          "market_prob": 27.5,
+          "elo_prob": 25.3,
+          "ev": -13.5,
+          "divergence": -2.2,
+          "abs_div": 2.178328971820825
+        }
+      ],
+      "reasons": [
+        "ELO+市场一致→主胜"
+      ],
+      "agree": true
+    }
+  ],
+  "recommend_count": 6,
+  "no_signal": 3,
+  "no_signal_matches": [
+    {
+      "homeTeam": "苏格兰",
+      "awayTeam": "摩洛哥",
+      "market_favor": "客胜",
+      "elo_favor": "主胜",
+      "max_div": 30.447326515760697,
+      "reason": "ELO与市场方向分歧"
+    },
+    {
+      "homeTeam": "突尼斯",
+      "awayTeam": "日本",
+      "market_favor": "客胜",
+      "elo_favor": "主胜",
+      "max_div": 32.492659181776446,
+      "reason": "ELO与市场方向分歧"
+    },
+    {
+      "homeTeam": "新西兰",
+      "awayTeam": "埃及",
+      "market_favor": "客胜",
+      "elo_favor": "主胜",
+      "max_div": 31.771247932504792,
+      "reason": "ELO与市场方向分歧"
+    }
+  ],
+  "elo_info": {
+    "matches": 226,
+    "teams": 48
+  },
+  "elo_rankings": [
+    [
+      "墨西哥",
+      1512.3796217550994
+    ],
+    [
+      "苏格兰",
+      1509.8101891224503
+    ],
+    [
+      "挪威",
+      1509.8101891224503
+    ],
+    [
+      "哥伦比亚",
+      1509.8101891224503
+    ],
+    [
+      "瑞士",
+      1508.0
+    ],
+    [
+      "美国",
+      1506.1898108775497
+    ],
+    [
+      "澳大利亚",
+      1506.1898108775497
+    ],
+    [
+      "德国",
+      1506.1898108775497
+    ],
+    [
+      "科特迪瓦",
+      1506.1898108775497
+    ],
+    [
+      "瑞典",
+      1506.1898108775497
+    ],
+    [
+      "法国",
+      1506.1898108775497
+    ],
+    [
+      "阿根廷",
+      1506.1898108775497
+    ],
+    [
+      "奥地利",
+      1506.1898108775497
+    ],
+    [
+      "英格兰",
+      1506.1898108775497
+    ],
+    [
+      "加纳",
+      1506.1898108775497
+    ],
+    [
+      "加拿大",
+      1504.3796217550994
+    ],
+    [
+      "摩洛哥",
+      1501.8101891224503
+    ],
+    [
+      "日本",
+      1501.8101891224503
+    ],
+    [
+      "佛得角",
+      1501.8101891224503
+    ],
+    [
+      "埃及",
+      1501.8101891224503
+    ],
+    [
+      "乌拉圭",
+      1501.8101891224503
+    ],
+    [
+      "新西兰",
+      1501.8101891224503
+    ],
+    [
+      "刚果",
+      1501.8101891224503
+    ],
+    [
+      "韩国",
+      1500.0
+    ],
+    [
+      "巴西",
+      1498.1898108775497
+    ],
+    [
+      "荷兰",
+      1498.1898108775497
+    ],
+    [
+      "西班牙",
+      1498.1898108775497
+    ],
+    [
+      "比利时",
+      1498.1898108775497
+    ],
+    [
+      "沙特",
+      1498.1898108775497
+    ],
+    [
+      "伊朗",
+      1498.1898108775497
+    ],
+    [
+      "葡萄牙",
+      1498.1898108775497
+    ],
+    [
+      "南非",
+      1495.6203782449006
+    ],
+    [
+      "波黑",
+      1495.6203782449006
+    ],
+    [
+      "巴拉圭",
+      1493.8101891224503
+    ],
+    [
+      "土耳其",
+      1493.8101891224503
+    ],
+    [
+      "库拉索",
+      1493.8101891224503
+    ],
+    [
+      "厄瓜多尔",
+      1493.8101891224503
+    ],
+    [
+      "突尼斯",
+      1493.8101891224503
+    ],
+    [
+      "塞内加尔",
+      1493.8101891224503
+    ],
+    [
+      "阿尔及利亚",
+      1493.8101891224503
+    ],
+    [
+      "约旦",
+      1493.8101891224503
+    ],
+    [
+      "克罗地亚",
+      1493.8101891224503
+    ],
+    [
+      "巴拿马",
+      1493.8101891224503
+    ],
+    [
+      "捷克",
+      1492.0
+    ],
+    [
+      "卡塔尔",
+      1492.0
+    ],
+    [
+      "海地",
+      1490.1898108775497
+    ],
+    [
+      "伊拉克",
+      1490.1898108775497
+    ],
+    [
+      "乌兹别克",
+      1490.1898108775497
+    ]
+  ],
+  "strategy": "V6 ELO(30%) + Market(70%)",
+  "thresholds": {
+    "min_odds": 1.3,
+    "max_odds": 5.0
   }
 }
