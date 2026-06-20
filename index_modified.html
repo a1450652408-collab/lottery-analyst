@@ -3744,15 +3744,15 @@ function renderRecommend(type, data) {
       var _zAllCopy = '胆码:' + _zDans.join(',') + ' | 拖码:' + _zTuos.join(',');
       
       _reHtml += '<div class="rec-card" style="border-left-color:#c2185b;background:linear-gradient(135deg,#fce4ec,#f8bbd0)">';
-      _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#c2185b;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 3万</span>3胆选六 8拖 · 16-59区滚动（112元/天）</div>';
-      _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">W=50 EMA动态选胆 | 3胆+8拖=C(8,3)=56注=112元 | 中6=30,000·中5=30·中4=10·中3=3</div>';
+      _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#c2185b;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 2,880</span>3胆选六 8拖 · 16-59区滚动（112元/天）</div>';
+      _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">W=50 EMA动态选胆 | 3胆+8拖=C(8,3)=56注=112元 | 中6=2,880·中5=30·中4=10·中3=3</div>';
       _reHtml += '<div class="rec-balls" style="line-height:2">';
       _reHtml += '<span style="font-weight:700;margin-right:6px">胆:</span>';
       _zDans.forEach(function(n){ _reHtml += '<span class="ball r" style="background:#c2185b;color:#fff;border-color:#c2185b">' + String(n).padStart(2,'0') + '</span>'; });
       _reHtml += '<span style="font-weight:700;margin:0 6px">拖:</span>';
       _zTuos.forEach(function(n){ _reHtml += '<span class="ball r">' + String(n).padStart(2,'0') + '</span>'; });
       _reHtml += '</div>';
-      _reHtml += '<div class="rec-reason">📊 16-59区(44码)每期约中11号 | 回测1974期净+443K·ROI 309%·月均盈13.6% | 胆码EMA窗口每日自动滚动更新</div>';
+      _reHtml += '<div class="rec-reason">📊 16-59区(44码)每期约中11号 | 理论EV -55.9% | 胆码EMA窗口每日自动滚动更新 | ⚠️ 选六奖金低(中6仅2,880)，无法覆盖112元/天成本</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _zAllCopy + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     })();
     
