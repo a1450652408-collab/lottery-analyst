@@ -3253,16 +3253,12 @@ function renderRecommend(type, data) {
     var _zvFreqRank = _zvPool.slice().sort(function(a,b){ return (_knFreq30[b]||-999) - (_knFreq30[a]||-999); });
     var _zvStreakRank = _zvPool.slice().sort(function(a,b){ return (_knStreak[b]||0) - (_knStreak[a]||0); });
     var _zvVotes = {};
-    // 反热惩罚：上一期开出的号码扣分（避免推荐全是上期号）
-    var _rePrevDraw = new Set(getNums(_reUseData[0]));
-    var _antiHotPenalty = 40; // 上期出现扣40分
     _zvPool.forEach(function(n) {
       var emaR = _zvEmaRank.indexOf(n);
       var momR = _zvMomRank.indexOf(n);
       var freqR = _zvFreqRank.indexOf(n);
       var streakR = _zvStreakRank.indexOf(n);
       var score = (80 - Math.min(emaR, 79)) * 1.5 + (80 - Math.min(momR, 79)) * 1.0 + (80 - Math.min(freqR, 79)) * 1.0 + (80 - Math.min(streakR, 79)) * 0.5;
-      if (_rePrevDraw.has(n)) score -= _antiHotPenalty;
       _zvVotes[n] = score;
     });
     
