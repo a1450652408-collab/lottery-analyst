@@ -3717,45 +3717,6 @@ function renderRecommend(type, data) {
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     })();
     
-    /* ===== 3胆选六 8拖 · 16-59区滚动（全历史回测最优策略） ===== */
-    (function() {
-      if (cfg.type !== "keno") return;
-      
-      var _z16_59 = []; for (var i=16; i<=59; i++) _z16_59.push(i);
-      var _W50 = 50, _alpha50 = 2 / (_W50 + 1);
-      
-      /* EMA(W=50) 评分 */
-      var _ema50 = {};
-      for (var _zni=1; _zni<=80; _zni++) _ema50[_zni] = 0;
-      var _zWin = _reUseData.slice(0, Math.min(_W50, _reUseData.length));
-      for (var _zj=_zWin.length-1; _zj>=0; _zj--) {
-        var _zn = getNums(_zWin[_zj]);
-        for (var _znn=1; _znn<=80; _znn++) {
-          if (_zn.indexOf(_znn) >= 0) _ema50[_znn] = _ema50[_znn] * (1-_alpha50) + _alpha50;
-          else _ema50[_znn] *= (1-_alpha50);
-        }
-      }
-      
-      /* 16-59区排序取3胆+8拖 */
-      var _zSorted = _z16_59.slice().sort(function(a,b){ return (_ema50[b]||0) - (_ema50[a]||0); });
-      var _zDans = _zSorted.slice(0, 3).sort(function(a,b){ return a-b; });
-      var _zTuos = _zSorted.slice(3, 11).sort(function(a,b){ return a-b; });
-      
-      var _zAllCopy = '胆码:' + _zDans.join(',') + ' | 拖码:' + _zTuos.join(',');
-      
-      _reHtml += '<div class="rec-card" style="border-left-color:#c2185b;background:linear-gradient(135deg,#fce4ec,#f8bbd0)">';
-      _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#c2185b;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 2,880</span>3胆选六 8拖 · 16-59区滚动（112元/天）</div>';
-      _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">W=50 EMA动态选胆 | 3胆+8拖=C(8,3)=56注=112元 | 中6=2,880·中5=30·中4=10·中3=3</div>';
-      _reHtml += '<div class="rec-balls" style="line-height:2">';
-      _reHtml += '<span style="font-weight:700;margin-right:6px">胆:</span>';
-      _zDans.forEach(function(n){ _reHtml += '<span class="ball r" style="background:#c2185b;color:#fff;border-color:#c2185b">' + String(n).padStart(2,'0') + '</span>'; });
-      _reHtml += '<span style="font-weight:700;margin:0 6px">拖:</span>';
-      _zTuos.forEach(function(n){ _reHtml += '<span class="ball r">' + String(n).padStart(2,'0') + '</span>'; });
-      _reHtml += '</div>';
-      _reHtml += '<div class="rec-reason">📊 16-59区(44码)每期约中11号 | 理论EV -55.9% | 胆码EMA窗口每日自动滚动更新 | ⚠️ 选六奖金低(中6仅2,880)，无法覆盖112元/天成本</div>';
-      _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _zAllCopy + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
-    })();
-    
     /* ===== 选一精准推荐 ===== */
     (function() {
       if (cfg.type !== "keno") return;
