@@ -1,60 +1,128 @@
-{
-  "date": "2026-06-20",
-  "updateTime": "2026-06-20 09:00:13",
-  "matches": [
-    {
-      "homeTeam": "突尼斯",
-      "awayTeam": "日本",
-      "recommend": "平局",
-      "recommend_odds": 3.96,
-      "confidence": "★★★",
-      "fav_team": "日本",
-      "fav_odds": 1.38,
-      "reason": "1场0胜, 场均失2.0球"
-    },
-    {
-      "homeTeam": "荷兰",
-      "awayTeam": "瑞典",
-      "recommend": "平局",
-      "recommend_odds": 3.58,
-      "confidence": "★★★",
-      "fav_team": "荷兰",
-      "fav_odds": 1.59,
-      "reason": "1场0胜, 场均失2.0球"
-    },
-    {
-      "homeTeam": "比利时",
-      "awayTeam": "伊朗",
-      "recommend": "平局",
-      "recommend_odds": 4.26,
-      "confidence": "★★★",
-      "fav_team": "比利时",
-      "fav_odds": 1.33,
-      "reason": "1场0胜, 场均1.0球(vs弱队)"
-    },
-    {
-      "homeTeam": "乌拉圭",
-      "awayTeam": "佛得角",
-      "recommend": "平局",
-      "recommend_odds": 4.0,
-      "confidence": "★★★",
-      "fav_team": "乌拉圭",
-      "fav_odds": 1.31,
-      "reason": "1场0胜, 场均1.0球(vs弱队)"
-    },
-    {
-      "homeTeam": "新西兰",
-      "awayTeam": "埃及",
-      "recommend": "平局",
-      "recommend_odds": 3.72,
-      "confidence": "★★",
-      "fav_team": "埃及",
-      "fav_odds": 1.46,
-      "reason": "1场0胜, 场均1.0球(vs弱队)"
-    }
-  ],
-  "summary": {
-    "total": 5,
-    "strategy": "V6 Fade Overrated Favorite"
+[
+  {
+    "match": "周五032",
+    "home": "土耳其",
+    "away": "巴拉圭",
+    "date": "2026-06-20",
+    "time": "11:00",
+    "gl": -1.0,
+    "had": [
+      1.72,
+      3.42,
+      3.92
+    ],
+    "hhad": [
+      3.5,
+      3.3,
+      1.85
+    ]
+  },
+  {
+    "match": "周六033",
+    "home": "荷兰",
+    "away": "瑞典",
+    "date": "2026-06-21",
+    "time": "01:00",
+    "gl": -1.0,
+    "had": [
+      1.59,
+      3.58,
+      4.52
+    ],
+    "hhad": [
+      2.86,
+      3.45,
+      2.04
+    ]
+  },
+  {
+    "match": "周六034",
+    "home": "德国",
+    "away": "科特迪瓦",
+    "date": "2026-06-21",
+    "time": "04:00",
+    "gl": -1.0,
+    "had": [
+      1.4,
+      4.15,
+      5.75
+    ],
+    "hhad": [
+      2.23,
+      3.65,
+      2.46
+    ]
+  },
+  {
+    "match": "周六036",
+    "home": "突尼斯",
+    "away": "日本",
+    "date": "2026-06-21",
+    "time": "12:00",
+    "gl": 1.0,
+    "had": [
+      6.55,
+      3.96,
+      1.38
+    ],
+    "hhad": [
+      2.5,
+      3.4,
+      2.3
+    ]
+  },
+  {
+    "match": "周日038",
+    "home": "比利时",
+    "away": "伊朗",
+    "date": "2026-06-22",
+    "time": "03:00",
+    "gl": -1.0,
+    "had": [
+      1.33,
+      4.26,
+      7.0
+    ],
+    "hhad": [
+      2.06,
+      3.5,
+      2.79
+    ]
+  },
+  {
+    "match": "周日039",
+    "home": "乌拉圭",
+    "away": "佛得角",
+    "date": "2026-06-22",
+    "time": "06:00",
+    "gl": -1.0,
+    "had": [
+      1.31,
+      4.0,
+      8.6
+    ],
+    "hhad": [
+      2.16,
+      3.23,
+      2.8
+    ]
+  },
+  {
+    "match": "周日040",
+    "home": "新西兰",
+    "away": "埃及",
+    "date": "2026-06-22",
+    "time": "09:00",
+    "gl": 1.0,
+    "had": [
+      5.7,
+      3.72,
+      1.46
+    ],
+    "hhad": [
+      2.3,
+      3.4,
+      2.5
+    ]
   }
-}
+]
