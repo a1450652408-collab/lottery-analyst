@@ -1891,7 +1891,7 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div class="matrix-grid" id="matrixGrid"></div>
     </div>
     <!-- 和值奇偶大小缩水工具 -->
-    <button class="btn btn-shrink btn-sm" id="btnShrink" style="width:100%;margin-top:8px">🔢 和值奇偶大小缩水</button>
+    <button class="btn btn-shrink btn-sm" id="btnShrink" style="width:100%;margin-top:8px;display:none">🔢 和值奇偶大小缩水</button>
     <div class="shrink-box" id="shrinkBox" style="display:none">
       <div class="shrink-input-row">
         <input type="text" id="shrinkInput" class="shrink-input" placeholder="输入号码，如 0123456789" maxlength="20">
@@ -4857,6 +4857,15 @@ function switchType(type) {
   loadAll(type);
 }
 
+function updateToolButtons(type) {
+  var cfg = C[type];
+  var isDigit = cfg && cfg.type === "digit";
+  var btnShrink = document.getElementById("btnShrink");
+  if (btnShrink) btnShrink.style.display = isDigit ? "block" : "none";
+  var shrinkBox = document.getElementById("shrinkBox");
+  if (shrinkBox) shrinkBox.style.display = "none";
+}
+
 /* ===== 快乐8 固定守号策略（选六复式） ===== */
 /* ===== 加载所有数据 ===== */
 function loadAll(type) {
@@ -4873,6 +4882,8 @@ function loadAll(type) {
     renderAnalysis(type, data);
     renderRecommend(type, data);
     updateTuolaji(type);
+    // 控制按钮可见性
+    updateToolButtons(type);
     var sk = document.getElementById("loadingSkeleton");
     if (sk) sk.style.display = "none";
   }).catch(function(e) {
@@ -4883,14 +4894,8 @@ function loadAll(type) {
       renderAnalysis(type, mock);
       renderRecommend(type, mock);
     });
-    // 和值奇偶大小缩水按钮：仅数字彩显示
-    setTimeout(function(){
-      var cfg = C[type];
-      var btnShrink = document.getElementById("btnShrink");
-      if (btnShrink) btnShrink.style.display = (cfg && cfg.type === "digit") ? "block" : "none";
-      var shrinkBox = document.getElementById("shrinkBox");
-      if (shrinkBox) shrinkBox.style.display = "none";
-    }, 100);
+    // 控制按钮可见性
+    updateToolButtons(type);
   });
 
 /* ===== 旋转矩阵缩水 ===== */
