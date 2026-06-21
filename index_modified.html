@@ -5088,7 +5088,9 @@ function runShrink() {
   var removed = total - filtered.length;
 
   // 显示信息
-  infoEl.innerHTML = "<b>" + digits.join("") + "</b> 共" + total + "注 → 筛掉" + removed + "注 → <b style='color:#00897b'>剩余" + filtered.length + "注</b>";
+  var copyText = filtered.map(function(c){return c.join("");}).join(" ");
+  infoEl.innerHTML = "<b>" + digits.join("") + "</b> 共" + total + "注 → 筛掉" + removed + "注 → <b style='color:#00897b'>剩余" + filtered.length + "注</b>" +
+    ' <button onclick="navigator.clipboard.writeText(\'' + copyText.replace(/'/g,"\\'") + '\')" style="margin-left:8px;padding:2px 10px;font-size:11px;border:1px solid #00897b;border-radius:12px;background:#e0f2f1;color:#00897b;cursor:pointer">📋 复制全部</button>';
 
   // 渲染结果（最多500注）
   var html = "";
