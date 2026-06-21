@@ -4891,12 +4891,11 @@ function loadAll(type) {
     document.getElementById("dataBadge").textContent = "模拟";
     document.getElementById("dataBadge").style.background = "#ff9800";
     var mock = genMock(type);
-      renderAnalysis(type, mock);
-      renderRecommend(type, mock);
-    });
-    // 控制按钮可见性
+    renderAnalysis(type, mock);
+    renderRecommend(type, mock);
     updateToolButtons(type);
   });
+}
 
 /* ===== 旋转矩阵缩水 ===== */
 function showMatrix() {
