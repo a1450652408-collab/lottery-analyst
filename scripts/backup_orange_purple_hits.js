@@ -1,0 +1,243 @@
+/**
+ * 快乐8 橙色卡片 & 紫色卡片 选二/选三 每日命中记录
+ * 算法从 index_modified.html 精确复制
+ * 输出: data/kl8_orange_purple_hits.json
+ * 供自动化: 每天更新后调用, 追加当天的记录
+ */
+
+const fs = require('fs');
+
+// 加载数据
+const html = fs.readFileSync('index_modified.html', 'utf8');
+const match = html.match(/window\.__LOTTERY_DATA\s*=\s*(\{.*?\});\s*<\/script>/s);
+if (!match) { console.error('未找到 __LOTTERY_DATA'); process.exit(1); }
+const lotteryData = JSON.parse(match[1]);
+const allData = lotteryData.kl8.slice().reverse();
+
+function getNums(d) {
+  if (d.n && Array.isArray(d.n)) return d.n;
+  if (d.r && Array.isArray(d.r)) return d.r;
+  return [];
+}
+
+function calcPrize(sn, hit) {
+  if (sn === 2) return hit >= 2 ? 19 : 0;
+  if (sn === 3) return hit >= 3 ? 53 : (hit >= 2 ? 3 : 0);
+  return 0;
+}
+
+// ========== 橙色卡片：区间均衡·EMA评分 ==========
+function orangeCard_emaScore(trainingData, lastDraw) {
+  const W = trainingData.length;
+  const knEma = {};
+  for (let n = 1; n <= 80; n++) {
+    const seq = [];
+    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
+    if (seq.length === 0) { knEma[n] = 0; continue; }
+    let e = seq[seq.length - 1];
+    for (let j = seq.length - 2; j >= 0; j--) e = 0.5 * seq[j] + 0.5 * e;
+    knEma[n] = e;
+  }
+  const knR5 = {}, knP5 = {};
+  for (let n = 1; n <= 80; n++) { knR5[n] = 0; knP5[n] = 0; }
+  for (let j = 0; j < Math.min(10, W); j++) {
+    getNums(trainingData[j]).forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
+  }
+  const knMom = {};
+  for (let n = 1; n <= 80; n++) {
+    const m = (knR5[n] - knP5[n]) / Math.max(knP5[n], 1);
+    knMom[n] = Math.max(-2, Math.min(2, m));
+  }
+  const knFreq30 = {};
+  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
+  for (let j = 0; j < Math.min(30, W); j++) {
+    getNums(trainingData[j]).forEach(n => { knFreq30[n]++; });
+  }
+  const win30 = Math.min(30, W);
+  const knPrevSet = new Set();
+  if (lastDraw) lastDraw.forEach(n => knPrevSet.add(n));
+
+  const reLastSeen = {};
+  for (let n = 1; n <= 80; n++) reLastSeen[n] = -1;
+  const reFreq = {};
+  for (let n = 1; n <= 80; n++) reFreq[n] = 0;
+  for (let j = 0; j < W; j++) {
+    getNums(trainingData[j]).forEach(n => { reLastSeen[n] = j; reFreq[n]++; });
+  }
+  const reMissVal = {};
+  for (let n = 1; n <= 80; n++) reMissVal[n] = W - 1 - reLastSeen[n];
+
+  const reKills = [];
+  for (let n = 1; n <= 80; n++) {
+    if (reFreq[n] === 0 && reMissVal[n] >= 15) reKills.push(n);
+    else if (reMissVal[n] >= 12) reKills.push(n);
+  }
+  const reKillSet = new Set(reKills.slice(0, 5));
+
+  const knScores = {};
+  for (let n = 1; n <= 80; n++) {
+    let s = (knEma[n] || 0) * 5.0 + (knFreq30[n] / win30) * 3.0 + (knMom[n] || 0) * 2.0;
+    if (knPrevSet.has(n)) s += 3.0;
+    if (reKillSet.has(n)) s = -999;
+    s += Math.max(0, 10 - (reMissVal[n] || 50)) * 0.5;
+    knScores[n] = s;
+  }
+  return knScores;
+}
+
+function zoneSelect(scores, selectN) {
+  const zones = [[1,20],[21,40],[41,60],[61,80]];
+  let result = [];
+  if (selectN <= 6 || selectN >= 10) {
+    const zPer = Math.floor(selectN / 4);
+    const zExtra = selectN % 4;
+    for (let zi = 0; zi < 4; zi++) {
+      const zTake = zPer + (zi < zExtra ? 1 : 0);
+      if (zTake <= 0) continue;
+      const zNums = [];
+      for (let n = zones[zi][0]; n <= zones[zi][1]; n++) zNums.push(n);
+      zNums.sort((a,b) => (scores[b]||-999) - (scores[a]||-999));
+      for (let t = 0; t < zTake && t < zNums.length; t++) result.push(zNums[t]);
+    }
+  }
+  if (result.length < selectN) {
+    const oAll = [];
+    for (let n = 1; n <= 80; n++) oAll.push(n);
+    oAll.sort((a,b) => (scores[b]||-999) - (scores[a]||-999));
+    for (let i = 0; i < oAll.length && result.length < selectN; i++) {
+      if (result.indexOf(oAll[i]) < 0) result.push(oAll[i]);
+    }
+  }
+  return result.slice(0, selectN);
+}
+
+// ========== 紫色卡片：区间均衡·多因子投票 ==========
+function purpleCard_votes(trainingData, lastDraw) {
+  const W = trainingData.length;
+  const knEma = {};
+  for (let n = 1; n <= 80; n++) {
+    const seq = [];
+    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
+    if (seq.length === 0) { knEma[n] = 0; continue; }
+    let e = seq[seq.length - 1];
+    for (let j = seq.length - 2; j >= 0; j--) e = 0.5 * seq[j] + 0.5 * e;
+    knEma[n] = e;
+  }
+  const emaFast = {}, emaSlow = {};
+  for (let n = 1; n <= 80; n++) {
+    const seq = [];
+    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
+    if (seq.length === 0) { emaFast[n] = 0; emaSlow[n] = 0; continue; }
+    let ef = seq[seq.length - 1], es = seq[seq.length - 1];
+    for (let j = seq.length - 2; j >= 0; j--) {
+      ef = 0.2 * seq[j] + 0.8 * ef;
+      es = 0.8 * seq[j] + 0.2 * es;
+    }
+    emaFast[n] = ef;
+    emaSlow[n] = es;
+  }
+  const emaComb = {};
+  for (let n = 1; n <= 80; n++)
+    emaComb[n] = (emaFast[n]||0)*2.0 + (knEma[n]||0)*3.0 + (emaSlow[n]||0)*1.0;
+
+  const knR5 = {}, knP5 = {};
+  for (let n = 1; n <= 80; n++) { knR5[n] = 0; knP5[n] = 0; }
+  for (let j = 0; j < Math.min(10, W); j++) {
+    getNums(trainingData[j]).forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
+  }
+  const knR10 = {}, knP10 = {};
+  for (let n = 1; n <= 80; n++) { knR10[n] = 0; knP10[n] = 0; }
+  for (let j = 0; j < Math.min(20, W); j++) {
+    getNums(trainingData[j]).forEach(n => { if (j < 10) knR10[n]++; else knP10[n]++; });
+  }
+  const knMomC = {};
+  for (let n = 1; n <= 80; n++) {
+    const m5 = (knR5[n] - knP5[n]) / Math.max(knP5[n], 1);
+    const m10 = (knR10[n] - knP10[n]) / Math.max(knP10[n], 1);
+    knMomC[n] = Math.max(-2, Math.min(2, m5)) * 0.6 + Math.max(-2, Math.min(2, m10)) * 0.4;
+  }
+  const knFreq30 = {};
+  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
+  for (let j = 0; j < Math.min(30, W); j++) {
+    getNums(trainingData[j]).forEach(n => { knFreq30[n]++; });
+  }
+  const knStreak = {};
+  for (let n = 1; n <= 80; n++) {
+    let s = 0;
+    for (let si = 0; si < Math.min(5, W); si++) {
+      if (getNums(trainingData[si]).indexOf(n) >= 0) s++; else break;
+    }
+    knStreak[n] = s;
+  }
+  const pool = [];
+  for (let n = 1; n <= 80; n++) pool.push(n);
+  const emaRank = pool.slice().sort((a,b) => (emaComb[b]||-999) - (emaComb[a]||-999));
+  const momRank = pool.slice().sort((a,b) => (knMomC[b]||-999) - (knMomC[a]||-999));
+  const freqRank = pool.slice().sort((a,b) => (knFreq30[b]||-999) - (knFreq30[a]||-999));
+  const streakRank = pool.slice().sort((a,b) => (knStreak[b]||0) - (knStreak[a]||0));
+  const zvVotes = {};
+  pool.forEach(n => {
+    const emaR = emaRank.indexOf(n), momR = momRank.indexOf(n);
+    const freqR = freqRank.indexOf(n), streakR = streakRank.indexOf(n);
+    zvVotes[n] = (80 - Math.min(emaR, 79)) * 1.5 + (80 - Math.min(momR, 79)) * 1.0
+               + (80 - Math.min(freqR, 79)) * 1.0 + (80 - Math.min(streakR, 79)) * 0.5;
+  });
+  return zvVotes;
+}
+
+// ========== 主逻辑 ==========
+const TRAIN_WIN = 50;
+const results = [];
+
+// 生成所有历史天数据
+for (let idx = 0; idx < allData.length; idx++) {
+  const d = allData[idx];
+  const drawn = getNums(d);
+  const drawnSet = new Set(drawn);
+  const pastData = allData.slice(0, idx);
+  const trainEnd = Math.max(0, pastData.length - TRAIN_WIN);
+  const trainingData = pastData.slice(trainEnd);
+  if (trainingData.length < TRAIN_WIN) continue;
+  const lastDraw = trainEnd > 0 ? getNums(pastData[pastData.length - 1]) : [];
+
+  const orangeScores = orangeCard_emaScore(trainingData, lastDraw);
+  const purpleVotes = purpleCard_votes(trainingData, lastDraw);
+
+  const o2 = zoneSelect(orangeScores, 2);
+  const p2 = zoneSelect(purpleVotes, 2);
+  const o3 = zoneSelect(orangeScores, 3);
+  const p3 = zoneSelect(purpleVotes, 3);
+
+  results.push({
+    date: d.d, period: d.p,
+    orange_x2: { rec: o2, hit: o2.filter(n => drawnSet.has(n)), prize: calcPrize(2, o2.filter(n => drawnSet.has(n)).length) },
+    purple_x2: { rec: p2, hit: p2.filter(n => drawnSet.has(n)), prize: calcPrize(2, p2.filter(n => drawnSet.has(n)).length) },
+    orange_x3: { rec: o3, hit: o3.filter(n => drawnSet.has(n)), prize: calcPrize(3, o3.filter(n => drawnSet.has(n)).length) },
+    purple_x3: { rec: p3, hit: p3.filter(n => drawnSet.has(n)), prize: calcPrize(3, p3.filter(n => drawnSet.has(n)).length) }
+  });
+}
+
+// 保存
+const outputPath = 'data/kl8_orange_purple_hits.json';
+fs.mkdirSync('data', { recursive: true });
+fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), 'utf8');
+
+// 统计
+const total = results.length;
+const o2wins = results.filter(r => r.orange_x2.prize > 0).length;
+const p2wins = results.filter(r => r.purple_x2.prize > 0).length;
+const o3wins = results.filter(r => r.orange_x3.prize > 0).length;
+const p3wins = results.filter(r => r.purple_x3.prize > 0).length;
+
+console.log(`保存到 ${outputPath}, 共 ${total} 天`);
+console.log(`橙选二: ${o2wins}/${total}天中奖 | 紫选二: ${p2wins}/${total}天`);
+console.log(`橙选三: ${o3wins}/${total}天中奖 | 紫选三: ${p3wins}/${total}天`);
+console.log('最新10天:');
+results.slice(-10).forEach(r => {
+  const wins = [];
+  if (r.orange_x2.prize > 0) wins.push(`橙二+${r.orange_x2.prize}`);
+  if (r.purple_x2.prize > 0) wins.push(`紫二+${r.purple_x2.prize}`);
+  if (r.orange_x3.prize > 0) wins.push(`橙三+${r.orange_x3.prize}`);
+  if (r.purple_x3.prize > 0) wins.push(`紫三+${r.purple_x3.prize}`);
+  console.log(`  ${r.date} 橙二[${r.orange_x2.rec}] 紫二[${r.purple_x2.rec}] 橙三[${r.orange_x3.rec}] 紫三[${r.purple_x3.rec}] ${wins.length ? '>> ' + wins.join(' ') : ''}`);
+});

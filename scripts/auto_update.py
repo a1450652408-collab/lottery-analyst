@@ -11,7 +11,7 @@
 调用方式: python scripts/auto_update.py
 """
 
-import re, json, sys, os, time, urllib.request
+import re, json, sys, os, time, urllib.request, subprocess
 from datetime import datetime
 from collections import Counter
 
@@ -547,6 +547,19 @@ def main():
     # 写回 HTML（含ttcx4和sh15x5数据）
     write_html(html, data, ds, de)
 
+    # ===== 快乐8 橙紫卡命中记录（追加当天）=====
+    try:
+        node_exe = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions\22.12.0\node.exe")
+        backup_script = os.path.join(PROJECT_ROOT, "scripts", "backup_orange_purple_hits.js")
+        r = subprocess.run([node_exe, backup_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=60)
+        if r.returncode == 0:
+            print("\n--- 快乐8 橙紫卡命中记录 ---")
+            for line in r.stdout.strip().split("\n"): print(f"  {line}")
+        else:
+            print(f"\n  ⚠️ 橙紫卡备份失败: {r.stderr[:200]}")
+    except Exception as e:
+        print(f"\n  ⚠️ 橙紫卡备份异常: {e}")
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
@@ -569,7 +582,7 @@ def _auto_git_push(project_root, has_changes):
     try:
         today_str = datetime.now().strftime("%Y-%m-%d")
         r = subprocess.run(
-            ["git", "add", "index_modified.html", "index.html", "data/"],
+            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js"],
             cwd=project_root, capture_output=True, text=True, timeout=30
         )
         if r.returncode != 0:
