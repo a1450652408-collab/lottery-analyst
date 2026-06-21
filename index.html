@@ -1647,6 +1647,20 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
 @keyframes hitPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .btn-matrix{background:linear-gradient(135deg,#7c4dff,#651fff);color:#fff;font-weight:700;font-size:13px;transition:all .2s}
 .btn-matrix:active{transform:scale(.96)}
+.btn-shrink{background:linear-gradient(135deg,#00897b,#00695c);color:#fff;font-weight:700;font-size:13px;transition:all .2s}
+.btn-shrink:active{transform:scale(.96)}
+.shrink-box{margin-top:10px;background:linear-gradient(135deg,#e0f2f1,#fff);border:1px solid rgba(0,137,123,.15);border-radius:12px;padding:12px}
+.shrink-input-row{display:flex;gap:8px;margin-bottom:10px}
+.shrink-input{flex:1;padding:8px 12px;border:1px solid rgba(0,137,123,.3);border-radius:20px;font-size:14px;outline:none;font-family:var(--font-mono);letter-spacing:2px}
+.shrink-input:focus{border-color:#00897b;box-shadow:0 0 0 2px rgba(0,137,123,.1)}
+.shrink-filters{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-bottom:10px;font-size:12px}
+.shrink-label{color:#00695c;font-weight:600}
+.shrink-chk{display:inline-flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid rgba(0,137,123,.2);background:#fff;font-size:12px;user-select:none;transition:all .15s}
+.shrink-chk:has(input:checked){background:#00897b;color:#fff;border-color:#00897b}
+.shrink-chk input{display:none}
+.shrink-info{font-size:12px;color:#00695c;margin-bottom:8px;line-height:1.6;text-align:center}
+.shrink-item{background:#fff;padding:6px 10px;border-radius:8px;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.06);font-family:var(--font-mono);letter-spacing:1px;cursor:default;transition:all .15s}
+.shrink-item:hover{background:#e0f2f1;transform:scale(1.02)}
 .matrix-box{margin-top:10px;background:linear-gradient(135deg,#f3f0ff,#fff);border:1px solid rgba(124,77,255,.15);border-radius:12px;padding:12px}
 .matrix-info{font-size:12px;color:#651fff;margin-bottom:10px;line-height:1.6;text-align:center}
 .matrix-info .saved{color:#2e7d32;font-weight:700}
@@ -1875,6 +1889,27 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
     <div class="matrix-box" id="matrixBox" style="display:none">
       <div class="matrix-info" id="matrixInfo"></div>
       <div class="matrix-grid" id="matrixGrid"></div>
+    </div>
+    <!-- 和值奇偶大小缩水工具 -->
+    <button class="btn btn-shrink btn-sm" id="btnShrink" style="width:100%;margin-top:8px">🔢 和值奇偶大小缩水</button>
+    <div class="shrink-box" id="shrinkBox" style="display:none">
+      <div class="shrink-input-row">
+        <input type="text" id="shrinkInput" class="shrink-input" placeholder="输入号码，如 0123456789" maxlength="20">
+        <button class="btn btn-smart btn-sm" id="btnShrinkGo" style="flex-shrink:0">筛选</button>
+      </div>
+      <div class="shrink-filters">
+        <span class="shrink-label">和值奇偶：</span>
+        <label class="shrink-chk"><input type="checkbox" id="chkSumOdd"> 奇</label>
+        <label class="shrink-chk"><input type="checkbox" id="chkSumEven"> 偶</label>
+        <span class="shrink-label" style="margin-left:12px">和值大小：</span>
+        <label class="shrink-chk"><input type="checkbox" id="chkSumBig"> 大(14-27)</label>
+        <label class="shrink-chk"><input type="checkbox" id="chkSumSmall"> 小(0-13)</label>
+        <span class="shrink-label" style="margin-left:12px">跨度：</span>
+        <label class="shrink-chk"><input type="checkbox" id="chkSpanBig"> 大(5-9)</label>
+        <label class="shrink-chk"><input type="checkbox" id="chkSpanSmall"> 小(0-4)</label>
+      </div>
+      <div class="shrink-info" id="shrinkInfo"></div>
+      <div class="matrix-grid" id="shrinkGrid"></div>
     </div>
     <!-- 命中率 -->
     <div class="hit-rate-box" id="hitRateBox" style="display:none">
@@ -4845,10 +4880,18 @@ function loadAll(type) {
     document.getElementById("dataBadge").textContent = "模拟";
     document.getElementById("dataBadge").style.background = "#ff9800";
     var mock = genMock(type);
-    renderAnalysis(type, mock);
-    renderRecommend(type, mock);
+      renderAnalysis(type, mock);
+      renderRecommend(type, mock);
+    });
+    // 和值奇偶大小缩水按钮：仅数字彩显示
+    setTimeout(function(){
+      var cfg = C[type];
+      var btnShrink = document.getElementById("btnShrink");
+      if (btnShrink) btnShrink.style.display = (cfg && cfg.type === "digit") ? "block" : "none";
+      var shrinkBox = document.getElementById("shrinkBox");
+      if (shrinkBox) shrinkBox.style.display = "none";
+    }, 100);
   });
-}
 
 /* ===== 旋转矩阵缩水 ===== */
 function showMatrix() {
@@ -4978,6 +5021,88 @@ function showMatrix() {
   if (btn) btn.style.display = (isLotto || isKeno) ? "block" : "none";
   if (isKeno) btn.textContent = "⚡ 旋转矩阵缩水（基于推荐号码）";
   else btn.textContent = "⚡ 旋转矩阵缩水（中N保K）";
+}
+}
+
+/* ===== 和值奇偶大小缩水工具 ===== */
+function runShrink() {
+  var inputEl = document.getElementById("shrinkInput");
+  var infoEl = document.getElementById("shrinkInfo");
+  var gridEl = document.getElementById("shrinkGrid");
+  var raw = inputEl.value.replace(/[^0-9]/g, "");
+
+  if (raw.length === 0) { infoEl.innerHTML = "请输入0-9号码"; gridEl.innerHTML = ""; return; }
+  if (raw.length < 3) { infoEl.innerHTML = "至少输入3个号码才能生成3位排列"; gridEl.innerHTML = ""; return; }
+
+  // 去重排序
+  var digits = [];
+  var seen = {};
+  for (var i = 0; i < raw.length; i++) {
+    var ch = raw[i];
+    if (!seen[ch]) { seen[ch] = true; digits.push(parseInt(ch)); }
+  }
+  digits.sort(function(a,b){return a-b;});
+
+  // 读取筛选条件
+  var filterOdd = document.getElementById("chkSumOdd").checked;
+  var filterEven = document.getElementById("chkSumEven").checked;
+  var filterBig = document.getElementById("chkSumBig").checked;
+  var filterSmall = document.getElementById("chkSumSmall").checked;
+  var filterSpanBig = document.getElementById("chkSpanBig").checked;
+  var filterSpanSmall = document.getElementById("chkSpanSmall").checked;
+
+  // 生成所有3位排列（可重复）
+  var all = [];
+  for (var a = 0; a < digits.length; a++) {
+    for (var b = 0; b < digits.length; b++) {
+      for (var c = 0; c < digits.length; c++) {
+        all.push([digits[a], digits[b], digits[c]]);
+      }
+    }
+  }
+  var total = all.length;
+
+  // 筛选：被勾选的条件 = 要排除的组合
+  var filtered = all.filter(function(combo) {
+    var sum = combo[0] + combo[1] + combo[2];
+    var span = Math.max(combo[0], combo[1], combo[2]) - Math.min(combo[0], combo[1], combo[2]);
+
+    // 和值奇偶
+    if (filterOdd && sum % 2 === 1) return false;
+    if (filterEven && sum % 2 === 0) return false;
+
+    // 和值大小: 大=14~27, 小=0~13
+    if (filterBig && sum >= 14) return false;
+    if (filterSmall && sum < 14) return false;
+
+    // 跨度大小: 大=5~9, 小=0~4
+    if (filterSpanBig && span >= 5) return false;
+    if (filterSpanSmall && span < 5) return false;
+
+    return true;
+  });
+
+  var removed = total - filtered.length;
+
+  // 显示信息
+  infoEl.innerHTML = "<b>" + digits.join("") + "</b> 共" + total + "注 → 筛掉" + removed + "注 → <b style='color:#00897b'>剩余" + filtered.length + "注</b>";
+
+  // 渲染结果（最多500注）
+  var html = "";
+  var limit = Math.min(filtered.length, 500);
+  for (var i = 0; i < limit; i++) {
+    var combo = filtered[i];
+    var sum = combo[0] + combo[1] + combo[2];
+    var span = Math.max(combo[0], combo[1], combo[2]) - Math.min(combo[0], combo[1], combo[2]);
+    var sumTag = sum >= 14 ? "大" : "小";
+    var spanTag = span >= 5 ? "宽" : "窄";
+    html += '<div class="shrink-item">' + combo.join("") + ' <span style="font-size:10px;color:#999">和' + sum + sumTag + ' 跨' + span + spanTag + '</span></div>';
+  }
+  if (filtered.length > 500) {
+    html += '<div style="font-size:11px;color:#999;text-align:center;width:100%;padding:8px">仅显示前500注，共' + filtered.length + '注</div>';
+  }
+  gridEl.innerHTML = html;
+  document.getElementById("shrinkBox").style.display = "block";
 }
 
 /* ===== AI 智能分析（前端直调 DeepSeek API，无需本地服务） ===== */
@@ -5134,6 +5259,18 @@ function init() {
   });
   var btnMatrix = document.getElementById("btnMatrix");
   if (btnMatrix) btnMatrix.addEventListener("click", showMatrix);
+  // 和值奇偶大小缩水工具
+  var btnShrink = document.getElementById("btnShrink");
+  var shrinkBox = document.getElementById("shrinkBox");
+  if (btnShrink) btnShrink.addEventListener("click", function(){
+    shrinkBox.style.display = shrinkBox.style.display === "none" ? "block" : "none";
+  });
+  var btnShrinkGo = document.getElementById("btnShrinkGo");
+  if (btnShrinkGo) btnShrinkGo.addEventListener("click", runShrink);
+  var shrinkInput = document.getElementById("shrinkInput");
+  if (shrinkInput) shrinkInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") runShrink();
+  });
   // AI 分析按钮
   var btnAi = document.getElementById("btnAiAnalysis");
   if (btnAi) btnAi.addEventListener("click", function(){ callAi("analysis", ""); });
