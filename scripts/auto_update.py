@@ -560,6 +560,18 @@ def main():
     except Exception as e:
         print(f"\n  ⚠️ 橙紫卡备份异常: {e}")
 
+    # ===== 生成所有彩种推荐号码并保存 =====
+    print("\n--- 生成所有彩种推荐号码 ---")
+    try:
+        gen_script = os.path.join(os.path.dirname(__file__), "gen_recommendations.py")
+        r = subprocess.run([sys.executable, gen_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            for line in r.stdout.strip().split("\n"): print(f"  {line}")
+        else:
+            print(f"  ⚠️ 推荐生成失败: {r.stderr[:300]}")
+    except Exception as e:
+        print(f"  ⚠️ 推荐生成异常: {e}")
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
