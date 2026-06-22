@@ -1,44 +1,8 @@
 {
-  "date": "2026-06-21",
-  "updateTime": "2026-06-21 08:59:29",
-  "totalMatches": 7,
+  "date": "2026-06-22",
+  "updateTime": "2026-06-22 09:01:39",
+  "totalMatches": 6,
   "recommendations": [
-    {
-      "homeTeam": "突尼斯",
-      "awayTeam": "日本",
-      "league": "世界杯",
-      "matchDate": "2026-06-21",
-      "matchTime": "12:00",
-      "confidence": "★★★",
-      "score": 4.5,
-      "recommend": "平局",
-      "recommend_odds": 4.05,
-      "fav_team": "日本",
-      "fav_odds": 1.36,
-      "fav_label": "客胜",
-      "overrated_reason": "1场0胜, 场均失2.0球",
-      "reasons": [
-        "日本被高估: 1场0胜, 场均失2.0球",
-        "平局@4.05"
-      ],
-      "team_stats": {
-        "日本": {
-          "played": 1,
-          "gf": 2,
-          "ga": 2,
-          "wins": 0,
-          "draws": 1,
-          "losses": 0,
-          "opponents": [
-            "荷兰"
-          ],
-          "results": [
-            "D"
-          ],
-          "opp_quality": 0.0
-        }
-      }
-    },
     {
       "homeTeam": "约旦",
       "awayTeam": "阿尔及利",
@@ -46,16 +10,16 @@
       "matchDate": "2026-06-23",
       "matchTime": "11:00",
       "confidence": "★★★",
-      "score": 3.5,
+      "score": 4.5,
       "recommend": "平局",
-      "recommend_odds": 3.75,
+      "recommend_odds": 3.8,
       "fav_team": "阿尔及利",
-      "fav_odds": 1.45,
+      "fav_odds": 1.44,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均失3.0球, 净胜-3",
       "reasons": [
         "阿尔及利被高估: 1场0胜, 场均失3.0球, 净胜-3",
-        "平局@3.75"
+        "平局@3.8"
       ],
       "team_stats": {
         "阿尔及利": {
@@ -76,74 +40,38 @@
       }
     },
     {
-      "homeTeam": "比利时",
-      "awayTeam": "伊朗",
+      "homeTeam": "巴拿马",
+      "awayTeam": "克罗地亚",
       "league": "世界杯",
-      "matchDate": "2026-06-22",
-      "matchTime": "03:00",
+      "matchDate": "2026-06-24",
+      "matchTime": "07:00",
       "confidence": "★★★",
-      "score": 3.0,
+      "score": 4.5,
       "recommend": "平局",
-      "recommend_odds": 4.25,
-      "fav_team": "比利时",
-      "fav_odds": 1.32,
-      "fav_label": "主胜",
-      "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
+      "recommend_odds": 3.95,
+      "fav_team": "克罗地亚",
+      "fav_odds": 1.41,
+      "fav_label": "客胜",
+      "overrated_reason": "1场0胜, 场均失4.0球, 净胜-2",
       "reasons": [
-        "比利时被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@4.25"
+        "克罗地亚被高估: 1场0胜, 场均失4.0球, 净胜-2",
+        "平局@3.95"
       ],
       "team_stats": {
-        "比利时": {
+        "克罗地亚": {
           "played": 1,
-          "gf": 1,
-          "ga": 1,
+          "gf": 2,
+          "ga": 4,
           "wins": 0,
-          "draws": 1,
-          "losses": 0,
+          "draws": 0,
+          "losses": 1,
           "opponents": [
-            "埃及"
+            "英格兰"
           ],
           "results": [
-            "D"
+            "L"
           ],
-          "opp_quality": 0.0
-        }
-      }
-    },
-    {
-      "homeTeam": "乌拉圭",
-      "awayTeam": "佛得角",
-      "league": "世界杯",
-      "matchDate": "2026-06-22",
-      "matchTime": "06:00",
-      "confidence": "★★★",
-      "score": 3.0,
-      "recommend": "平局",
-      "recommend_odds": 4.0,
-      "fav_team": "乌拉圭",
-      "fav_odds": 1.31,
-      "fav_label": "主胜",
-      "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
-      "reasons": [
-        "乌拉圭被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@4.0"
-      ],
-      "team_stats": {
-        "乌拉圭": {
-          "played": 1,
-          "gf": 1,
-          "ga": 1,
-          "wins": 0,
-          "draws": 1,
-          "losses": 0,
-          "opponents": [
-            "沙特"
-          ],
-          "results": [
-            "D"
-          ],
-          "opp_quality": 0.0
+          "opp_quality": 2.0
         }
       }
     },
@@ -153,17 +81,17 @@
       "league": "世界杯",
       "matchDate": "2026-06-22",
       "matchTime": "09:00",
-      "confidence": "★★",
-      "score": 2.0,
+      "confidence": "★★★",
+      "score": 3.0,
       "recommend": "平局",
-      "recommend_odds": 3.72,
+      "recommend_odds": 3.87,
       "fav_team": "埃及",
-      "fav_odds": 1.46,
+      "fav_odds": 1.42,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
       "reasons": [
         "埃及被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@3.72"
+        "平局@3.87"
       ],
       "team_stats": {
         "埃及": {
@@ -184,7 +112,7 @@
       }
     }
   ],
-  "no_signal": 2,
+  "no_signal": 3,
   "stats_info": {
     "teams": 48
   },
