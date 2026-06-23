@@ -1,7 +1,7 @@
 {
-  "date": "2026-06-22",
-  "updateTime": "2026-06-22 09:01:39",
-  "totalMatches": 6,
+  "date": "2026-06-23",
+  "updateTime": "2026-06-23 08:52:37",
+  "totalMatches": 8,
   "recommendations": [
     {
       "homeTeam": "约旦",
@@ -12,14 +12,14 @@
       "confidence": "★★★",
       "score": 4.5,
       "recommend": "平局",
-      "recommend_odds": 3.8,
+      "recommend_odds": 4.36,
       "fav_team": "阿尔及利",
-      "fav_odds": 1.44,
+      "fav_odds": 1.34,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均失3.0球, 净胜-3",
       "reasons": [
         "阿尔及利被高估: 1场0胜, 场均失3.0球, 净胜-3",
-        "平局@3.8"
+        "平局@4.36"
       ],
       "team_stats": {
         "阿尔及利": {
@@ -50,7 +50,7 @@
       "recommend": "平局",
       "recommend_odds": 3.95,
       "fav_team": "克罗地亚",
-      "fav_odds": 1.41,
+      "fav_odds": 1.39,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均失4.0球, 净胜-2",
       "reasons": [
@@ -76,25 +76,64 @@
       }
     },
     {
-      "homeTeam": "新西兰",
-      "awayTeam": "埃及",
+      "homeTeam": "波黑",
+      "awayTeam": "卡塔尔",
       "league": "世界杯",
-      "matchDate": "2026-06-22",
-      "matchTime": "09:00",
+      "matchDate": "2026-06-25",
+      "matchTime": "03:00",
       "confidence": "★★★",
-      "score": 3.0,
+      "score": 4.5,
       "recommend": "平局",
-      "recommend_odds": 3.87,
-      "fav_team": "埃及",
-      "fav_odds": 1.42,
+      "recommend_odds": 4.45,
+      "fav_team": "波黑",
+      "fav_odds": 1.38,
+      "fav_label": "主胜",
+      "overrated_reason": "2场0胜, 场均失2.5球, 净胜-3",
+      "reasons": [
+        "波黑被高估: 2场0胜, 场均失2.5球, 净胜-3",
+        "平局@4.45"
+      ],
+      "team_stats": {
+        "波黑": {
+          "played": 2,
+          "gf": 2,
+          "ga": 5,
+          "wins": 0,
+          "draws": 1,
+          "losses": 1,
+          "opponents": [
+            "瑞士",
+            "加拿大"
+          ],
+          "results": [
+            "L",
+            "D"
+          ],
+          "opp_quality": 4.5
+        }
+      }
+    },
+    {
+      "homeTeam": "苏格兰",
+      "awayTeam": "巴西",
+      "league": "世界杯",
+      "matchDate": "2026-06-25",
+      "matchTime": "06:00",
+      "confidence": "★★★",
+      "score": 4.0,
+      "recommend": "平局",
+      "recommend_odds": 4.8,
+      "fav_team": "巴西",
+      "fav_odds": 1.26,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
       "reasons": [
-        "埃及被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@3.87"
+        "巴西被高估: 1场0胜, 场均1.0球(vs弱队)",
+        "平局@4.8",
+        "极端热门"
       ],
       "team_stats": {
-        "埃及": {
+        "巴西": {
           "played": 1,
           "gf": 1,
           "ga": 1,
@@ -102,7 +141,7 @@
           "draws": 1,
           "losses": 0,
           "opponents": [
-            "比利时"
+            "摩洛哥"
           ],
           "results": [
             "D"
@@ -112,7 +151,7 @@
       }
     }
   ],
-  "no_signal": 3,
+  "no_signal": 4,
   "stats_info": {
     "teams": 48
   },
