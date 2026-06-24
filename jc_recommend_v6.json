@@ -1,97 +1,26 @@
 {
-  "date": "2026-06-23",
-  "updateTime": "2026-06-23 08:52:37",
-  "totalMatches": 8,
+  "date": "2026-06-24",
+  "updateTime": "2026-06-24 15:37:59",
+  "totalMatches": 13,
   "recommendations": [
-    {
-      "homeTeam": "约旦",
-      "awayTeam": "阿尔及利",
-      "league": "世界杯",
-      "matchDate": "2026-06-23",
-      "matchTime": "11:00",
-      "confidence": "★★★",
-      "score": 4.5,
-      "recommend": "平局",
-      "recommend_odds": 4.36,
-      "fav_team": "阿尔及利",
-      "fav_odds": 1.34,
-      "fav_label": "客胜",
-      "overrated_reason": "1场0胜, 场均失3.0球, 净胜-3",
-      "reasons": [
-        "阿尔及利被高估: 1场0胜, 场均失3.0球, 净胜-3",
-        "平局@4.36"
-      ],
-      "team_stats": {
-        "阿尔及利": {
-          "played": 1,
-          "gf": 0,
-          "ga": 3,
-          "wins": 0,
-          "draws": 0,
-          "losses": 1,
-          "opponents": [
-            "阿根廷"
-          ],
-          "results": [
-            "L"
-          ],
-          "opp_quality": 3.0
-        }
-      }
-    },
-    {
-      "homeTeam": "巴拿马",
-      "awayTeam": "克罗地亚",
-      "league": "世界杯",
-      "matchDate": "2026-06-24",
-      "matchTime": "07:00",
-      "confidence": "★★★",
-      "score": 4.5,
-      "recommend": "平局",
-      "recommend_odds": 3.95,
-      "fav_team": "克罗地亚",
-      "fav_odds": 1.39,
-      "fav_label": "客胜",
-      "overrated_reason": "1场0胜, 场均失4.0球, 净胜-2",
-      "reasons": [
-        "克罗地亚被高估: 1场0胜, 场均失4.0球, 净胜-2",
-        "平局@3.95"
-      ],
-      "team_stats": {
-        "克罗地亚": {
-          "played": 1,
-          "gf": 2,
-          "ga": 4,
-          "wins": 0,
-          "draws": 0,
-          "losses": 1,
-          "opponents": [
-            "英格兰"
-          ],
-          "results": [
-            "L"
-          ],
-          "opp_quality": 2.0
-        }
-      }
-    },
     {
       "homeTeam": "波黑",
       "awayTeam": "卡塔尔",
       "league": "世界杯",
       "matchDate": "2026-06-25",
       "matchTime": "03:00",
-      "confidence": "★★★",
-      "score": 4.5,
+      "confidence": "★★★★",
+      "score": 5.5,
       "recommend": "平局",
-      "recommend_odds": 4.45,
+      "recommend_odds": 5.0,
       "fav_team": "波黑",
-      "fav_odds": 1.38,
+      "fav_odds": 1.28,
       "fav_label": "主胜",
       "overrated_reason": "2场0胜, 场均失2.5球, 净胜-3",
       "reasons": [
         "波黑被高估: 2场0胜, 场均失2.5球, 净胜-3",
-        "平局@4.45"
+        "平局@5.0",
+        "极端热门"
       ],
       "team_stats": {
         "波黑": {
@@ -122,14 +51,14 @@
       "confidence": "★★★",
       "score": 4.0,
       "recommend": "平局",
-      "recommend_odds": 4.8,
+      "recommend_odds": 5.4,
       "fav_team": "巴西",
-      "fav_odds": 1.26,
+      "fav_odds": 1.19,
       "fav_label": "客胜",
       "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
       "reasons": [
         "巴西被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@4.8",
+        "平局@5.4",
         "极端热门"
       ],
       "team_stats": {
@@ -149,9 +78,45 @@
           "opp_quality": 0.0
         }
       }
+    },
+    {
+      "homeTeam": "乌拉圭",
+      "awayTeam": "西班牙",
+      "league": "世界杯",
+      "matchDate": "2026-06-27",
+      "matchTime": "08:00",
+      "confidence": "★★★",
+      "score": 3.0,
+      "recommend": "平局",
+      "recommend_odds": 4.22,
+      "fav_team": "西班牙",
+      "fav_odds": 1.34,
+      "fav_label": "客胜",
+      "overrated_reason": "1场0胜, 场均0.0球(vs弱队)",
+      "reasons": [
+        "西班牙被高估: 1场0胜, 场均0.0球(vs弱队)",
+        "平局@4.22"
+      ],
+      "team_stats": {
+        "西班牙": {
+          "played": 1,
+          "gf": 0,
+          "ga": 0,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "opponents": [
+            "佛得角"
+          ],
+          "results": [
+            "D"
+          ],
+          "opp_quality": 0.0
+        }
+      }
     }
   ],
-  "no_signal": 4,
+  "no_signal": 10,
   "stats_info": {
     "teams": 48
   },
