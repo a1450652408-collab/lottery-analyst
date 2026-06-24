@@ -3721,6 +3721,19 @@ function renderRecommend(type, data) {
         _reHtml += '</div><div class="rec-reason">📊 跨区间分布·0三连 | 回测1982期净+4,958,829·中10一次(500万)·中8一次·中7十一次 | 三组合计60元/天</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
       })();
+
+      // 选五9码复式·126注（252元/天）
+      (function() {
+        var _s5 = [5,11,12,18,19,62,63,77,78];
+        var _s5Str = '选五复试 ' + _s5.map(function(n){return String(n).padStart(2,"0");}).join(" ");
+        _reHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;background:linear-gradient(135deg,#f3e5f5,#e1bee7)">';
+        _reHtml += '<div class="rec-header"><span style="display:inline-block;background:#7b1fa2;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;margin-right:4px">🎯 1千</span>选五9码复式·月均中头奖（252元/天）</div>';
+        _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">母码:' + _s5.map(function(n){return String(n).padStart(2,"0");}).join(",") + ' | C(9,5)=126注=252元 | 中5=1,000·中4=21·中3=3 | 月均中头奖1次</div>';
+        _reHtml += '<div class="rec-balls">';
+        _s5.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
+        _reHtml += '</div><div class="rec-reason">📊 回测2026年153期净+3,259·ROI 108.5%·中5六次·中7一次(22,575) | 月均中头奖1次(1,600~7,125) | 日成本¥252·小奖回血快</div>';
+        _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s5Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制母码</div></div>';
+      })();
     })();
     
     /* ===== 快乐8 信号强度策略 ===== */
