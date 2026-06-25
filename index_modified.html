@@ -3599,6 +3599,64 @@ function renderRecommend(type, data) {
       });
     })();
 
+    /* ===== 和值/012路/奇偶比分析卡片 ===== */
+    _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#fff)"><div class="rec-header">📊 和值·012路·奇偶比分析</div><div id="kl8_morph_box" style="padding:6px;font-size:12px;line-height:1.6;color:#333">';
+    _reHtml += '<div style="text-align:center;color:#999;padding:8px">⏳ 加载形态数据...</div></div></div>';
+    (function() {
+      fetch("data/kl8_trend_deep.json?_t=" + Date.now()).then(function(r) { return r.json(); }).then(function(td) {
+        var w = td.windows.medium_30 || td.windows.long_50;
+        if (!w) return;
+        var sa = w.sum_analysis, r12 = w.route_012, oe = w.odd_even;
+        if (!sa || !r12 || !oe) return;
+        
+        var html = "<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px'>";
+        
+        /* 和值 */
+        html += "<div style='background:#e8eaf6;border-radius:8px;padding:6px;text-align:center'>";
+        html += "<div style='font-size:10px;color:#666'>平均和值</div>";
+        html += "<div style='font-size:20px;font-weight:bold;color:#283593'>" + sa.avg + "</div>";
+        html += "<div style='font-size:9px;color:#999'>当期" + sa.current + " · 范围" + sa.min + "~" + sa.max + "</div>";
+        html += "<div style='font-size:10px;margin-top:2px'><span style='color:#" + (sa.trend.includes('走高') ? 'e53935' : sa.trend.includes('走低') ? '4caf50' : 'ff9800') + "'>" + sa.trend + "</span></div>";
+        html += "</div>";
+        
+        /* 012路 */
+        var c012 = r12.current;
+        html += "<div style='background:#e8f5e9;border-radius:8px;padding:6px;text-align:center'>";
+        html += "<div style='font-size:10px;color:#666'>012路(当期)</div>";
+        html += "<div style='display:flex;justify-content:center;gap:8px;margin:4px 0'><span><span style='color:#e53935;font-weight:bold'>" + (c012['0路']||0) + "</span><span style='font-size:9px;color:#999'>路0</span></span>";
+        html += "<span><span style='color:#4caf50;font-weight:bold'>" + (c012['1路']||0) + "</span><span style='font-size:9px;color:#999'>路1</span></span>";
+        html += "<span><span style='color:#1565c0;font-weight:bold'>" + (c012['2路']||0) + "</span><span style='font-size:9px;color:#999'>路2</span></span></div>";
+        html += "<div style='font-size:9px;color:#999'>期望 " + r12.expected['0路'] + "/" + r12.expected['1路'] + "/" + r12.expected['2路'] + "</div>";
+        html += "</div>";
+        
+        /* 奇偶比 */
+        html += "<div style='background:#fff3e0;border-radius:8px;padding:6px;text-align:center'>";
+        html += "<div style='font-size:10px;color:#666'>奇偶比(当期)</div>";
+        html += "<div style='font-size:20px;font-weight:bold;color:#e65100'>" + (oe.current ? oe.current.ratio : '?') + "</div>";
+        html += "<div style='font-size:9px;color:#999'>期望10:10 · 近均" + (oe.avg ? oe.avg.ratio : '?') + "</div>";
+        html += "</div></div>";
+        
+        /* 012路+奇偶趋势微表 */
+        html += "<div style='font-size:10px;color:#666;margin-top:2px'>📈 近5期趋势</div>";
+        html += "<table style='width:100%;font-size:10px;border-collapse:collapse;margin-top:2px'>";
+        html += "<tr style='background:#f5f5f5'><td style='padding:2px 4px'>日期</td><td style='padding:2px 4px'>和值</td><td style='padding:2px 4px'>0路</td><td>1路</td><td>2路</td><td>奇:偶</td></tr>";
+        var trendLen = Math.min(5, (r12.trend||[]).length);
+        for (var ti = 0; ti < trendLen; ti++) {
+          var tr = r12.trend[ti];
+          var oeTr = oe.trend[ti] || {};
+          html += "<tr><td style='padding:2px 4px;color:#999'>" + (tr.date||'').slice(-5) + "</td>";
+          html += "<td style='padding:2px 4px;font-weight:bold'>" + (tr._sum || '-') + "</td>";
+          html += "<td style='padding:2px 4px'>" + tr['0路'] + "</td><td>" + tr['1路'] + "</td><td>" + tr['2路'] + "</td>";
+          html += "<td style='padding:2px 4px'>" + (oeTr.odd||'') + ":" + (oeTr.even||'') + "</td></tr>";
+        }
+        html += "</table>";
+        html += "<div style='margin-top:3px;font-size:9px;color:#999'>数据基于近30期</div>";
+        document.getElementById("kl8_morph_box").innerHTML = html;
+      }).catch(function() {
+        document.getElementById("kl8_morph_box").innerHTML = '<div style="text-align:center;color:#999;padding:8px">⚠️ 形态数据暂不可用</div>';
+      });
+    })();
+
     /* ===== 选四3胆全托·加权随机8组（已删除） ===== */
     var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用
     (function() {

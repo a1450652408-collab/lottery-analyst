@@ -143,6 +143,84 @@ def analyze_warm_hot_pairs(classification, momentum, top_hot=8, top_warm=8):
         "recommend_rebound": warm_nums[:3] + [n for n in warming if n not in hot_nums][:2]  # 温+升温
     }
 
+def _analyze_012(data):
+    """012路分析（号码%3的余数分类）"""
+    recent = data[:30]
+    result = {"current": {}, "avg_dist": {"0路": 0, "1路": 0, "2路": 0}, "trend": []}
+    
+    for d in recent[:10]:
+        nums = d.get("n", d.get("r", []))
+        c0 = sum(1 for n in nums if n % 3 == 0)
+        c1 = sum(1 for n in nums if n % 3 == 1)
+        c2 = sum(1 for n in nums if n % 3 == 2)
+        result["trend"].append({"date": d.get("d",""), "0路": c0, "1路": c1, "2路": c2, "_sum": sum(nums)})
+    
+    if recent:
+        nums = recent[0].get("n", recent[0].get("r", []))
+        result["current"] = {
+            "0路": sum(1 for n in nums if n % 3 == 0),
+            "1路": sum(1 for n in nums if n % 3 == 1),
+            "2路": sum(1 for n in nums if n % 3 == 2)
+        }
+    
+    # 平均分布（全历史）
+    c0_t, c1_t, c2_t = 0, 0, 0
+    for d in data[:50]:
+        nums = d.get("n", d.get("r", []))
+        c0_t += sum(1 for n in nums if n % 3 == 0)
+        c1_t += sum(1 for n in nums if n % 3 == 1)
+        c2_t += sum(1 for n in nums if n % 3 == 2)
+    n = min(len(data), 50)
+    result["avg_dist"] = {
+        "0路": round(c0_t/n, 1), "1路": round(c1_t/n, 1), "2路": round(c2_t/n, 1)
+    }
+    # 理论值：27个0路号，27个1路号，26个2路号
+    result["expected"] = {"0路": 6.8, "1路": 6.8, "2路": 6.5}
+    return result
+
+def _analyze_odd_even(data):
+    """奇偶比分析"""
+    recent = data[:30]
+    result = {"current": {}, "avg": {}, "trend": []}
+    
+    for d in recent[:10]:
+        nums = d.get("n", d.get("r", []))
+        odd = sum(1 for n in nums if n % 2 == 1)
+        even = len(nums) - odd
+        result["trend"].append({"date": d.get("d",""), "odd": odd, "even": even})
+    
+    if recent:
+        nums = recent[0].get("n", recent[0].get("r", []))
+        odd = sum(1 for n in nums if n % 2 == 1)
+        result["current"] = {"odd": odd, "even": len(nums) - odd, "ratio": f"{odd}:{len(nums)-odd}"}
+    
+    # 平均
+    o_t, e_t = 0, 0
+    for d in data[:50]:
+        nums = d.get("n", d.get("r", []))
+        o_t += sum(1 for n in nums if n % 2 == 1)
+        e_t += len(nums) - (sum(1 for n in nums if n % 2 == 1))
+    n = min(len(data), 50)
+    avg_o = round(o_t/n, 1)
+    result["avg"] = {"odd": avg_o, "even": round(e_t/n, 1), "ratio": f"{avg_o}:{round(e_t/n,1)}"}
+    result["expected"] = {"odd": 10.0, "even": 10.0, "ratio": "10:10"}  # 理论奇偶各半
+    return result
+
+def _sum_trend(recent_sums):
+    """和值趋势判断"""
+    if len(recent_sums) < 5:
+        return "数据不足"
+    # 近期3期平均 vs 前5期平均
+    recent_3 = sum(recent_sums[:3]) / 3
+    prev_5 = sum(recent_sums[3:8]) / min(5, len(recent_sums)-3)
+    diff = recent_3 - prev_5
+    if diff > 30:
+        return f"走高↑(+{diff:.0f})"
+    elif diff < -30:
+        return f"走低↓({diff:.0f})"
+    else:
+        return f"平稳({diff:+.0f})"
+
 def main():
     data = load_data()
     total = len(data)
@@ -168,13 +246,27 @@ def main():
         momentum = trend_momentum(win_data, win_size)
         combo = analyze_warm_hot_pairs(classification, momentum)
         
+        # ★ 和值 / 012路 / 奇偶比 分析
+        sums = [sum(d.get("n", d.get("r", []))) for d in win_data]
+        o12 = _analyze_012(win_data)
+        oe = _analyze_odd_even(win_data)
+        
         analysis["windows"][win_label] = {
             "size": win_size,
             "classify": classification,
             "pairs": pairs,
             "zones": zones,
             "momentum": momentum,
-            "combo": combo
+            "combo": combo,
+            "sum_analysis": {
+                "avg": round(sum(sums) / len(sums), 1),
+                "min": min(sums),
+                "max": max(sums),
+                "current": sums[0],
+                "trend": _sum_trend(sums[:20])
+            },
+            "route_012": o12,
+            "odd_even": oe
         }
     
     # 输出
