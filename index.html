@@ -3071,7 +3071,8 @@ function renderRecommend(type, data) {
     else if (_reMiss[_rei] >= 12) _reKills.push(_rei);
   }
   _reKills = _reKills.slice(0, 5);
-  var _reKillSet = new Set(_reKills);
+  /* ★ 优化：不再使用kill set（之前导致系统性偏差的根因之一）*/
+  var _reKillSet = new Set();
   var _reHotList = rec.analysis && rec.analysis.hotReds ? rec.analysis.hotReds : [];
   var _reCleanHots = _reHotList.filter(function(n) { return !_reKillSet.has(n); });
   var _reRecent20 = _reUseData.slice(0, 20);

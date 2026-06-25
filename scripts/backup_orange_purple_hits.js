@@ -27,59 +27,75 @@ function calcPrize(sn, hit) {
 }
 
 // ========== 橙色卡片：区间均衡·EMA评分 ==========
+/* ★ 优化：单次扫描构建命中矩阵，避免重复遍历 */
 function orangeCard_emaScore(trainingData, lastDraw) {
   const W = trainingData.length;
-  const knEma = {};
-  for (let n = 1; n <= 80; n++) {
-    const seq = [];
-    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
-    if (seq.length === 0) { knEma[n] = 0; continue; }
-    let e = seq[seq.length - 1];
-    for (let j = seq.length - 2; j >= 0; j--) e = 0.5 * seq[j] + 0.5 * e;
-    knEma[n] = e;
-  }
+  
+  /* 单次扫描：构建命中矩阵 [期][号] 和 各统计量 */
+  const hitMatrix = [];     // hitMatrix[j][n] = 第j期n是否命中
+  const knFreqAll = {};
+  for (let n = 1; n <= 80; n++) knFreqAll[n] = 0;
+  const knLastSeen = {};
+  for (let n = 1; n <= 80; n++) knLastSeen[n] = -1;
   const knR5 = {}, knP5 = {};
   for (let n = 1; n <= 80; n++) { knR5[n] = 0; knP5[n] = 0; }
-  for (let j = 0; j < Math.min(10, W); j++) {
-    getNums(trainingData[j]).forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
+  const knFreq30 = {};
+  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
+  
+  for (let j = 0; j < W; j++) {
+    const nums = getNums(trainingData[j]);
+    const row = {};
+    nums.forEach(n => { row[n] = 1; knFreqAll[n]++; knLastSeen[n] = j; });
+    hitMatrix.push(row);
+    /* 近10期的R5/P5 */
+    if (j < 10) {
+      nums.forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
+    }
+    /* 近30期频率 */
+    if (j < 30) {
+      nums.forEach(n => { knFreq30[n]++; });
+    }
   }
+  
+  /* 从矩阵计算EMA（一次遍历，无需重建序列） */
+  const knEma = {};
+  for (let n = 1; n <= 80; n++) {
+    let e = 0;
+    for (let j = W - 1; j >= 0; j--) {
+      e = 0.5 * (hitMatrix[j][n] || 0) + 0.5 * e;
+    }
+    knEma[n] = e;
+    
+    /* ★ 多时间框架EMA：短(alpha=0.7)/长(alpha=0.3) 趋势确认 */
+    let es = 0, ef = 0;
+    for (let j = W - 1; j >= 0; j--) {
+      const v = hitMatrix[j][n] || 0;
+      es = 0.3 * v + 0.7 * es;
+      ef = 0.7 * v + 0.3 * ef;
+    }
+    /* 短周期热且长周期也热 → 真趋势；短热长冷 → 噪音不采信 */
+    knEma[n] = (ef > 0.15 && es > 0.12) ? knEma[n] * 1.2 : knEma[n] * 0.9;
+  }
+  
+  /* 动量（R5 vs P5） */
   const knMom = {};
   for (let n = 1; n <= 80; n++) {
     const m = (knR5[n] - knP5[n]) / Math.max(knP5[n], 1);
     knMom[n] = Math.max(-2, Math.min(2, m));
   }
-  const knFreq30 = {};
-  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
-  for (let j = 0; j < Math.min(30, W); j++) {
-    getNums(trainingData[j]).forEach(n => { knFreq30[n]++; });
-  }
+  
   const win30 = Math.min(30, W);
   const knPrevSet = new Set();
   if (lastDraw) lastDraw.forEach(n => knPrevSet.add(n));
 
-  const reLastSeen = {};
-  for (let n = 1; n <= 80; n++) reLastSeen[n] = -1;
-  const reFreq = {};
-  for (let n = 1; n <= 80; n++) reFreq[n] = 0;
-  for (let j = 0; j < W; j++) {
-    getNums(trainingData[j]).forEach(n => { reLastSeen[n] = j; reFreq[n]++; });
-  }
-  const reMissVal = {};
-  for (let n = 1; n <= 80; n++) reMissVal[n] = W - 1 - reLastSeen[n];
-
-  const reKills = [];
-  for (let n = 1; n <= 80; n++) {
-    if (reFreq[n] === 0 && reMissVal[n] >= 15) reKills.push(n);
-    else if (reMissVal[n] >= 12) reKills.push(n);
-  }
-  const reKillSet = new Set(reKills.slice(0, 5));
-
+  /* ★ 去掉kill set（它是不低于随机的根因之一） */
+  
   const knScores = {};
   for (let n = 1; n <= 80; n++) {
+    const missVal = W - 1 - knLastSeen[n];
     let s = (knEma[n] || 0) * 5.0 + (knFreq30[n] / win30) * 3.0 + (knMom[n] || 0) * 2.0;
     if (knPrevSet.has(n)) s += 3.0;
-    if (reKillSet.has(n)) s = -999;
-    s += Math.max(0, 10 - (reMissVal[n] || 50)) * 0.5;
+    s += Math.max(0, 10 - missVal) * 0.5;
     knScores[n] = s;
   }
   return knScores;
@@ -141,28 +157,46 @@ function zoneSelect(scores, selectN, avoidSet, allowedSet) {
   return result.slice(0, selectN);
 }
 
-// ========== 紫色卡片：区间均衡·多因子投票 ==========
+// ========== 紫色卡片：区间均衡·多因子投票（优化：单次扫描矩阵）==========
 function purpleCard_votes(trainingData, lastDraw) {
   const W = trainingData.length;
-  const knEma = {};
-  for (let n = 1; n <= 80; n++) {
-    const seq = [];
-    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
-    if (seq.length === 0) { knEma[n] = 0; continue; }
-    let e = seq[seq.length - 1];
-    for (let j = seq.length - 2; j >= 0; j--) e = 0.5 * seq[j] + 0.5 * e;
-    knEma[n] = e;
-  }
-  const emaFast = {}, emaSlow = {};
-  for (let n = 1; n <= 80; n++) {
-    const seq = [];
-    for (let j = 0; j < W; j++) seq.push(getNums(trainingData[j]).indexOf(n) >= 0 ? 1 : 0);
-    if (seq.length === 0) { emaFast[n] = 0; emaSlow[n] = 0; continue; }
-    let ef = seq[seq.length - 1], es = seq[seq.length - 1];
-    for (let j = seq.length - 2; j >= 0; j--) {
-      ef = 0.2 * seq[j] + 0.8 * ef;
-      es = 0.8 * seq[j] + 0.2 * es;
+  
+  /* 单次扫描构建命中矩阵 */
+  const hitMatrix = [];
+  const knFreq30 = {};
+  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
+  const knR5 = {}, knP5 = {};
+  for (let n = 1; n <= 80; n++) { knR5[n] = 0; knP5[n] = 0; }
+  const knR10 = {}, knP10 = {};
+  for (let n = 1; n <= 80; n++) { knR10[n] = 0; knP10[n] = 0; }
+  
+  for (let j = 0; j < W; j++) {
+    const nums = getNums(trainingData[j]);
+    const row = {};
+    nums.forEach(n => { row[n] = 1; });
+    hitMatrix.push(row);
+    if (j < 10) {
+      nums.forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
     }
+    if (j < 20) {
+      nums.forEach(n => { if (j < 10) knR10[n]++; else knP10[n]++; });
+    }
+    if (j < 30) {
+      nums.forEach(n => { knFreq30[n]++; });
+    }
+  }
+
+  /* 从矩阵计算EMA(alpha=0.5) + EMA快(0.2) + EMA慢(0.8) — 一次遍历 */
+  const knEma = {}, emaFast = {}, emaSlow = {};
+  for (let n = 1; n <= 80; n++) {
+    let e = 0, ef = 0, es = 0;
+    for (let j = W - 1; j >= 0; j--) {
+      const v = hitMatrix[j][n] || 0;
+      e = 0.5 * v + 0.5 * e;
+      ef = 0.2 * v + 0.8 * ef;
+      es = 0.8 * v + 0.2 * es;
+    }
+    knEma[n] = e;
     emaFast[n] = ef;
     emaSlow[n] = es;
   }
@@ -170,26 +204,12 @@ function purpleCard_votes(trainingData, lastDraw) {
   for (let n = 1; n <= 80; n++)
     emaComb[n] = (emaFast[n]||0)*2.0 + (knEma[n]||0)*3.0 + (emaSlow[n]||0)*1.0;
 
-  const knR5 = {}, knP5 = {};
-  for (let n = 1; n <= 80; n++) { knR5[n] = 0; knP5[n] = 0; }
-  for (let j = 0; j < Math.min(10, W); j++) {
-    getNums(trainingData[j]).forEach(n => { if (j < 5) knR5[n]++; else knP5[n]++; });
-  }
-  const knR10 = {}, knP10 = {};
-  for (let n = 1; n <= 80; n++) { knR10[n] = 0; knP10[n] = 0; }
-  for (let j = 0; j < Math.min(20, W); j++) {
-    getNums(trainingData[j]).forEach(n => { if (j < 10) knR10[n]++; else knP10[n]++; });
-  }
+  /* 动量（R5/P5 + R10/P10） */
   const knMomC = {};
   for (let n = 1; n <= 80; n++) {
     const m5 = (knR5[n] - knP5[n]) / Math.max(knP5[n], 1);
     const m10 = (knR10[n] - knP10[n]) / Math.max(knP10[n], 1);
     knMomC[n] = Math.max(-2, Math.min(2, m5)) * 0.6 + Math.max(-2, Math.min(2, m10)) * 0.4;
-  }
-  const knFreq30 = {};
-  for (let n = 1; n <= 80; n++) knFreq30[n] = 0;
-  for (let j = 0; j < Math.min(30, W); j++) {
-    getNums(trainingData[j]).forEach(n => { knFreq30[n]++; });
   }
   const knStreak = {};
   for (let n = 1; n <= 80; n++) {
