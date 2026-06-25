@@ -603,6 +603,20 @@ def main():
     except Exception as e:
         print(f"  ⚠️ 数字彩分析异常: {e}")
 
+    # ===== 数字彩历史数据扩充（365期全量） =====
+    print("\n--- 数字彩历史数据扩充 ---")
+    try:
+        expand_script = os.path.join(os.path.dirname(__file__), "fetch_digit_history.py")
+        r = subprocess.run([sys.executable, expand_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            for line in r.stdout.strip().split("\n"):
+                if line.strip():
+                    print(f"  {line}")
+        else:
+            print(f"  ⚠️ 数据扩充失败: {r.stderr[:200]}")
+    except Exception as e:
+        print(f"  ⚠️ 数据扩充异常: {e}")
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
