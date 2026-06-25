@@ -1986,6 +1986,11 @@ body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-s
       <div id="hitRateGrid"></div>
     </div>
   </div>
+  <!-- 🔬 数字彩深度分析 -->
+  <div class="card" id="deepAnalysisCard" style="display:none;border-left:3px solid #1a237e;margin-top:6px">
+    <div class="rec-header" style="color:#1a237e;font-weight:700">🔬 深度分析（7因子模型·滚动回测调优）</div>
+    <div id="deepAnalysisContent"></div>
+  </div>
   <!-- AI 智能分析 -->
   <div class="ai-section" id="aiSection">
     <button class="btn btn-ai btn-sm" id="btnAiAnalysis" style="width:100%;margin:6px 0">
@@ -5029,6 +5034,88 @@ function renderRecommend(type, data) {
   /* ===== 命中率 ===== */
   // 用用户实际看到的推荐 rec 来保存和对比命中率
   renderHitRate(type, data, rec);
+
+  /* ===== 数字彩深度分析（fc3d/pl5） ===== */
+  if (type === "fc3d" || type === "pl5") {
+    var _daCard = document.getElementById("deepAnalysisCard");
+    if (_daCard) {
+      _daCard.style.display = "block";
+      var _daFile = type === "fc3d" ? 'data/fc3d_deep_analysis.json' : 'data/pl5_deep_analysis.json';
+      var _daContent = document.getElementById("deepAnalysisContent");
+      if (_daContent && !_daContent.hasAttribute("data-loaded")) {
+        _daContent.setAttribute("data-loaded", "true");
+        fetch(_daFile + "?_t=" + Date.now()).then(function(r){ return r.json(); }).then(function(da) {
+          var _dh = '';
+          /* 参数调优 */
+          _dh += '<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 6px;background:#e8eaf6;border-radius:4px;margin:4px 0;font-size:10px">';
+          _dh += '<span>📊 窗口: ' + da.tuning.suggested_window + '期</span>';
+          _dh += '<span>🔮 最佳组合: <b>' + da.prediction.best_combo.join("") + '</b></span>';
+          _dh += '<span>🎯 Top3: ' + da.prediction.top3_combos.map(function(c){return c.join("");}).join(" / ") + '</span>';
+          _dh += '<span>💡 ' + da.tuning.reason + '</span>';
+          _dh += '</div>';
+          
+          /* 每位数字分析（热号/冷号/间隔） */
+          _dh += '<div style="display:grid;grid-template-columns:repeat(' + da.positions + ',1fr);gap:4px;padding:2px 0">';
+          for (var _pi = 0; _pi < da.position_analysis.length; _pi++) {
+            var _pa = da.position_analysis[_pi];
+            _dh += '<div style="background:#f5f5f5;border-radius:4px;padding:4px;font-size:9px">';
+            _dh += '<div style="font-weight:700;color:#1a237e;margin-bottom:2px">位' + (_pi+1) + '</div>';
+            _dh += '<div>热: <span style="color:#e53935">' + (_pa.hot.length > 0 ? _pa.hot.join(",") : "无") + '</span></div>';
+            _dh += '<div>冷: <span style="color:#1565c0">' + (_pa.cold.length > 0 ? _pa.cold.join(",") : "无") + '</span></div>';
+            _dh += '<div>间隔: ' + (_pa.gap.current_miss || 0) + '期</div>';
+            _dh += '<div>近10: ' + _pa.last10.join(" ") + '</div>';
+            /* 跟随分析 */
+            if (_pa.follow && Object.keys(_pa.follow).length > 0) {
+              var _fk = Object.keys(_pa.follow).slice(0,3);
+              _dh += '<div style="margin-top:2px;color:#666">跟随: ';
+              for (var _fi = 0; _fi < _fk.length; _fi++) {
+                _dh += _fk[_fi] + '→[' + _pa.follow[_fk[_fi]].map(function(f){return f.digit;}).join("") + '] ';
+              }
+              _dh += '</div>';
+            }
+            _dh += '</div>';
+          }
+          _dh += '</div>';
+          
+          /* 奇偶/大小模式 */
+          var _oe = da.features.odd_even;
+          var _bs = da.features.big_small;
+          _dh += '<div style="display:flex;gap:6px;padding:2px 0;font-size:9px;flex-wrap:wrap">';
+          _dh += '<span>奇偶比: ' + da.features.balance.oe_ratio + '%奇</span>';
+          _dh += '<span>大小比: ' + da.features.balance.bs_ratio + '%大</span>';
+          _dh += '<span>和值均: ' + da.features.sum.avg + '</span>';
+          _dh += '<span>跨度均: ' + da.features.span.avg + '</span>';
+          /* 奇偶连号 */
+          if (_oe.streaks && _oe.streaks.length > 0) {
+            _dh += '<span>奇偶连: ' + _oe.streaks.map(function(s){return s.pattern==="1"?"奇":"偶"+"×"+s.length;}).join(" ") + '</span>';
+          }
+          /* 转移概率 */
+          if (_oe.transition) {
+            var _otKeys = Object.keys(_oe.transition);
+            if (_otKeys.length > 0) {
+              var _otKey = _otKeys[0];
+              _dh += '<span>转移: ' + _otKey + '→奇' + _oe.transition[_otKey].next_1 + '%</span>';
+            }
+          }
+          _dh += '</div>';
+          
+          /* 回测结论 */
+          var _btWin = da.backtest.windows[da.backtest.best_window];
+          var _fm = _btWin ? _btWin.full_match_top3 : {hits:0,total:0,rate:0};
+          _dh += '<div style="font-size:9px;color:#666;padding:2px 4px;border-top:1px solid #e0e0e0;margin-top:2px">';
+          _dh += '📈 滚动回测(最优窗口' + da.tuning.suggested_window + '期): ';
+          _dh += '位1 Top3: ' + (_btWin ? (_btWin.pos1.top3_hits + '/' + _btWin.pos1.total + '=' + _btWin.pos1.top3_rate + '%') : 'N/A') + ' | ';
+          _dh += '全位命中: ' + _fm.hits + '/' + _fm.total + '=' + _fm.rate.toFixed(2) + '%';
+          _dh += ' | 模型: ' + da.prediction.method;
+          _dh += '</div>';
+          
+          _daContent.innerHTML = _dh;
+        }).catch(function() {
+          _daCard.style.display = "none";
+        });
+      }
+    }
+  }
 
   /* ===== 遗漏值走势图 → chartMiss（MiniChart） ===== */
   if (rec.analysis) {
