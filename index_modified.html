@@ -2096,6 +2096,29 @@ function fetchData(type) {
         return list;
       });
     }
+    // 数字彩（福彩3D/排五）嵌入数据仅115期，从full.json加载
+    if ((type === "fc3d" || type === "pl5") && list.length < 100) {
+      var url = type === "fc3d" ? 'data/fc3d_full.json' : 'data/pl5_full.json';
+      return fetch(url).then(function(res) {
+        if (!res.ok) throw new Error('网络错误');
+        return res.json();
+      }).then(function(extData) {
+        var existing = {};
+        list.forEach(function(d) { if (d.p) existing[d.p] = true; });
+        extData.forEach(function(d) {
+          if (d.p && !existing[d.p]) {
+            if (d.n && Array.isArray(d.n)) d.n.sort(function(a,b){return a-b;});
+            list.push(d);
+          }
+        });
+        list.sort(function(a,b){ return parseInt(b.p) - parseInt(a.p); });
+        cache[type] = list;
+        return list;
+      }).catch(function() {
+        cache[type] = list;
+        return list;
+      });
+    }
     cache[type] = list;
     return Promise.resolve(list);
   }
