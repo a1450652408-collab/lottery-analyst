@@ -551,12 +551,15 @@ def main():
     try:
         node_exe = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions\22.12.0\node.exe")
         backup_script = os.path.join(PROJECT_ROOT, "scripts", "backup_orange_purple_hits.js")
-        r = subprocess.run([node_exe, backup_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=60)
+        # ⚠️ 清空 NODE_OPTIONS，否则 --use-system-ca 会导致 Node 22.x 报错退出
+        clean_env = os.environ.copy()
+        clean_env.pop("NODE_OPTIONS", None)
+        r = subprocess.run([node_exe, backup_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=60, env=clean_env)
         if r.returncode == 0:
             print("\n--- 快乐8 橙紫卡命中记录 ---")
             for line in r.stdout.strip().split("\n"): print(f"  {line}")
         else:
-            print(f"\n  ⚠️ 橙紫卡备份失败: {r.stderr[:200]}")
+            print(f"\n  ⚠️ 橙紫卡备份失败 (code={r.returncode}): {r.stderr[:300]}")
     except Exception as e:
         print(f"\n  ⚠️ 橙紫卡备份异常: {e}")
 
