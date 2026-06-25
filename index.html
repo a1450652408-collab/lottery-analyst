@@ -5046,28 +5046,32 @@ function renderRecommend(type, data) {
         _daContent.setAttribute("data-loaded", "true");
         fetch(_daFile + "?_t=" + Date.now()).then(function(r){ return r.json(); }).then(function(da) {
           var _dh = '';
-          /* 参数调优 */
+          /* 参数调优 - v2 */
           _dh += '<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 6px;background:#e8eaf6;border-radius:4px;margin:4px 0;font-size:10px">';
           _dh += '<span>📊 窗口: ' + da.tuning.suggested_window + '期</span>';
           _dh += '<span>🔮 最佳组合: <b>' + da.prediction.best_combo.join("") + '</b></span>';
+          if (da.prediction.ensemble_combo) {
+            _dh += '<span>🤝 集成: <b>' + da.prediction.ensemble_combo.join("") + '</b></span>';
+          }
           _dh += '<span>🎯 Top3: ' + da.prediction.top3_combos.map(function(c){return c.join("");}).join(" / ") + '</span>';
           _dh += '<span>💡 ' + da.tuning.reason + '</span>';
           _dh += '</div>';
           
-          /* 每位数字分析（热号/冷号/间隔） */
+          /* 每位数字分析（热号/冷号/间隔/预测） */
           _dh += '<div style="display:grid;grid-template-columns:repeat(' + da.positions + ',1fr);gap:4px;padding:2px 0">';
           for (var _pi = 0; _pi < da.position_analysis.length; _pi++) {
             var _pa = da.position_analysis[_pi];
+            var _pred = da.prediction.positions[_pi];
             _dh += '<div style="background:#f5f5f5;border-radius:4px;padding:4px;font-size:9px">';
             _dh += '<div style="font-weight:700;color:#1a237e;margin-bottom:2px">位' + (_pi+1) + '</div>';
             _dh += '<div>热: <span style="color:#e53935">' + (_pa.hot.length > 0 ? _pa.hot.join(",") : "无") + '</span></div>';
             _dh += '<div>冷: <span style="color:#1565c0">' + (_pa.cold.length > 0 ? _pa.cold.join(",") : "无") + '</span></div>';
             _dh += '<div>间隔: ' + (_pa.gap.current_miss || 0) + '期</div>';
-            _dh += '<div>近10: ' + _pa.last10.join(" ") + '</div>';
+            _dh += '<div>预测Top5: <b>' + _pred.top5.join(" ") + '</b></div>';
             /* 跟随分析 */
             if (_pa.follow && Object.keys(_pa.follow).length > 0) {
-              var _fk = Object.keys(_pa.follow).slice(0,3);
-              _dh += '<div style="margin-top:2px;color:#666">跟随: ';
+              var _fk = Object.keys(_pa.follow).slice(0,2);
+              _dh += '<div style="margin-top:1px;color:#666">跟随: ';
               for (var _fi = 0; _fi < _fk.length; _fi++) {
                 _dh += _fk[_fi] + '→[' + _pa.follow[_fk[_fi]].map(function(f){return f.digit;}).join("") + '] ';
               }
@@ -5077,7 +5081,7 @@ function renderRecommend(type, data) {
           }
           _dh += '</div>';
           
-          /* 奇偶/大小模式 */
+          /* 奇偶/大小模式 + 权重优化 */
           var _oe = da.features.odd_even;
           var _bs = da.features.big_small;
           _dh += '<div style="display:flex;gap:6px;padding:2px 0;font-size:9px;flex-wrap:wrap">';
@@ -5085,27 +5089,38 @@ function renderRecommend(type, data) {
           _dh += '<span>大小比: ' + da.features.balance.bs_ratio + '%大</span>';
           _dh += '<span>和值均: ' + da.features.sum.avg + '</span>';
           _dh += '<span>跨度均: ' + da.features.span.avg + '</span>';
+          if (da.tuning.optimized_weights) {
+            var _ow = da.tuning.optimized_weights;
+            _dh += '<span title="9因子v2权重">⚖️ 权重: EMA' + _ow.ema + ' Markov' + _ow.markov + ' MACD' + _ow.macd_trend + ' Sim' + _ow.similarity + '</span>';
+          }
           /* 奇偶连号 */
           if (_oe.streaks && _oe.streaks.length > 0) {
             _dh += '<span>奇偶连: ' + _oe.streaks.map(function(s){return s.pattern==="1"?"奇":"偶"+"×"+s.length;}).join(" ") + '</span>';
           }
-          /* 转移概率 */
-          if (_oe.transition) {
-            var _otKeys = Object.keys(_oe.transition);
-            if (_otKeys.length > 0) {
-              var _otKey = _otKeys[0];
-              _dh += '<span>转移: ' + _otKey + '→奇' + _oe.transition[_otKey].next_1 + '%</span>';
-            }
-          }
           _dh += '</div>';
           
+          /* 五码定位复式回测 */
+          if (da.wu_ma_hit_rate) {
+            var _wmKeys = Object.keys(da.wu_ma_hit_rate).sort();
+            _dh += '<div style="font-size:9px;color:#333;padding:2px 4px;border-top:1px solid #e0e0e0;margin-top:2px">';
+            _dh += '<b>📐 五码定位复式回测:</b> ';
+            for (var _wk = 0; _wk < _wmKeys.length; _wk++) {
+              var _wmData = da.wu_ma_hit_rate[_wmKeys[_wk]];
+              var _ws = _wmKeys[_wk].split("_")[1];
+              var _perPos = [];
+              for (var _pp in _wmData.per_pos) {
+                _perPos.push('位' + (parseInt(_pp)+1) + '=' + _wmData.per_pos[_pp] + '%');
+              }
+              _dh += '<span style="margin:0 4px">' + _ws + '期: ' + _perPos.join(" ") + ' 全位=' + _wmData.full_match_top5 + '%</span>';
+            }
+            _dh += '</div>';
+          }
+          
           /* 回测结论 */
-          var _btWin = da.backtest.windows[da.backtest.best_window];
+          var _btWin = da.backtest.windows ? da.backtest.windows[da.backtest.best_window] : null;
           var _fm = _btWin ? _btWin.full_match_top3 : {hits:0,total:0,rate:0};
           _dh += '<div style="font-size:9px;color:#666;padding:2px 4px;border-top:1px solid #e0e0e0;margin-top:2px">';
-          _dh += '📈 滚动回测(最优窗口' + da.tuning.suggested_window + '期): ';
-          _dh += '位1 Top3: ' + (_btWin ? (_btWin.pos1.top3_hits + '/' + _btWin.pos1.total + '=' + _btWin.pos1.top3_rate + '%') : 'N/A') + ' | ';
-          _dh += '全位命中: ' + _fm.hits + '/' + _fm.total + '=' + _fm.rate.toFixed(2) + '%';
+          _dh += '📈 滚动回测(v2优化): 平均Top3 ' + (da.backtest.v2_optimized ? da.backtest.v2_optimized.avg_top3_rate + '%' : 'N/A');
           _dh += ' | 模型: ' + da.prediction.method;
           _dh += '</div>';
           

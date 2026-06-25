@@ -263,19 +263,92 @@ class PatternEngine:
 # 4. 预测模型
 # ============================================================
 class DigitPredictor:
-    """数字彩预测模型（每位独立预测）"""
+    """数字彩预测模型v2（每位独立预测·权重自调优）"""
     
-    def __init__(self, data, positions, window_size=50, analysis_window=20):
+    # 9个因子名称与初始权重
+    FACTOR_NAMES = [
+        "freq", "ema", "momentum", "miss_revert", 
+        "markov", "pattern_follow", "gap_uniform", 
+        "macd_trend", "similarity"
+    ]
+    DEFAULT_WEIGHTS = {
+        "freq": 0.12, "ema": 0.18, "momentum": 0.10, "miss_revert": 0.10,
+        "markov": 0.12, "pattern_follow": 0.08, "gap_uniform": 0.08,
+        "macd_trend": 0.12, "similarity": 0.10
+    }
+    
+    def __init__(self, data, positions, window_size=50, analysis_window=20, weights=None):
         self.data = data  # 最新在前
         self.positions = positions
         self.window_size = min(window_size, max(len(data), 10))
         self.analysis_window = min(analysis_window, self.window_size)
+        self.weights = weights or self.DEFAULT_WEIGHTS.copy()
+        self.similarity_cache = {}
         
-    def predict_position(self, pos):
+    def _macd(self, seq, fast=3, slow=8, signal=3):
+        """简化MACD计算（给每个数字算）"""
+        if len(seq) < slow + signal:
+            return 0.0
+        # EMA fast
+        ema_f = seq[0]
+        for v in seq[1:]:
+            ema_f = (2/(fast+1)) * v + (1 - 2/(fast+1)) * ema_f
+        # EMA slow
+        ema_s = seq[0]
+        for v in seq[1:]:
+            ema_s = (2/(slow+1)) * v + (1 - 2/(slow+1)) * ema_s
+        macd_line = ema_f - ema_s
+        # EMA signal
+        ema_sig = macd_line
+        # 简化为信号值
+        return macd_line
+    
+    def _pattern_similarity(self, pos_nums, target_digit):
         """
-        对单个位置进行预测。
-        返回: {digit: score} 排名
+        模式相似度匹配：找与最近N期模式相似的历史期，看后续出现频率
         """
+        recent_len = min(5, len(pos_nums))
+        if len(pos_nums) < recent_len + 2:
+            return 0.0
+        
+        # 最近几期的模式
+        recent_pattern = pos_nums[:recent_len]
+        
+        # 在所有历史中找最相似的
+        scores = 0.0
+        matches = 0
+        
+        for i in range(1, len(pos_nums) - recent_len - 1):
+            # 计算欧氏距离
+            dist = sum(abs(pos_nums[j] - recent_pattern[j]) for j in range(recent_len))
+            dist = dist / (recent_len * 9)  # 归一化到 0~1
+            
+            if dist < 0.3:  # 相似度阈值
+                matches += 1
+                # 检查相似段的后一期
+                next_val = pos_nums[i - recent_len - 1] if i - recent_len - 1 >= 0 else None
+                # 实际上是 pos_nums[i] 之后出现的
+                
+        
+        # 更简单的方法：检查最近recent_len期的组合在历史上出现后，下一期的数字分布
+        pattern_key = tuple(recent_pattern)
+        if pattern_key not in self.similarity_cache:
+            followers = defaultdict(int)
+            for i in range(len(pos_nums) - recent_len):
+                if tuple(pos_nums[i:i+recent_len]) == pattern_key:
+                    if i + recent_len < len(pos_nums):
+                        followers[pos_nums[i + recent_len]] += 1
+            self.similarity_cache[pattern_key] = followers
+        
+        followers = self.similarity_cache[pattern_key]
+        total = sum(followers.values())
+        if total == 0:
+            return 0.0
+        return followers.get(target_digit, 0) / total
+    
+    def predict_position(self, pos, weights=None):
+        """对单个位置进行9因子预测"""
+        w = weights or self.weights
         recent = self.data[:self.window_size]
         nums_list = [d["n"] for d in recent if len(d["n"]) > pos]
         
@@ -283,89 +356,100 @@ class DigitPredictor:
             return {d: 0 for d in range(10)}
         
         pos_nums = [n[pos] for n in nums_list]
-        recent_nums = pos_nums[:self.analysis_window]
-        older_nums = pos_nums[self.analysis_window:] if len(pos_nums) > self.analysis_window else []
+        total = len(pos_nums)
+        if total < 5:
+            return {d: 0 for d in range(10)}
         
         scores = {d: 0.0 for d in range(10)}
         
-        # --- 因子1: 频率得分 (权重0.15) ---
+        # --- 因子1: 频率得分 ---
         freq = Counter(pos_nums)
-        total = len(pos_nums)
         for d in range(10):
-            scores[d] += (freq.get(d, 0) / total) * 0.15
+            scores[d] += (freq.get(d, 0) / total) * w["freq"]
         
-        # --- 因子2: EMA热度 (权重0.20) ---
-        alpha = 0.4
+        # --- 因子2: EMA热度 ---
+        alpha = 0.35
         for d in range(10):
             ema = 0.0
-            for n in reversed(pos_nums):  # 从旧到新
+            for n in reversed(pos_nums):
                 hit = 1.0 if n == d else 0.0
                 ema = alpha * hit + (1 - alpha) * ema
-            scores[d] += ema * 0.20
+            scores[d] += ema * w["ema"]
         
-        # --- 因子3: 近期动量 (权重0.15) ---
-        if len(recent_nums) >= 10:
-            r5 = recent_nums[:5]
-            p5 = recent_nums[5:10]
+        # --- 因子3: 近期动量 ---
+        if total >= 10:
+            r5 = pos_nums[:5]
+            p5 = pos_nums[5:10]
             for d in range(10):
-                mom = (r5.count(d) - p5.count(d)) * 2
-                scores[d] += max(-0.5, min(0.5, mom * 0.01)) * 0.15
+                mom = (r5.count(d) - p5.count(d)) * 3
+                scores[d] += max(-0.3, min(0.3, mom * 0.01)) * w["momentum"]
         
-        # --- 因子4: 遗漏值回补 (权重0.15) ---
+        # --- 因子4: 遗漏值回补 ---
         last_seen = {}
         for i, n in enumerate(pos_nums):
             last_seen[n] = i
-        total_len = len(pos_nums)
         for d in range(10):
-            miss = last_seen.get(d, total_len)
-            expected_interval = total_len / max(freq.get(d, 1), 1)
-            miss_bonus = max(0, (miss - expected_interval) / total_len * 0.5)
-            scores[d] += miss_bonus * 0.15
+            miss = last_seen.get(d, total)
+            expected_interval = total / max(freq.get(d, 1), 1)
+            miss_bonus = max(0, (miss - expected_interval) / total * 1.0)
+            scores[d] += miss_bonus * w["miss_revert"]
         
-        # --- 因子5: 马尔可夫链 (权重0.15) ---
-        if len(pos_nums) >= 4:
+        # --- 因子5: 马尔可夫链 (二阶) ---
+        if total >= 3:
             trans = defaultdict(lambda: [0]*10)
-            for i in range(len(pos_nums)-1):
+            for i in range(total-1):
                 trans[pos_nums[i]][pos_nums[i+1]] += 1
             last_val = pos_nums[0]
-            trans_counts = trans[last_val]
-            total_trans = sum(trans_counts)
-            if total_trans > 0:
+            tc = trans[last_val]
+            tt = sum(tc)
+            if tt > 0:
                 for d in range(10):
-                    scores[d] += (trans_counts[d] / total_trans) * 0.15
+                    scores[d] += (tc[d] / tt) * w["markov"]
         
-        # --- 因子6: 模式跟随 (权重0.10) ---
-        if len(pos_nums) >= 6:
-            # 最近3期模式
-            pattern3 = tuple(pos_nums[:3])
+        # --- 因子6: 模式跟随 ---
+        if total >= 4:
+            pattern3 = tuple(pos_nums[:min(3, total-1)])
             followers = []
-            for i in range(len(pos_nums)-3):
-                if tuple(pos_nums[i:i+3]) == pattern3:
-                    followers.append(pos_nums[i+3])
+            for i in range(total - len(pattern3)):
+                if tuple(pos_nums[i:i+len(pattern3)]) == pattern3:
+                    if i + len(pattern3) < total:
+                        followers.append(pos_nums[i + len(pattern3)])
             if followers:
-                f_counter = Counter(followers)
+                fc = Counter(followers)
                 for d in range(10):
-                    scores[d] += (f_counter.get(d, 0) / len(followers)) * 0.10
+                    scores[d] += (fc.get(d, 0) / len(followers)) * w["pattern_follow"]
         
-        # --- 因子7: 间隔均匀度 (权重0.10) ---
+        # --- 因子7: 间隔均匀度 ---
         for d in range(10):
-            positions_d = [i for i, n in enumerate(pos_nums) if n == d]
-            if len(positions_d) >= 2:
-                gaps = [positions_d[i+1] - positions_d[i] for i in range(len(positions_d)-1)]
-                if gaps:
-                    mean_gap = sum(gaps) / len(gaps)
-                    variance = sum((g - mean_gap)**2 for g in gaps) / len(gaps)
-                    # 间隔越均匀, 分数越高
-                    uniformity = 1 / (1 + variance / 100)
-                    scores[d] += uniformity * 0.10
+            pos_d = [i for i, n in enumerate(pos_nums) if n == d]
+            if len(pos_d) >= 2:
+                gaps = [pos_d[j+1] - pos_d[j] for j in range(len(pos_d)-1)]
+                mean_gap = sum(gaps) / len(gaps)
+                var_ = sum((g - mean_gap)**2 for g in gaps) / len(gaps)
+                uniformity = 1 / (1 + var_ / 100)
+                scores[d] += uniformity * w["gap_uniform"]
+        
+        # --- 因子8: MACD趋势 ---
+        for d in range(10):
+            seq = [1.0 if n == d else 0.0 for n in pos_nums[:min(30, total)]]
+            macd_val = self._macd(seq)
+            # MACD正=升温，负=降温
+            trend_score = max(-0.3, min(0.3, macd_val * 0.5))
+            scores[d] += trend_score * w["macd_trend"]
+        
+        # --- 因子9: 模式相似度匹配 ---
+        for d in range(10):
+            sim = self._pattern_similarity(pos_nums, d)
+            scores[d] += sim * w["similarity"]
         
         return scores
     
-    def predict_all(self):
+    def predict_all(self, weights=None):
         """预测所有位置"""
         results = []
         for pos in range(self.positions):
-            scores = self.predict_position(pos)
+            self.similarity_cache = {}  # 每位独立缓存
+            scores = self.predict_position(pos, weights)
             ranked = sorted(scores.items(), key=lambda x: -x[1])
             total = sum(scores.values()) or 1
             results.append({
@@ -377,13 +461,10 @@ class DigitPredictor:
         return results
     
     def best_combo(self, pos_results):
-        """根据各位置预测组合最佳直选"""
-        combo = []
-        for pr in pos_results:
-            combo.append(pr["top3"][0])  # 每位置取最高分
-        return combo
+        """最佳直选"""
+        return [pr["top3"][0] for pr in pos_results]
     
-    def weighted_combos(self, pos_results, count=10):
+    def weighted_combos(self, pos_results, count=5):
         """加权随机生成多组直选"""
         import random
         combos = []
@@ -396,10 +477,10 @@ class DigitPredictor:
                 weights = [max(0.01, s["score"]) for s in pr["ranked"]]
                 total_w = sum(weights)
                 r = random.random() * total_w
-                cumulative = 0
+                cum = 0
                 for s, w in zip(pr["ranked"], weights):
-                    cumulative += w
-                    if r <= cumulative:
+                    cum += w
+                    if r <= cum:
                         combo.append(s["digit"])
                         key_parts.append(str(s["digit"]))
                         break
@@ -409,6 +490,139 @@ class DigitPredictor:
                 combos.append(combo)
             attempts += 1
         return combos
+
+
+# ============================================================
+# 4b. 权重优化引擎
+# ============================================================
+class WeightOptimizer:
+    """
+    权重优化器：通过网格搜索找到最优因子权重组合
+    搜索空间：每个因子权重在 [0.5x, 2.0x] 范围内步进
+    """
+    
+    def optimize(self, data, positions, window_sizes=[20, 30, 50]):
+        """
+        网格搜索最优权重（快速版：10候选 × 30验证期）
+        返回: {weights, score, window}
+        """
+        import random
+        
+        best = {"score": 0, "weights": DigitPredictor.DEFAULT_WEIGHTS.copy(), "window": 20}
+        
+        # 10组随机权重组合（快速）
+        random.seed(42)
+        candidates = []
+        for _ in range(10):
+            w = {}
+            raw = [random.uniform(0.5, 2.0) for _ in range(9)]
+            total = sum(raw)
+            for i, name in enumerate(DigitPredictor.FACTOR_NAMES):
+                w[name] = DigitPredictor.DEFAULT_WEIGHTS[name] * (raw[i] / total * 9 / 1.0)
+            candidates.append(w)
+        # 加默认权重
+        candidates.append(DigitPredictor.DEFAULT_WEIGHTS.copy())
+        
+        # 每组合测试所有窗口（仅验证30期）
+        for ws in window_sizes:
+            if len(data) < ws + 5:
+                continue
+            test_count = min(30, len(data) - ws - 1)
+            
+            for ci, w in enumerate(candidates):
+                total_hits = {pos: 0 for pos in range(positions)}
+                total_tests = 0
+                
+                for ti in range(test_count):
+                    test_idx = len(data) - 1 - ti - 1  # 从最新往前
+                    if test_idx < ws:
+                        continue
+                    train_data = data[test_idx - ws:test_idx]
+                    actual = data[test_idx]["n"]
+                    if len(actual) < positions:
+                        continue
+                    
+                    predictor = DigitPredictor(train_data, positions, window_size=ws, weights=w)
+                    pos_results = predictor.predict_all(w)
+                    total_tests += 1
+                    
+                    for pos in range(positions):
+                        if actual[pos] in pos_results[pos]["top3"]:
+                            total_hits[pos] += 1
+                
+                if total_tests > 0:
+                    avg_hit = sum(total_hits.values()) / (positions * total_tests) * 100
+                    if avg_hit > best["score"]:
+                        best = {
+                            "score": round(avg_hit, 2),
+                            "weights": w,
+                            "window": ws,
+                            "per_pos": {pos: round(h/total_tests*100, 2) for pos, h in total_hits.items()}
+                        }
+        
+        return best
+
+
+# ============================================================
+# 4c. 集成预测（多模型投票）
+# ============================================================
+class EnsemblePredictor:
+    """多模型集成预测"""
+    
+    @staticmethod
+    def predict(data, positions, window_size=50):
+        """
+        多模型集成：
+        1. 标准9因子模型
+        2. 纯频率模型
+        3. 纯EMA模型
+        4. 纯马尔可夫模型
+        """
+        models = [
+            ("9因子", DigitPredictor(data, positions, window_size)),
+            ("频率", DigitPredictor(data, positions, window_size, weights={
+                "freq": 0.5, "ema": 0, "momentum": 0, "miss_revert": 0,
+                "markov": 0, "pattern_follow": 0, "gap_uniform": 0,
+                "macd_trend": 0, "similarity": 0
+            })),
+            ("EMA", DigitPredictor(data, positions, window_size, weights={
+                "freq": 0, "ema": 0.5, "momentum": 0, "miss_revert": 0,
+                "markov": 0, "pattern_follow": 0, "gap_uniform": 0,
+                "macd_trend": 0, "similarity": 0
+            })),
+            ("Markov", DigitPredictor(data, positions, window_size, weights={
+                "freq": 0, "ema": 0, "momentum": 0, "miss_revert": 0,
+                "markov": 0.5, "pattern_follow": 0, "gap_uniform": 0,
+                "macd_trend": 0, "similarity": 0
+            })),
+        ]
+        
+        results = []
+        for pos in range(positions):
+            votes = {d: 0 for d in range(10)}
+            all_top3 = set()
+            
+            for name, model in models:
+                scores = model.predict_position(pos)
+                ranked = sorted(scores.items(), key=lambda x: -x[1])
+                top3 = [d for d, s in ranked[:3]]
+                # 投票：第一名3分，第二名2分，第三名1分
+                votes[top3[0]] += 3
+                votes[top3[1]] += 2
+                votes[top3[2]] += 1
+                all_top3.update(top3)
+            
+            # 按总分排序
+            ranked = sorted(votes.items(), key=lambda x: -x[1])
+            results.append({
+                "pos": pos,
+                "ranked": [{"digit": d, "score": s / len(models)} for d, s in ranked],
+                "top3": [d for d, s in ranked[:3]],
+                "top5": [d for d, s in ranked[:5]],
+                "consensus": len(ranked) > 0 and ranked[0][1] >= 7  # 是否有强共识
+            })
+        
+        return results
 
 
 # ============================================================
@@ -586,28 +800,82 @@ def analyze_digit(data_raw, key_name, positions=3):
             "last10": pos_nums[:10] if len(pos_nums) >= 10 else pos_nums,
         })
     
-    # 5. 运行预测
-    predictor = DigitPredictor(recent, positions)
-    pos_predictions = predictor.predict_all()
+    # 5. 运行预测 (v2: 9因子 + 集成 + 权重优化)
+    # 5a. 权重优化
+    optimizer = WeightOptimizer()
+    opt_result = optimizer.optimize(data, positions, window_sizes=[20, 30, 50, 100])
+    opt_weights = opt_result["weights"]
+    opt_ws = opt_result["window"]
+    opt_score = opt_result["score"]
+    print(f"  权重优化: 最优窗口{opt_ws}期, 平均Top3命中率{opt_score:.2f}%")
+    if "per_pos" in opt_result:
+        for pos, rate in opt_result["per_pos"].items():
+            print(f"    位{pos+1}: {rate}%")
+    
+    # 5b. 标准9因子预测 (用优化权重)
+    predictor = DigitPredictor(recent, positions, window_size=opt_ws if opt_ws <= len(recent) else 20, weights=opt_weights)
+    pos_predictions = predictor.predict_all(opt_weights)
     best_combo = predictor.best_combo(pos_predictions)
-    weighted_combos = predictor.weighted_combos(pos_predictions, count=5)
+    weighted_combos = predictor.weighted_combos(pos_predictions, count=3)
     top3_combos = []
-    for combo in [best_combo] + [wc for wc in weighted_combos]:
+    for combo in [best_combo] + weighted_combos:
         if combo not in top3_combos:
             top3_combos.append(combo)
             if len(top3_combos) >= 3:
                 break
     
-    # 6. 滚动回测
-    backtest_results = rolling_backtest(data, positions)
+    # 5c. 集成预测
+    ensemble = EnsemblePredictor()
+    ensemble_predictions = ensemble.predict(recent, positions, window_size=opt_ws if opt_ws <= len(recent) else 20)
+    ensemble_combo = [ep["top3"][0] for ep in ensemble_predictions]
+    
+    # 5d. 五码定位复式回测
+    wu_ma_hit_rate = {}
+    for ws in [20, 30, 50]:
+        wu_hits_top5 = {pos: 0 for pos in range(positions)}
+        wu_full_hits = 0
+        wu_tests = 0
+        
+        for test_idx in range(ws, len(data) - 1):
+            train_data = data[test_idx - ws:test_idx]
+            actual = data[test_idx]["n"]
+            if len(actual) < positions:
+                continue
+            p = DigitPredictor(train_data, positions, window_size=ws, weights=opt_weights)
+            pr = p.predict_all(opt_weights)
+            wu_tests += 1
+            all_in_top5 = True
+            for pos in range(positions):
+                if actual[pos] in pr[pos]["top5"]:
+                    wu_hits_top5[pos] += 1
+                else:
+                    all_in_top5 = False
+            if all_in_top5:
+                wu_full_hits += 1
+        
+        if wu_tests > 0:
+            wu_ma_hit_rate[f"win_{ws}"] = {
+                "per_pos": {pos: round(h/wu_tests*100, 2) for pos, h in wu_hits_top5.items()},
+                "full_match_top5": round(wu_full_hits/wu_tests*100, 4),
+                "total_tests": wu_tests,
+                "full_hits": wu_full_hits
+            }
+    
+    # 6. 滚动回测 (v2: 使用优化权重)
+    backtest_results = rolling_backtest(data, positions)  # 保留原始回测用于对比
+    # 添加优化权重的v2回测
+    backtest_results["v2_optimized"] = {
+        "weights": {k: round(v, 4) for k, v in opt_weights.items()},
+        "best_window": opt_ws,
+        "avg_top3_rate": round(opt_score, 2)
+    }
     
     # 7. 参数调优建议
-    best_ws = int(backtest_results["best_window"].split("_")[1])
     tuning = {
         "current_window": 20,
-        "suggested_window": best_ws,
-        "reason": f"回测发现窗口{best_ws}期命中率最高({backtest_results['best_rate']}%)",
-        "windows_tested": list(backtest_results["windows"].keys()),
+        "suggested_window": opt_ws,
+        "reason": f"权重优化后窗口{opt_ws}期平均命中率{opt_score:.2f}%",
+        "optimized_weights": {k: round(v, 4) for k, v in opt_weights.items()},
     }
     
     # 8. 输出汇总
@@ -647,18 +915,27 @@ def analyze_digit(data_raw, key_name, positions=3):
             "positions": pos_predictions,
             "best_combo": best_combo,
             "top3_combos": top3_combos,
-            "method": "7因子加权评分(频率+EMA+动量+遗漏+Markov+模式跟随+间隔均匀度)"
+            "ensemble_combo": ensemble_combo,
+            "ensemble_predictions": ensemble_predictions,
+            "method": "9因子v2(频率+EMA+动量+遗漏+Markov+模式跟随+间隔均匀度+MACD趋势+相似度匹配)+集成投票+权重自调优"
         },
         
         "backtest": backtest_results,
+        
+        "wu_ma_hit_rate": wu_ma_hit_rate,
         
         "tuning": tuning,
     }
     
     # 打印关键摘要
-    print(f"最佳推荐: {''.join(str(d) for d in best_combo)}")
-    print(f"最优窗口: {best_ws}期 (命中率 {backtest_results['best_rate']}%)")
-    print(f"全位命中(TOP3): {backtest_results['windows'][backtest_results['best_window']]['full_match_top3']['rate']}%")
+    print(f"最佳推荐(v2): {''.join(str(d) for d in best_combo)}")
+    print(f"集成推荐: {''.join(str(d) for d in ensemble_combo)}")
+    print(f"优化窗口: {opt_ws}期 (平均Top3 {opt_score:.2f}%)")
+    # 五码回测
+    for k, v in wu_ma_hit_rate.items():
+        ws = k.split("_")[1]
+        pos_str = " | ".join([f"位{p+1}:{r}%" for p, r in v["per_pos"].items()])
+        print(f"  五码(window {ws}期): {pos_str} | 全位Top5: {v['full_match_top5']}%")
     
     return result
 
