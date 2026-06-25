@@ -3264,15 +3264,37 @@ function renderRecommend(type, data) {
       for (var _n = _zRanges[zi][0]; _n <= _zRanges[zi][1]; _n++) _s += scores[_n] || 0;
       return _s / 20;
     }
-    /* 区内排序取前N */
-    function _zPickFrom(zi, scores, take, exclude) {
+    /* ★ 橙卡加权随机选取函数（替代旧版硬取TopN） */
+    function _zPickWeighted(zi, scores, take, exclude) {
       var _zRanges = [[1,20],[21,40],[41,60],[61,80]];
       var _arr = [];
       for (var _n = _zRanges[zi][0]; _n <= _zRanges[zi][1]; _n++) _arr.push(_n);
       _arr.sort(function(a,b){ return (scores[b]||-999) - (scores[a]||-999); });
+      
+      /* 从Top40%池中加权随机选 */
+      var poolSize = Math.max(take, Math.ceil(_arr.length * 0.4));
+      var pool = _arr.slice(0, poolSize).filter(function(n) { return !exclude || exclude.indexOf(n) < 0; });
+      var weighted = pool.map(function(n) {
+        var w = Math.max(0.1, (scores[n]||0) + 1);
+        return { n: n, w: w };
+      });
       var _res = [];
-      for (var _i = 0; _i < _arr.length && _res.length < take; _i++) {
-        if (!exclude || exclude.indexOf(_arr[_i]) < 0) _res.push(_arr[_i]);
+      var taken = 0;
+      while (taken < take && weighted.length > 0) {
+        var totalW = 0; weighted.forEach(function(x){ totalW += x.w; });
+        if (totalW <= 0) break;
+        var r = Math.random() * totalW;
+        var pickIdx = 0;
+        for (var i = 0; i < weighted.length; i++) { r -= weighted[i].w; if (r <= 0) { pickIdx = i; break; } }
+        var picked = weighted[pickIdx].n;
+        if (_res.indexOf(picked) < 0) { _res.push(picked); taken++; }
+        weighted.splice(pickIdx, 1);
+      }
+      /* 不够就补最热的 */
+      if (taken < take) {
+        for (var t = 0; t < _arr.length && taken < take; t++) {
+          if (_res.indexOf(_arr[t]) < 0 && (!exclude || exclude.indexOf(_arr[t]) < 0)) { _res.push(_arr[t]); taken++; }
+        }
       }
       return _res;
     }
@@ -3288,7 +3310,7 @@ function renderRecommend(type, data) {
         for (var _zzi = 0; _zzi < 4; _zzi++) {
           var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
           if (_zTake <= 0) continue;
-          var _zPick = _zPickFrom(_zzi, _knScores40, _zTake, null);
+          var _zPick = _zPickWeighted(_zzi, _knScores40, _zTake, null);
           _zRes = _zRes.concat(_zPick);
         }
       } else if (_zndc === 7) {
@@ -3299,7 +3321,7 @@ function renderRecommend(type, data) {
         var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
         var _zPer7 = Math.floor(_zndc / 3);
         for (var _ti = 0; _ti < 3; _ti++) {
-          var _zPick = _zPickFrom(_zTop3[_ti], _knScores40, _zPer7, _zRes);
+          var _zPick = _zPickWeighted(_zTop3[_ti], _knScores40, _zPer7, _zRes);
           _zRes = _zRes.concat(_zPick);
         }
       } else if (_zndc === 8) {
@@ -3310,8 +3332,8 @@ function renderRecommend(type, data) {
         var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
         var _zPriTake = Math.round(_zndc * 0.65);
         var _zSecTake = _zndc - _zPriTake;
-        _zRes = _zPickFrom(_zPri, _knScores40, _zPriTake, null);
-        var _zSecPick = _zPickFrom(_zSec, _knScores40, _zSecTake, _zRes);
+        _zRes = _zPickWeighted(_zPri, _knScores40, _zPriTake, null);
+        var _zSecPick = _zPickWeighted(_zSec, _knScores40, _zSecTake, _zRes);
         _zRes = _zRes.concat(_zSecPick);
       } else if (_zndc === 9) {
         /* 选9：冷热混合（1-40区间） */
