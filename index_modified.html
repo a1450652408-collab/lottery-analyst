@@ -3505,6 +3505,100 @@ function renderRecommend(type, data) {
     _reHtml += '<div style=\"font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
     _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分(41-80区间) | 基于2871期回测数据</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
 
+    /* ===== 冷温热深度分析卡片 ===== */
+    _reHtml += '<div class="rec-card" style="border-left-color:#e91e63;background:linear-gradient(135deg,#fce4ec,#fff)"><div class="rec-header">🔥 号码走势·冷温热深度分析</div><div id="kl8_trend_box" style="padding:6px;font-size:12px;line-height:1.6;color:#333">';
+    _reHtml += '<div style="text-align:center;color:#999;padding:8px">⏳ 加载分析数据...</div></div></div>';
+    /* 异步加载趋势数据 */
+    (function() {
+      fetch("data/kl8_trend_deep.json?_t=" + Date.now()).then(function(r) { return r.json(); }).then(function(td) {
+        var win = td.windows.medium_30 || td.windows.long_50;
+        if (!win) return;
+        var c = win.classify;
+        function getTier(n) { var k = c[n]; if (!k) k = c[String(n)]; return k ? k.tier : "?"; }
+        function getFreq(n) { var k = c[n]; if (!k) k = c[String(n)]; return k ? k.freq : 0; }
+        
+        /* 热号/升温号/温号三栏 */
+        var hotList = [], warmList = [], warmingList = [];
+        for (var n = 1; n <= 80; n++) {
+          var t = getTier(n);
+          if (t === "H") hotList.push(n);
+          else if (t === "W") warmList.push(n);
+        }
+        /* 升温号：从momentum取 */
+        var mom = win.momentum;
+        for (var n = 1; n <= 80; n++) {
+          var mk = mom[n] || mom[String(n)];
+          if (mk && mk.direction === "升温↑") warmingList.push(n);
+        }
+        
+        var html = "";
+        html += "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px'>";
+        html += "<span style='background:#e53935;color:#fff;padding:2px 8px;border-radius:8px;font-size:10px'>🔥 热号" + hotList.length + "</span>";
+        html += "<span style='background:#ff9800;color:#fff;padding:2px 8px;border-radius:8px;font-size:10px'>🟡 温号" + warmList.length + "</span>";
+        html += "<span style='background:#4caf50;color:#fff;padding:2px 8px;border-radius:8px;font-size:10px'>⬆ 升温" + warmingList.length + "</span>";
+        html += "</div>";
+        
+        /* 热号展示 */
+        html += "<div style='margin-bottom:4px'><span style='font-weight:bold;color:#e53935;font-size:11px'>🔥 热号Top 10</span><div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:2px'>";
+        hotList.slice(0,10).forEach(function(n) {
+          var freq = (getFreq(n) * 100).toFixed(0);
+          html += "<span style='background:#ffebee;color:#e53935;padding:1px 6px;border-radius:8px;font-size:11px;font-weight:bold'>" + String(n).padStart(2,"0") + "<span style='font-weight:normal;color:#999;font-size:9px'> " + freq + "%</span></span>";
+        });
+        html += "</div></div>";
+        
+        /* 升温号展示 */
+        html += "<div style='margin-bottom:4px'><span style='font-weight:bold;color:#4caf50;font-size:11px'>⬆ 升温中 Top 6</span><div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:2px'>";
+        warmingList.slice(0,6).forEach(function(n) {
+          html += "<span style='background:#e8f5e9;color:#388e3c;padding:1px 6px;border-radius:8px;font-size:11px;font-weight:bold'>" + String(n).padStart(2,"0") + "</span>";
+        });
+        html += "</div></div>";
+        
+        /* 区段分布 */
+        html += "<div style='margin-bottom:4px'><span style='font-weight:bold;color:#666;font-size:11px'>📊 区段均量</span>";
+        html += "<div style='display:flex;gap:8px;margin-top:2px'>";
+        var zNames = ["1-20","21-40","41-60","61-80"];
+        var zoneData = win.zones;
+        zNames.forEach(function(zn) {
+          var z = zoneData[zn];
+          if (!z) return;
+          var barLen = Math.round(z.avg * 2);
+          var bar = "";
+          for (var b = 0; b < barLen; b++) bar += "█";
+          html += "<div style='flex:1;text-align:center;font-size:10px'>" + zn + "<br><span style='font-size:14px;font-weight:bold'>" + z.avg.toFixed(1) + "</span><br><span style='color:#999'>" + bar + "</span></div>";
+        });
+        html += "</div></div>";
+        
+        /* 温热组合推荐 */
+        var rec = win.combo;
+        html += "<div style='margin-bottom:4px'><span style='font-weight:bold;color:#e91e63;font-size:11px'>🎯 温热搭配推荐</span>";
+        html += "<div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:2px'>";
+        if (rec.recommend_heat) {
+          rec.recommend_heat.forEach(function(n) {
+            html += "<span style='background:#ffebee;color:#e53935;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold'>" + String(n).padStart(2,"0") + "</span>";
+          });
+        }
+        html += "<span style='color:#999;margin:0 4px'>+</span>";
+        if (rec.recommend_rebound) {
+          rec.recommend_rebound.forEach(function(n) {
+            html += "<span style='background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold'>" + String(n).padStart(2,"0") + "</span>";
+          });
+        }
+        html += "</div></div>";
+        
+        /* 高频配对 */
+        html += "<div><span style='font-weight:bold;color:#666;font-size:11px'>🔗 高频共现对 Top5</span><div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:2px'>";
+        (win.pairs || []).slice(0,5).forEach(function(p) {
+          html += "<span style='background:#f3e5f5;color:#7b1fa2;padding:1px 6px;border-radius:6px;font-size:10px'>" + String(p.pair[0]).padStart(2,"0") + "-" + String(p.pair[1]).padStart(2,"0") + " <span style='color:#999'>×" + p.count + "</span></span>";
+        });
+        html += "</div></div>";
+        
+        html += "<div style='margin-top:4px;font-size:9px;color:#999'>数据基于近" + win.size + "期 · 热(≥25%) 温(15%~25%) 冷(<15%)</div>";
+        document.getElementById("kl8_trend_box").innerHTML = html;
+      }).catch(function() {
+        document.getElementById("kl8_trend_box").innerHTML = '<div style="text-align:center;color:#999;padding:8px">⚠️ 趋势数据暂不可用</div>';
+      });
+    })();
+
     /* ===== 选四3胆全托·加权随机8组（已删除） ===== */
     var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用
     (function() {

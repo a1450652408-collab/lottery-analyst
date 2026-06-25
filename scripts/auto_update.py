@@ -575,6 +575,20 @@ def main():
     except Exception as e:
         print(f"  ⚠️ 推荐生成异常: {e}")
 
+    # ===== 快乐8 走势深度分析（冷温热+组合模式） =====
+    print("\n--- 快乐8 走势深度分析 ---")
+    try:
+        trend_script = os.path.join(os.path.dirname(__file__), "kl8_trend_deep.py")
+        r = subprocess.run([sys.executable, trend_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+        if r.returncode == 0:
+            for line in r.stdout.strip().split("\n"):
+                if line.strip():
+                    print(f"  {line}")
+        else:
+            print(f"  ⚠️ 趋势分析失败: {r.stderr[:200]}")
+    except Exception as e:
+        print(f"  ⚠️ 趋势分析异常: {e}")
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
@@ -597,7 +611,7 @@ def _auto_git_push(project_root, has_changes):
     try:
         today_str = datetime.now().strftime("%Y-%m-%d")
         r = subprocess.run(
-            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js"],
+            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js", "scripts/kl8_trend_deep.py"],
             cwd=project_root, capture_output=True, text=True, timeout=30
         )
         if r.returncode != 0:
