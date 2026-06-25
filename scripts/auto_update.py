@@ -589,6 +589,20 @@ def main():
     except Exception as e:
         print(f"  ⚠️ 趋势分析异常: {e}")
 
+    # ===== 数字彩深度分析（福彩3D/排列三/排列五） =====
+    print("\n--- 数字彩深度分析 ---")
+    try:
+        digit_script = os.path.join(os.path.dirname(__file__), "digit_analysis.py")
+        r = subprocess.run([sys.executable, digit_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+        if r.returncode == 0:
+            for line in r.stdout.strip().split("\n"):
+                if line.strip():
+                    print(f"  {line}")
+        else:
+            print(f"  ⚠️ 数字彩分析失败: {r.stderr[:200]}")
+    except Exception as e:
+        print(f"  ⚠️ 数字彩分析异常: {e}")
+
     # 汇总
     print("\n" + "=" * 55)
     if updated_types:
