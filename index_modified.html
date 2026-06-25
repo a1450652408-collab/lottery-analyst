@@ -3225,9 +3225,10 @@ function renderRecommend(type, data) {
     _knRanked.sort(function(a, b) { return b.s - a.s; });
     var _knTop35 = _knRanked.slice(0, 35).map(function(x) { return x.n; }).sort(function(a,b){return a-b;});
     var _knTop35Ordered = _knRanked.slice(0, 35).map(function(x) { return x.n; });
-    /* ★ 橙/紫卡共用35码池：过滤分数，只留Top35 */
-    var _knScores35 = {};
-    _knTop35.forEach(function(n) { _knScores35[n] = _knScores[n] || 0; });
+    /* ★ 橙卡号码池1-40 / 紫卡号码池41-80 */
+    var _knScores40 = {};
+    for (var _n40 = 1; _n40 <= 40; _n40++) { _knScores40[_n40] = _knScores[_n40] || 0; }
+    for (var _n40 = 41; _n40 <= 80; _n40++) { _knScores40[_n40] = -999; }
     
     /* ===== 四区TOP4=16码池（选五5组 + 旋转矩阵共用） ===== */
     var _xwZones = [[1,20],[21,40],[41,60],[61,80]];
@@ -3274,50 +3275,50 @@ function renderRecommend(type, data) {
       }
       return _res;
     }
-    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（回测最优·分玩法优化·35码池）</div>';
+    _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（回测最优·分玩法优化·1-40区间）</div>';
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
       var _zZones = [[1,20],[21,40],[41,60],[61,80]];
       
       if (_zndc <= 6 || _zndc >= 10) {
-        /* 选2~选6、选10~13：区间均衡（原版，35码池） */
+        /* 选2~选6、选10~13：区间均衡（1-40区间） */
         var _zPer = Math.floor(_zndc / 4);
         var _zExtra = _zndc % 4;
         for (var _zzi = 0; _zzi < 4; _zzi++) {
           var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
           if (_zTake <= 0) continue;
-          var _zPick = _zPickFrom(_zzi, _knScores35, _zTake, null);
+          var _zPick = _zPickFrom(_zzi, _knScores40, _zTake, null);
           _zRes = _zRes.concat(_zPick);
         }
       } else if (_zndc === 7) {
-        /* 选7：集中区策略（35码池） */
+        /* 选7：集中区策略（1-40区间） */
         var _zRankZones = [];
-        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores35) });
+        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores40) });
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
         var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
         var _zPer7 = Math.floor(_zndc / 3);
         for (var _ti = 0; _ti < 3; _ti++) {
-          var _zPick = _zPickFrom(_zTop3[_ti], _knScores35, _zPer7, _zRes);
+          var _zPick = _zPickFrom(_zTop3[_ti], _knScores40, _zPer7, _zRes);
           _zRes = _zRes.concat(_zPick);
         }
       } else if (_zndc === 8) {
-        /* 选8：重点覆盖（35码池） */
+        /* 选8：重点覆盖（1-40区间） */
         var _zRankZones = [];
-        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores35) });
+        for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores40) });
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
         var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
         var _zPriTake = Math.round(_zndc * 0.65);
         var _zSecTake = _zndc - _zPriTake;
-        _zRes = _zPickFrom(_zPri, _knScores35, _zPriTake, null);
-        var _zSecPick = _zPickFrom(_zSec, _knScores35, _zSecTake, _zRes);
+        _zRes = _zPickFrom(_zPri, _knScores40, _zPriTake, null);
+        var _zSecPick = _zPickFrom(_zSec, _knScores40, _zSecTake, _zRes);
         _zRes = _zRes.concat(_zSecPick);
       } else if (_zndc === 9) {
-        /* 选9：冷热混合（35码池） */
+        /* 选9：冷热混合（1-40区间） */
         var _zHotTake = Math.round(_zndc * 0.7);
         var _zColdTake = _zndc - _zHotTake;
         var _zAllHot = [];
         for (var _n = 1; _n <= 80; _n++) _zAllHot.push(_n);
-        _zAllHot.sort(function(a,b){ return (_knScores35[b]||-999) - (_knScores35[a]||-999); });
+        _zAllHot.sort(function(a,b){ return (_knScores40[b]||-999) - (_knScores40[a]||-999); });
         _zRes = _zAllHot.slice(0, _zHotTake);
         var _zAllCold = [];
         for (var _n = 1; _n <= 80; _n++) _zAllCold.push(_n);
@@ -3331,7 +3332,7 @@ function renderRecommend(type, data) {
       if (_zRes.length < _zndc) {
         var _oAll = [];
         for (var _oni = 1; _oni <= 80; _oni++) _oAll.push(_oni);
-        _oAll.sort(function(a,b){ return (_knScores35[b]||-999) - (_knScores35[a]||-999); });
+        _oAll.sort(function(a,b){ return (_knScores40[b]||-999) - (_knScores40[a]||-999); });
         for (var _oi = 0; _oi < _oAll.length && _zRes.length < _zndc; _oi++) {
           if (_zRes.indexOf(_oAll[_oi]) < 0) _zRes.push(_oAll[_oi]);
         }
@@ -3366,11 +3367,12 @@ function renderRecommend(type, data) {
       var score = (80 - Math.min(emaR, 79)) * 1.5 + (80 - Math.min(momR, 79)) * 1.0 + (80 - Math.min(freqR, 79)) * 1.0 + (80 - Math.min(streakR, 79)) * 0.5;
       _zvVotes[n] = score;
     });
-    /* ★ 紫卡过滤到Top35码池 */
-    var _zvVotes35 = {};
-    _knTop35.forEach(function(n) { _zvVotes35[n] = _zvVotes[n] || 0; });
+    /* ★ 紫卡过滤到41-80区间 */
+    var _zvVotes40plus = {};
+    for (var _zvn = 1; _zvn <= 40; _zvn++) { _zvVotes40plus[_zvn] = -999; }
+    for (var _zvn = 41; _zvn <= 80; _zvn++) { _zvVotes40plus[_zvn] = _zvVotes[_zvn] || 0; }
     
-    _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2·35码池）</div>';
+    _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2·41-80区间）</div>';
     /* ★ 改进版选取函数：从Top40%池中加权随机选，杜绝钉子户 */
     function _zonePickWeighted(scores, selectN) {
       var zones = [[1,20],[21,40],[41,60],[61,80]];
@@ -3418,11 +3420,11 @@ function renderRecommend(type, data) {
       
       if (_zndc <= 6 || _zndc >= 10) {
         /* ★ 改进：加权随机选号（35码池） */
-        _zRes = _zonePickWeighted(_zvVotes35, _zndc);
+        _zRes = _zonePickWeighted(_zvVotes40plus, _zndc);
       } else if (_zndc === 7) {
         /* 选7：多因子+集中区（35码池） */
         var _zAllVotes = [];
-        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes35[_n]||0 });
+        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zAllVotes.sort(function(a,b){ return b.v - a.v; });
         var _zTop30 = _zAllVotes.slice(0, 30);
         var _zZoneCount = [0,0,0,0];
@@ -3439,7 +3441,7 @@ function renderRecommend(type, data) {
         for (var _ti = 0; _ti < 3; _ti++) {
           var _zZNums = [];
           for (var _zn = _zZones[_zTop3[_ti]][0]; _zn <= _zZones[_zTop3[_ti]][1]; _zn++) _zZNums.push(_zn);
-          _zZNums.sort(function(a,b){ return (_zvVotes35[b]||0) - (_zvVotes35[a]||0); });
+          _zZNums.sort(function(a,b){ return (_zvVotes40plus[b]||0) - (_zvVotes40plus[a]||0); });
           for (var _zt = 0; _zt < _zPer7 && _zt < _zZNums.length; _zt++) {
             if (_zRes.indexOf(_zZNums[_zt]) < 0) _zRes.push(_zZNums[_zt]);
           }
@@ -3449,18 +3451,18 @@ function renderRecommend(type, data) {
         var _zRankZones = [];
         for (var _zzi = 0; _zzi < 4; _zzi++) {
           var _sum = 0;
-          for (var _n = _zZones[_zzi][0]; _n <= _zZones[_zzi][1]; _n++) _sum += _zvVotes35[_n]||0;
+          for (var _n = _zZones[_zzi][0]; _n <= _zZones[_zzi][1]; _n++) _sum += _zvVotes40plus[_n]||0;
           _zRankZones.push({ i: _zzi, a: _sum/20 });
         }
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
         var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
         var _zPriTake = Math.round(_zndc * 0.65);
         var _zSecTake = _zndc - _zPriTake;
-        for (var _n = _zZones[_zPri][0]; _n <= _zZones[_zPri][1]; _n++) _zRes.push({ n: _n, v: _zvVotes35[_n]||0 });
+        for (var _n = _zZones[_zPri][0]; _n <= _zZones[_zPri][1]; _n++) _zRes.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zRes.sort(function(a,b){ return b.v - a.v; });
         _zRes = _zRes.slice(0, _zPriTake).map(function(x){ return x.n; });
         var _zSecNums = [];
-        for (var _n = _zZones[_zSec][0]; _n <= _zZones[_zSec][1]; _n++) _zSecNums.push({ n: _n, v: _zvVotes35[_n]||0 });
+        for (var _n = _zZones[_zSec][0]; _n <= _zZones[_zSec][1]; _n++) _zSecNums.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zSecNums.sort(function(a,b){ return b.v - a.v; });
         for (var _si = 0; _si < _zSecNums.length && _zRes.length < _zndc; _si++) {
           if (_zRes.indexOf(_zSecNums[_si].n) < 0) _zRes.push(_zSecNums[_si].n);
@@ -3468,7 +3470,7 @@ function renderRecommend(type, data) {
       } else if (_zndc === 9) {
         /* 选9：冷热混合（35码池） */
         var _zAllVotes = [];
-        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes35[_n]||0 });
+        for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zAllVotes.sort(function(a,b){ return b.v - a.v; });
         var _zHotTake = Math.round(_zndc * 0.7);
         _zRes = _zAllVotes.slice(0, _zHotTake).map(function(x){ return x.n; });
@@ -3484,7 +3486,7 @@ function renderRecommend(type, data) {
       if (_zRes.length < _zndc) {
         var _oAll = [];
         for (var _oni = 1; _oni <= 80; _oni++) _oAll.push(_oni);
-        _oAll.sort(function(a,b){ return (_zvVotes35[b]||0) - (_zvVotes35[a]||0); });
+        _oAll.sort(function(a,b){ return (_zvVotes40plus[b]||0) - (_zvVotes40plus[a]||0); });
         for (var _oi = 0; _oi < _oAll.length && _zRes.length < _zndc; _oi++) {
           if (_zRes.indexOf(_oAll[_oi]) < 0) _zRes.push(_oAll[_oi]);
         }
@@ -3500,7 +3502,7 @@ function renderRecommend(type, data) {
       _reHtml += '</div><span style=\"font-size:8px;color:#999\">' + _zc10Str + '</span><span class=\"rec-row-copy\" onclick=\"_copyKenoRow(this)\">📋</span></div>';
     }
     _reHtml += '<div style=\"font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
-    _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分(35码池) | 基于2871期回测数据</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
+    _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分(41-80区间) | 基于2871期回测数据</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
 
     /* ===== 选四3胆全托·加权随机8组（已删除） ===== */
     var _eliteRanked, _eliteSc;  // 提升到共享作用域，供后续 IIFE 共用

@@ -85,7 +85,7 @@ function orangeCard_emaScore(trainingData, lastDraw) {
   return knScores;
 }
 
-function zoneSelect(scores, selectN, avoidSet) {
+function zoneSelect(scores, selectN, avoidSet, allowedSet) {
   const zones = [[1,20],[21,40],[41,60],[61,80]];
   let result = [];
   if (selectN <= 6 || selectN >= 10) {
@@ -95,7 +95,10 @@ function zoneSelect(scores, selectN, avoidSet) {
       const zTake = zPer + (zi < zExtra ? 1 : 0);
       if (zTake <= 0) continue;
       const zNums = [];
-      for (let n = zones[zi][0]; n <= zones[zi][1]; n++) zNums.push(n);
+      for (let n = zones[zi][0]; n <= zones[zi][1]; n++) {
+        if (!allowedSet || allowedSet.has(n)) zNums.push(n);
+      }
+      if (zNums.length === 0) continue; // 该区没有允许的号
       zNums.sort((a,b) => (scores[b]||-999) - (scores[a]||-999));
       /* ★ 改进：从Top40%池中加权随机选，替代原来的硬取TopN，杜绝钉子户 */
       const poolSize = Math.max(zTake, Math.ceil(zNums.length * 0.4));
@@ -127,7 +130,9 @@ function zoneSelect(scores, selectN, avoidSet) {
   }
   if (result.length < selectN) {
     const oAll = [];
-    for (let n = 1; n <= 80; n++) oAll.push(n);
+    for (let n = 1; n <= 80; n++) {
+      if (!allowedSet || allowedSet.has(n)) oAll.push(n);
+    }
     oAll.sort((a,b) => (scores[b]||-999) - (scores[a]||-999));
     for (let i = 0; i < oAll.length && result.length < selectN; i++) {
       if (result.indexOf(oAll[i]) < 0) result.push(oAll[i]);
@@ -215,7 +220,8 @@ const TRAIN_WIN = 50;
 const results = [];
 
 // 生成所有历史天数据
-const recentRecHistory = []; // 滑动窗口：存最近7天的推荐号码
+const oRecHistory = []; // 橙卡近7天推荐
+const pRecHistory = []; // 紫卡近7天推荐
 for (let idx = 0; idx < allData.length; idx++) {
   const d = allData[idx];
   const drawn = getNums(d);
@@ -229,34 +235,31 @@ for (let idx = 0; idx < allData.length; idx++) {
   const orangeScores = orangeCard_emaScore(trainingData, lastDraw);
   const purpleVotes = purpleCard_votes(trainingData, lastDraw);
 
-  /* ★ 从EMA评分Top35中选号（橙卡+紫卡共用35码池） */
-  const allNums = [];
-  for (let n = 1; n <= 80; n++) allNums.push(n);
-  const emaRanked = allNums.slice().sort((a,b) => (orangeScores[b]||-999) - (orangeScores[a]||-999));
-  const top35Pool = emaRanked.slice(0, 35);
-  const filteredOrange = {}, filteredPurple = {};
-  top35Pool.forEach(n => {
-    filteredOrange[n] = orangeScores[n] || 0;
-    filteredPurple[n] = purpleVotes[n] || 0;
-  });
+  /* ★ 橙卡只用1-40区间 / 紫卡只用41-80区间 */
+  const orangeAllowed = new Set();
+  for (let n = 1; n <= 40; n++) orangeAllowed.add(n);
+  const purpleAllowed = new Set();
+  for (let n = 41; n <= 80; n++) purpleAllowed.add(n);
 
-  /* ★ 防死磕：最近7天推过的号降低权重 */
-  const avoidSet = new Set();
-  const lookback = Math.min(7, recentRecHistory.length);
-  for (let ri = recentRecHistory.length - lookback; ri < recentRecHistory.length; ri++) {
-    recentRecHistory[ri].forEach(n => avoidSet.add(n));
+  /* ★ 防死磕：最近7天推过的号降低权重（橙/紫分开跟踪） */
+  const oAvoidSet = new Set();
+  const pAvoidSet = new Set();
+  const lookback = Math.min(7, oRecHistory.length);
+  for (let ri = oRecHistory.length - lookback; ri < oRecHistory.length; ri++) {
+    oRecHistory[ri].forEach(n => oAvoidSet.add(n));
+    pRecHistory[ri].forEach(n => pAvoidSet.add(n));
   }
 
-  const o2 = zoneSelect(filteredOrange, 2, avoidSet);
-  const p2 = zoneSelect(filteredPurple, 2, avoidSet);
-  const o3 = zoneSelect(filteredOrange, 3, avoidSet);
-  const p3 = zoneSelect(filteredPurple, 3, avoidSet);
+  const o2 = zoneSelect(orangeScores, 2, oAvoidSet, orangeAllowed);
+  const p2 = zoneSelect(purpleVotes, 2, pAvoidSet, purpleAllowed);
+  const o3 = zoneSelect(orangeScores, 3, oAvoidSet, orangeAllowed);
+  const p3 = zoneSelect(purpleVotes, 3, pAvoidSet, purpleAllowed);
 
   /* 记录本次推荐，供后续防死磕 */
-  const todaysRecs = [...o2, ...p2, ...o3, ...p3];
-  recentRecHistory.push(todaysRecs);
-  // 只保留最近30天
-  if (recentRecHistory.length > 30) recentRecHistory.shift();
+  oRecHistory.push([...o2, ...o3]);
+  pRecHistory.push([...p2, ...p3]);
+  if (oRecHistory.length > 30) oRecHistory.shift();
+  if (pRecHistory.length > 30) pRecHistory.shift();
 
   results.push({
     date: d.d, period: d.p,
