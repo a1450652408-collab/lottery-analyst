@@ -229,6 +229,17 @@ for (let idx = 0; idx < allData.length; idx++) {
   const orangeScores = orangeCard_emaScore(trainingData, lastDraw);
   const purpleVotes = purpleCard_votes(trainingData, lastDraw);
 
+  /* ★ 从EMA评分Top35中选号（橙卡+紫卡共用35码池） */
+  const allNums = [];
+  for (let n = 1; n <= 80; n++) allNums.push(n);
+  const emaRanked = allNums.slice().sort((a,b) => (orangeScores[b]||-999) - (orangeScores[a]||-999));
+  const top35Pool = emaRanked.slice(0, 35);
+  const filteredOrange = {}, filteredPurple = {};
+  top35Pool.forEach(n => {
+    filteredOrange[n] = orangeScores[n] || 0;
+    filteredPurple[n] = purpleVotes[n] || 0;
+  });
+
   /* ★ 防死磕：最近7天推过的号降低权重 */
   const avoidSet = new Set();
   const lookback = Math.min(7, recentRecHistory.length);
@@ -236,10 +247,10 @@ for (let idx = 0; idx < allData.length; idx++) {
     recentRecHistory[ri].forEach(n => avoidSet.add(n));
   }
 
-  const o2 = zoneSelect(orangeScores, 2, avoidSet);
-  const p2 = zoneSelect(purpleVotes, 2, avoidSet);
-  const o3 = zoneSelect(orangeScores, 3, avoidSet);
-  const p3 = zoneSelect(purpleVotes, 3, avoidSet);
+  const o2 = zoneSelect(filteredOrange, 2, avoidSet);
+  const p2 = zoneSelect(filteredPurple, 2, avoidSet);
+  const o3 = zoneSelect(filteredOrange, 3, avoidSet);
+  const p3 = zoneSelect(filteredPurple, 3, avoidSet);
 
   /* 记录本次推荐，供后续防死磕 */
   const todaysRecs = [...o2, ...p2, ...o3, ...p3];
