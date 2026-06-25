@@ -3367,22 +3367,54 @@ function renderRecommend(type, data) {
     });
     
     _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2）</div>';
+    /* ★ 改进版选取函数：从Top40%池中加权随机选，杜绝钉子户 */
+    function _zonePickWeighted(scores, selectN) {
+      var zones = [[1,20],[21,40],[41,60],[61,80]];
+      var result = [];
+      if (selectN <= 6 || selectN >= 10) {
+        var zPer = Math.floor(selectN / 4);
+        var zExtra = selectN % 4;
+        for (var zi = 0; zi < 4; zi++) {
+          var zTake = zPer + (zi < zExtra ? 1 : 0);
+          if (zTake <= 0) continue;
+          var zNums = [];
+          for (var n = zones[zi][0]; n <= zones[zi][1]; n++) zNums.push(n);
+          zNums.sort(function(a,b){ return (scores[b]||0) - (scores[a]||0); });
+          /* 从Top40%中加权随机选 */
+          var poolSize = Math.max(zTake, Math.ceil(zNums.length * 0.4));
+          var pool = zNums.slice(0, poolSize);
+          var weighted = pool.map(function(n) {
+            var w = Math.max(0.1, (scores[n]||0) + 1);
+            if (result.indexOf(n) >= 0) w = 0;
+            return { n: n, w: w };
+          });
+          var taken = 0;
+          while (taken < zTake && weighted.length > 0) {
+            var totalW = 0; weighted.forEach(function(x){ totalW += x.w; });
+            if (totalW <= 0) break;
+            var r = Math.random() * totalW;
+            var pickIdx = 0;
+            for (var i = 0; i < weighted.length; i++) { r -= weighted[i].w; if (r <= 0) { pickIdx = i; break; } }
+            var picked = weighted[pickIdx].n;
+            if (result.indexOf(picked) < 0) { result.push(picked); taken++; }
+            weighted.splice(pickIdx, 1);
+          }
+          if (taken < zTake) {
+            for (var t = 0; t < zNums.length && taken < zTake; t++) {
+              if (result.indexOf(zNums[t]) < 0) { result.push(zNums[t]); taken++; }
+            }
+          }
+        }
+      }
+      return result;
+    }
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
       var _zZones = [[1,20],[21,40],[41,60],[61,80]];
       
       if (_zndc <= 6 || _zndc >= 10) {
-        /* 选2~选6、选10~13：区间均衡（原版，多因子投票） */
-        var _zPer = Math.floor(_zndc / 4);
-        var _zExtra = _zndc % 4;
-        for (var _zzi = 0; _zzi < 4; _zzi++) {
-          var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
-          if (_zTake <= 0) continue;
-          var _zZNums = [];
-          for (var _zn = _zZones[_zzi][0]; _zn <= _zZones[_zzi][1]; _zn++) _zZNums.push(_zn);
-          _zZNums.sort(function(a,b){ return (_zvVotes[b]||0) - (_zvVotes[a]||0); });
-          for (var _zt = 0; _zt < _zTake && _zt < _zZNums.length; _zt++) _zRes.push(_zZNums[_zt]);
-        }
+        /* ★ 改进：加权随机选号替代硬取TopN */
+        _zRes = _zonePickWeighted(_zvVotes, _zndc);
       } else if (_zndc === 7) {
         /* 选7：多因子+集中区——看Top30号集中在哪3个区，集中选号 */
         var _zAllVotes = [];

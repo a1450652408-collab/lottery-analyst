@@ -85,7 +85,7 @@ function orangeCard_emaScore(trainingData, lastDraw) {
   return knScores;
 }
 
-function zoneSelect(scores, selectN) {
+function zoneSelect(scores, selectN, avoidSet) {
   const zones = [[1,20],[21,40],[41,60],[61,80]];
   let result = [];
   if (selectN <= 6 || selectN >= 10) {
@@ -97,7 +97,32 @@ function zoneSelect(scores, selectN) {
       const zNums = [];
       for (let n = zones[zi][0]; n <= zones[zi][1]; n++) zNums.push(n);
       zNums.sort((a,b) => (scores[b]||-999) - (scores[a]||-999));
-      for (let t = 0; t < zTake && t < zNums.length; t++) result.push(zNums[t]);
+      /* ★ 改进：从Top40%池中加权随机选，替代原来的硬取TopN，杜绝钉子户 */
+      const poolSize = Math.max(zTake, Math.ceil(zNums.length * 0.4));
+      const pool = zNums.slice(0, poolSize);
+      let weighted = pool.map(n => {
+        let w = Math.max(0.1, (scores[n]||0) + 1);
+        if (result.indexOf(n) >= 0) w = 0;          // 已入选的归零
+        if (avoidSet && avoidSet.has(n)) w *= 0.3;  // 最近推过的降低权重
+        return { n, w };
+      });
+      let taken = 0;
+      while (taken < zTake && weighted.length > 0) {
+        const totalW = weighted.reduce((s, x) => s + x.w, 0);
+        if (totalW <= 0) break;
+        let r = Math.random() * totalW;
+        let pickIdx = 0;
+        for (let i = 0; i < weighted.length; i++) { r -= weighted[i].w; if (r <= 0) { pickIdx = i; break; } }
+        const picked = weighted[pickIdx].n;
+        if (result.indexOf(picked) < 0) { result.push(picked); taken++; }
+        weighted.splice(pickIdx, 1);
+      }
+      /* 还缺的话补最热的 */
+      if (taken < zTake) {
+        for (let t = 0; t < zNums.length && taken < zTake; t++) {
+          if (result.indexOf(zNums[t]) < 0) { result.push(zNums[t]); taken++; }
+        }
+      }
     }
   }
   if (result.length < selectN) {
@@ -190,6 +215,7 @@ const TRAIN_WIN = 50;
 const results = [];
 
 // 生成所有历史天数据
+const recentRecHistory = []; // 滑动窗口：存最近7天的推荐号码
 for (let idx = 0; idx < allData.length; idx++) {
   const d = allData[idx];
   const drawn = getNums(d);
@@ -203,10 +229,23 @@ for (let idx = 0; idx < allData.length; idx++) {
   const orangeScores = orangeCard_emaScore(trainingData, lastDraw);
   const purpleVotes = purpleCard_votes(trainingData, lastDraw);
 
-  const o2 = zoneSelect(orangeScores, 2);
-  const p2 = zoneSelect(purpleVotes, 2);
-  const o3 = zoneSelect(orangeScores, 3);
-  const p3 = zoneSelect(purpleVotes, 3);
+  /* ★ 防死磕：最近7天推过的号降低权重 */
+  const avoidSet = new Set();
+  const lookback = Math.min(7, recentRecHistory.length);
+  for (let ri = recentRecHistory.length - lookback; ri < recentRecHistory.length; ri++) {
+    recentRecHistory[ri].forEach(n => avoidSet.add(n));
+  }
+
+  const o2 = zoneSelect(orangeScores, 2, avoidSet);
+  const p2 = zoneSelect(purpleVotes, 2, avoidSet);
+  const o3 = zoneSelect(orangeScores, 3, avoidSet);
+  const p3 = zoneSelect(purpleVotes, 3, avoidSet);
+
+  /* 记录本次推荐，供后续防死磕 */
+  const todaysRecs = [...o2, ...p2, ...o3, ...p3];
+  recentRecHistory.push(todaysRecs);
+  // 只保留最近30天
+  if (recentRecHistory.length > 30) recentRecHistory.shift();
 
   results.push({
     date: d.d, period: d.p,
