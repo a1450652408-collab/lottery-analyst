@@ -427,114 +427,114 @@ def recommend_digit(recent, pos):
         else: z4.append(scored_pos[pi][1])
     return {"basic":basic,"dantuo":dantuo,"multi":[z1,z2,z3,z4],"scored_pos":scored_pos}
 
-now = int(time.time())
-recs = []
+if __name__ == "__main__":
+    now = int(time.time())
+    recs = []
 
-def add_rec(t, period, date, basic_items, dantuo_data, multi=None, enhanced=None):
-    r={"id":t+"_"+period+"_"+str(now),"type":t,"period":period,"date":date,
-       "basic":basic_items,"dantuo":dantuo_data}
-    if multi: r["multi"]=multi
-    if enhanced: r["enhanced"]=enhanced
-    recs.append(r)
+    def add_rec(t, period, date, basic_items, dantuo_data, multi=None, enhanced=None):
+        r={"id":t+"_"+period+"_"+str(now),"type":t,"period":period,"date":date,
+           "basic":basic_items,"dantuo":dantuo_data}
+        if multi: r["multi"]=multi
+        if enhanced: r["enhanced"]=enhanced
+        recs.append(r)
 
-kl8d=data.get("kl8",[])
-if len(kl8d)>50:
-    b20,vl=recommend_kl8(kl8d[:30])
-    dt=kl8_dantuo(vl, kl8d[:30])
-    e20,evl=recommend_kl8_enhanced(kl8d[:30])
-    edt=kl8_dantuo(evl, kl8d[:30])
-    # 35码池综合方法选9胆
-    d9=select_kl8_9dan(kl8d[:30], evl)
-    add_rec("kl8",kl8d[0]["p"],kl8d[0]["d"],[{"nums":b20,"blues":[]}],dt,
-            enhanced={"nums":e20,"dantuo":edt,"d9dan":d9})
-    print(f"kl8({kl8d[0]['p']}): 普通{len(b20)}码+{len(dt)}组胆拖 增强{len(e20)}码+{len(edt)}组胆拖")
+    kl8d=data.get("kl8",[])
+    if len(kl8d)>50:
+        b20,vl=recommend_kl8(kl8d[:30])
+        dt=kl8_dantuo(vl, kl8d[:30])
+        e20,evl=recommend_kl8_enhanced(kl8d[:30])
+        edt=kl8_dantuo(evl, kl8d[:30])
+        d9=select_kl8_9dan(kl8d[:30], evl)
+        add_rec("kl8",kl8d[0]["p"],kl8d[0]["d"],[{"nums":b20,"blues":[]}],dt,
+                enhanced={"nums":e20,"dantuo":edt,"d9dan":d9})
+        print(f"kl8({kl8d[0]['p']}): 普通{len(b20)}码+{len(dt)}组胆拖 增强{len(e20)}码+{len(edt)}组胆拖")
 
-ssqd=data.get("ssq",[])
-if len(ssqd)>5:
-    r=recommend_lotto(ssqd[:15],33,6,16,1)
-    er=recommend_lotto_enhanced(ssqd[:15],33,6,16,1)
-    add_rec("ssq",ssqd[0]["p"],ssqd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
-            enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
-    print(f"ssq({ssqd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
+    ssqd=data.get("ssq",[])
+    if len(ssqd)>5:
+        r=recommend_lotto(ssqd[:15],33,6,16,1)
+        er=recommend_lotto_enhanced(ssqd[:15],33,6,16,1)
+        add_rec("ssq",ssqd[0]["p"],ssqd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
+                enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
+        print(f"ssq({ssqd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
 
-dltd=data.get("dlt",[])
-if len(dltd)>5:
-    r=recommend_lotto(dltd[:15],35,5,12,2)
-    er=recommend_lotto_enhanced(dltd[:15],35,5,12,2)
-    add_rec("dlt",dltd[0]["p"],dltd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
-            enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
-    print(f"dlt({dltd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
+    dltd=data.get("dlt",[])
+    if len(dltd)>5:
+        r=recommend_lotto(dltd[:15],35,5,12,2)
+        er=recommend_lotto_enhanced(dltd[:15],35,5,12,2)
+        add_rec("dlt",dltd[0]["p"],dltd[0]["d"],[{"nums":r["reds"],"blues":r["blues"]}],r["dantuo"],
+                enhanced={"nums":er["reds"],"blues":er["blues"],"dantuo":er["dantuo"]})
+        print(f"dlt({dltd[0]['p']}): {r['reds']}+{r['blues']}, {len(r['dantuo'])}组胆拖")
 
-qlcd=data.get("qlc",[])
-if len(qlcd)>5:
-    r=recommend_lotto(qlcd[:15],30,7,1,0)
-    er=recommend_lotto_enhanced(qlcd[:15],30,7,1,0)
-    add_rec("qlc",qlcd[0]["p"],qlcd[0]["d"],[{"nums":r["reds"],"blues":[]}],r["dantuo"],
-            enhanced={"nums":er["reds"],"dantuo":er["dantuo"]})
-    print(f"qlc({qlcd[0]['p']}): {r['reds']}, {len(r['dantuo'])}组胆拖")
+    qlcd=data.get("qlc",[])
+    if len(qlcd)>5:
+        r=recommend_lotto(qlcd[:15],30,7,1,0)
+        er=recommend_lotto_enhanced(qlcd[:15],30,7,1,0)
+        add_rec("qlc",qlcd[0]["p"],qlcd[0]["d"],[{"nums":r["reds"],"blues":[]}],r["dantuo"],
+                enhanced={"nums":er["reds"],"dantuo":er["dantuo"]})
+        print(f"qlc({qlcd[0]['p']}): {r['reds']}, {len(r['dantuo'])}组胆拖")
 
-fc3d=data.get("fc3d",[])
-if len(fc3d)>5:
-    r=recommend_digit(fc3d[:30],3)
-    add_rec("fc3d",fc3d[0]["p"],fc3d[0]["d"],
-        [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
-         {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
-         {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
-        [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"],
-        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
-                  "names":["百位","十位","个位"]})
+    fc3d=data.get("fc3d",[])
+    if len(fc3d)>5:
+        r=recommend_digit(fc3d[:30],3)
+        add_rec("fc3d",fc3d[0]["p"],fc3d[0]["d"],
+            [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
+             {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
+             {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
+            [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
+            multi=r["multi"],
+            enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
+                      "names":["百位","十位","个位"]})
 
-pl3d=data.get("pl3",[])
-if len(pl3d)>5:
-    r=recommend_digit(pl3d[:30],3)
-    add_rec("pl3",pl3d[0]["p"],pl3d[0]["d"],
-        [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
-         {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
-         {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
-        [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"],
-        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
-                  "names":["百位","十位","个位"]})
+    pl3d=data.get("pl3",[])
+    if len(pl3d)>5:
+        r=recommend_digit(pl3d[:30],3)
+        add_rec("pl3",pl3d[0]["p"],pl3d[0]["d"],
+            [{"nums":[r["basic"][0][0],r["basic"][1][0],r["basic"][2][0]],"blues":[]},
+             {"nums":[r["basic"][0][1],r["basic"][1][1],r["basic"][2][1]],"blues":[]},
+             {"nums":[r["basic"][0][2],r["basic"][1][2],r["basic"][2][2]],"blues":[]}],
+            [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
+            multi=r["multi"],
+            enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(3)],
+                      "names":["百位","十位","个位"]})
 
-pl5d=data.get("pl5",[])
-if len(pl5d)>5:
-    r=recommend_digit(pl5d[:30],5)
-    add_rec("pl5",pl5d[0]["p"],pl5d[0]["d"],
-        [{"nums":[r["basic"][i][0] for i in range(5)],"blues":[]}],
-        [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"],
-        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(5)],
-                  "names":["万位","千位","百位","十位","个位"]})
+    pl5d=data.get("pl5",[])
+    if len(pl5d)>5:
+        r=recommend_digit(pl5d[:30],5)
+        add_rec("pl5",pl5d[0]["p"],pl5d[0]["d"],
+            [{"nums":[r["basic"][i][0] for i in range(5)],"blues":[]}],
+            [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
+            multi=r["multi"],
+            enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(5)],
+                      "names":["万位","千位","百位","十位","个位"]})
 
-qxcd=data.get("qxc",[])
-if len(qxcd)>5:
-    r=recommend_digit(qxcd[:30],7)
-    add_rec("qxc",qxcd[0]["p"],qxcd[0]["d"],
-        [{"nums":[r["basic"][i][0] for i in range(7)],"blues":[]}],
-        [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
-        multi=r["multi"],
-        enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(7)],
-                  "names":["第1位","第2位","第3位","第4位","第5位","第6位","第7位"]})
+    qxcd=data.get("qxc",[])
+    if len(qxcd)>5:
+        r=recommend_digit(qxcd[:30],7)
+        add_rec("qxc",qxcd[0]["p"],qxcd[0]["d"],
+            [{"nums":[r["basic"][i][0] for i in range(7)],"blues":[]}],
+            [{"dan":[c["dan"][0]],"tuo":c["tuo"],"pos":i} for i,c in enumerate(r["dantuo"])],
+            multi=r["multi"],
+            enhanced={"pos":[sorted(r["scored_pos"][pi])[:5] for pi in range(7)],
+                      "names":["第1位","第2位","第3位","第4位","第5位","第6位","第7位"]})
 
-saved_path = 'data/saved_recs.json'
-existing = []
-if os.path.exists(saved_path):
-    try:
-        with open(saved_path, 'r', encoding='utf-8') as f:
-            existing = json.load(f)
-    except: pass
+    saved_path = 'data/saved_recs.json'
+    existing = []
+    if os.path.exists(saved_path):
+        try:
+            with open(saved_path, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+        except: pass
 
-by_key = {}
-for r in existing:
-    by_key[r.get("type","")+"_"+r.get("period","")] = r
-for rec in recs:
-    by_key[rec["type"]+"_"+rec["period"]] = rec
+    by_key = {}
+    for r in existing:
+        by_key[r.get("type","")+"_"+r.get("period","")] = r
+    for rec in recs:
+        by_key[rec["type"]+"_"+rec["period"]] = rec
 
-merged = sorted(by_key.values(), key=lambda r: r.get("id",""), reverse=True)
+    merged = sorted(by_key.values(), key=lambda r: r.get("id",""), reverse=True)
 
-os.makedirs(os.path.dirname(saved_path), exist_ok=True)
-with open(saved_path, 'w', encoding='utf-8') as f:
-    json.dump(merged, f, ensure_ascii=False, indent=2)
+    os.makedirs(os.path.dirname(saved_path), exist_ok=True)
+    with open(saved_path, 'w', encoding='utf-8') as f:
+        json.dump(merged, f, ensure_ascii=False, indent=2)
 
-print(f"\nTotal: {len(merged)} records saved")
+    print(f"\nTotal: {len(merged)} records saved")
