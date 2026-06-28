@@ -1,9 +1,46 @@
 {
-  "date": "2026-06-27",
-  "updateTime": "2026-06-27 08:52:57",
+  "date": "2026-06-28",
+  "updateTime": "2026-06-28 18:18:58",
   "totalMatches": 6,
-  "recommendations": [],
-  "no_signal": 6,
+  "recommendations": [
+    {
+      "homeTeam": "巴西",
+      "awayTeam": "日本",
+      "league": "世界杯",
+      "matchDate": "2026-06-30",
+      "matchTime": "01:00",
+      "confidence": "★★",
+      "score": 2.0,
+      "recommend": "平局",
+      "recommend_odds": 3.56,
+      "fav_team": "巴西",
+      "fav_odds": 1.52,
+      "fav_label": "主胜",
+      "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
+      "reasons": [
+        "巴西被高估: 1场0胜, 场均1.0球(vs弱队)",
+        "平局@3.56"
+      ],
+      "team_stats": {
+        "巴西": {
+          "played": 1,
+          "gf": 1,
+          "ga": 1,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "opponents": [
+            "摩洛哥"
+          ],
+          "results": [
+            "D"
+          ],
+          "opp_quality": 0.0
+        }
+      }
+    }
+  ],
+  "no_signal": 5,
   "stats_info": {
     "teams": 48
   },
