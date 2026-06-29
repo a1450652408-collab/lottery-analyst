@@ -5144,6 +5144,11 @@ function renderRecommend(type, data) {
     document.getElementById("kl8_sr_result").innerHTML = "<span style='color:#00897b'>已自动填入选" + cz + "区(" + ["01-10","11-20","21-30","31-40","41-50","51-60","61-70","71-80"][cz] + ")外的70个号，点击「缩水」筛选</span>";
   };
 
+  /* ===== 快乐8 25码选七·动态推荐(冷热温+奇偶) ===== */
+  if (cfg.type === "keno") {
+    _reHtml += '<div id="kl8_x7_dynamic"><div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)"><div class="rec-header">🧠 25码选七·智能推荐(冷热温+奇偶)</div><div style="padding:8px;text-align:center;color:#999;font-size:10px">⏳ 加载候选数据...</div></div></div>';
+  }
+
   /* ===== 快乐8 25码选七旋转矩阵（固定守号） ===== */
   if (cfg.type === "keno") {
     var _zxPool = [1,5,6,8,9,11,12,15,16,18,19,27,40,41,53,62,63,65,66,72,73,77,78,79,80];
@@ -5208,6 +5213,59 @@ function renderRecommend(type, data) {
     }
   }
   
+  /* ===== 25码选七动态推荐引擎 ===== */
+  (function() {
+    if (cfg.type !== "keno") return;
+    var _zxPool = [1,5,6,8,9,11,12,15,16,18,19,27,40,41,53,62,63,65,66,72,73,77,78,79,80];
+    /* 计算各号热度 */
+    var _zxSc = {};
+    _zxPool.forEach(function(n) { _zxSc[n] = (_knEma[n]||0)*5 + ((_knFreq30[n]||0)/30)*3 + (_knMom[n]||0)*2; });
+    var _zxSorted = _zxPool.slice().sort(function(a,b){ return (_zxSc[b]||0)-(_zxSc[a]||0); });
+    var _zxHot = _zxSorted.slice(0,6), _zxWarm = _zxSorted.slice(6,16), _zxCold = _zxSorted.slice(16);
+    /* 预测奇偶 */
+    var _zxRd = data.slice(0, Math.min(10, data.length));
+    var _zxOp = 4;
+    if (_zxRd.length > 0) {
+      var _zxOs = 0, _zxOc = 0;
+      _zxRd.forEach(function(item) {
+        var ns = getNums(item).filter(function(n){ return _zxPool.indexOf(n)>=0; });
+        if (ns.length>0) { _zxOs += ns.filter(function(n){ return n%2===1; }).length; _zxOc++; }
+      });
+      if (_zxOc > 0) _zxOp = Math.round(_zxOs/_zxOc);
+    }
+    /* 加载候选池 */
+    fetch("data/kl8_x7_candidates.json?_t="+Date.now()).then(function(r){ return r.json(); }).then(function(cd){
+      var tickets = cd.tickets;
+      var scored = tickets.map(function(t){
+        var hc = t.filter(function(n){ return _zxHot.indexOf(n)>=0; }).length;
+        var wc = t.filter(function(n){ return _zxWarm.indexOf(n)>=0; }).length;
+        var cc = t.filter(function(n){ return _zxCold.indexOf(n)>=0; }).length;
+        var oc = t.filter(function(n){ return n%2===1; }).length;
+        var sc = hc*2 + wc*1 + cc*(-1) + (Math.abs(oc-_zxOp)<=1?1:0);
+        return {t:t, s:sc, h:hc, w:wc, c:cc, o:oc};
+      });
+      scored.sort(function(a,b){ return b.s-a.s; });
+      var top = scored.slice(0,50);
+      var html = '<div class="rec-card" style="border-left-color:#e65100;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">';
+      html += '<div class="rec-header">🧠 25码选七·智能推荐(冷热温+奇偶)</div>';
+      html += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
+      html += '<div style="margin-bottom:2px">🔥热: <span style="color:#e53935">'+_zxHot.join(",")+'</span> | 🟡温: <span style="color:#ff9800">'+_zxWarm.join(",")+'</span> | ❄冷: <span style="color:#1565c0">'+_zxCold.join(",")+'</span></div>';
+      html += '<div style="margin-bottom:2px">🔮 奇偶: 预测'+_zxOp+'奇+'+(7-_zxOp)+'偶 | 候选池'+cd.count+'注→精选50注='+(50*2)+'元/天</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px">';
+      for(var i=0;i<top.length;i++){
+        var t=top[i];
+        var cls=t.h>=3?'background:#ffebee;border:1px solid #ef9a9a':(t.c>=2?'background:#e3f2fd;border:1px solid #90caf9':'background:#fff8e1;border:1px solid #ffe0b2');
+        html += '<span style="'+cls+';padding:1px 4px;border-radius:3px;font-size:9px">'+t.t.map(function(n){return String(n).padStart(2,"0");}).join(" ")+'</span>';
+      }
+      html += '</div><div style="display:flex;gap:6px">';
+      var copyStr = top.map(function(t){return t.t.map(function(n){return String(n).padStart(2,"0");}).join(" ");}).join("\\n");
+      html += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\''+copyStr+'\')" style="font-size:10px;cursor:pointer;color:#e65100">📋复制</span>';
+      html += '<span style="font-size:9px;color:#999">每日动态推荐 | 热号x3=红底 冷号x2=蓝底</span>';
+      html += '</div></div></div>';
+      document.getElementById("kl8_x7_dynamic").innerHTML = html;
+    }).catch(function(){});
+  })();
+
   /* ===== 定位走势推荐（每位置top5，供用户缩水）===== */
   var _posSec = document.getElementById("posSection");
   var _posRec = document.getElementById("posRecs");
