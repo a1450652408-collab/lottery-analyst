@@ -3341,57 +3341,62 @@ function renderRecommend(type, data) {
       return _res;
     }
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（回测最优·分玩法优化·1-40区间）</div>';
+    /* ★ 先为每个区预排序号码（第1名=最热） */
+    var _zPrePick = [[],[],[],[]];
+    for (var _zpi = 0; _zpi < 4; _zpi++) {
+      var _zpNums = [];
+      for (var _zn = _zZones[_zpi][0]; _zn <= _zZones[_zpi][1]; _zn++) _zpNums.push(_zn);
+      _zpNums.sort(function(a,b){ return (_knScores40[b]||-999) - (_knScores40[a]||-999); });
+      // 只保留最热的4个（选13最多需4个）
+      _zPrePick[_zpi] = _zpNums.slice(0, 11);
+    }
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
-      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
       
       if (_zndc <= 6 || _zndc >= 10) {
-        /* 选2~选6、选10~13：区间均衡（1-40区间）+ 奇偶平衡 */
+        /* 选2~选6、选10~13：区间均衡（1-40区间）+ 增量选号 */
         var _zPer = Math.floor(_zndc / 4);
         var _zExtra = _zndc % 4;
-        var _zParity = { tO: Math.round(_zndc / 2), tE: _zndc - Math.round(_zndc / 2), cO: 0, cE: 0 };
         for (var _zzi = 0; _zzi < 4; _zzi++) {
           var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
           if (_zTake <= 0) continue;
-          var _zPick = _zPickWeighted(_zzi, _knScores40, _zTake, null, _zParity);
-          _zRes = _zRes.concat(_zPick);
-          _zParity.cO = _zRes.filter(function(n){ return n % 2 === 1; }).length;
-          _zParity.cE = _zRes.length - _zParity.cO;
+          // 从预排序列表中按顺序取号
+          for (var _zti = 0; _zti < _zTake && _zti < _zPrePick[_zzi].length; _zti++) {
+            if (_zRes.indexOf(_zPrePick[_zzi][_zti]) < 0) _zRes.push(_zPrePick[_zzi][_zti]);
+          }
         }
       } else if (_zndc === 7) {
-        /* 选7：集中区策略（1-40区间）+ 奇偶平衡 */
+        /* 选7：集中区策略（1-40区间）+ 增量 */
         var _zRankZones = [];
         for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores40) });
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
         var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
         var _zPer7 = Math.floor(_zndc / 3);
-        var _zParity = { tO: Math.round(_zndc / 2), tE: _zndc - Math.round(_zndc / 2), cO: 0, cE: 0 };
         for (var _ti = 0; _ti < 3; _ti++) {
-          var _zPick = _zPickWeighted(_zTop3[_ti], _knScores40, _zPer7, _zRes, _zParity);
-          _zRes = _zRes.concat(_zPick);
-          _zParity.cO = _zRes.filter(function(n){ return n % 2 === 1; }).length;
-          _zParity.cE = _zRes.length - _zParity.cO;
+          var _zi = _zTop3[_ti];
+          for (var _zti = 0; _zti < _zPer7 && _zti < _zPrePick[_zi].length; _zti++) {
+            if (_zRes.indexOf(_zPrePick[_zi][_zti]) < 0) _zRes.push(_zPrePick[_zi][_zti]);
+          }
         }
       } else if (_zndc === 8) {
-        /* 选8：重点覆盖（1-40区间）+ 奇偶平衡 */
+        /* 选8：重点覆盖（1-40区间）+ 增量 */
         var _zRankZones = [];
         for (var _zzi = 0; _zzi < 4; _zzi++) _zRankZones.push({ i: _zzi, a: _zAvgScore(_zzi, _knScores40) });
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
         var _zPri = _zRankZones[0].i, _zSec = _zRankZones[1].i;
         var _zPriTake = Math.round(_zndc * 0.65);
         var _zSecTake = _zndc - _zPriTake;
-        var _zParity = { tO: Math.round(_zndc / 2), tE: _zndc - Math.round(_zndc / 2), cO: 0, cE: 0 };
-        _zRes = _zPickWeighted(_zPri, _knScores40, _zPriTake, null, _zParity);
-        _zParity.cO = _zRes.filter(function(n){ return n % 2 === 1; }).length;
-        _zParity.cE = _zRes.length - _zParity.cO;
-        var _zSecPick = _zPickWeighted(_zSec, _knScores40, _zSecTake, _zRes, _zParity);
-        _zRes = _zRes.concat(_zSecPick);
+        for (var _zti = 0; _zti < _zPriTake && _zti < _zPrePick[_zPri].length; _zti++) {
+          if (_zRes.indexOf(_zPrePick[_zPri][_zti]) < 0) _zRes.push(_zPrePick[_zPri][_zti]);
+        }
+        for (var _zti = 0; _zti < _zSecTake && _zti < _zPrePick[_zSec].length; _zti++) {
+          if (_zRes.indexOf(_zPrePick[_zSec][_zti]) < 0) _zRes.push(_zPrePick[_zSec][_zti]);
+        }
       } else if (_zndc === 9) {
         /* 选9：冷热混合（1-40区间） */
         var _zHotTake = Math.round(_zndc * 0.7);
         var _zColdTake = _zndc - _zHotTake;
-        var _zAllHot = [];
-        for (var _n = 1; _n <= 40; _n++) _zAllHot.push(_n);
+        var _zAllHot = _zPrePick[0].concat(_zPrePick[1]).concat(_zPrePick[2]).concat(_zPrePick[3]);
         _zAllHot.sort(function(a,b){ return (_knScores40[b]||-999) - (_knScores40[a]||-999); });
         _zRes = _zAllHot.slice(0, _zHotTake);
         var _zAllCold = [];
@@ -3504,15 +3509,31 @@ function renderRecommend(type, data) {
       }
       return result;
     }
+    /* ★ 紫卡增量选号：先预排序各区 */
+    var _zZonesP = [[41,50],[51,60],[61,70],[71,80]];
+    var _zPrePickP = [[],[],[],[]];
+    for (var _zpi = 0; _zpi < 4; _zpi++) {
+      var _zpNums = [];
+      for (var _zn = _zZonesP[_zpi][0]; _zn <= _zZonesP[_zpi][1]; _zn++) _zpNums.push(_zn);
+      _zpNums.sort(function(a,b){ return (_zvVotes40plus[b]||-999) - (_zvVotes40plus[a]||-999); });
+      _zPrePickP[_zpi] = _zpNums.slice(0, 11);
+    }
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
-      var _zZones = [[41,50],[51,60],[61,70],[71,80]];
       
       if (_zndc <= 6 || _zndc >= 10) {
-        /* ★ 改进：加权随机选号（35码池） */
-        _zRes = _zonePickWeighted(_zvVotes40plus, _zndc);
+        /* 选2~选6、选10~13：区间均衡（41-80区间）+ 增量选号 */
+        var _zPer = Math.floor(_zndc / 4);
+        var _zExtra = _zndc % 4;
+        for (var _zzi = 0; _zzi < 4; _zzi++) {
+          var _zTake = _zPer + (_zzi < _zExtra ? 1 : 0);
+          if (_zTake <= 0) continue;
+          for (var _zti = 0; _zti < _zTake && _zti < _zPrePickP[_zzi].length; _zti++) {
+            if (_zRes.indexOf(_zPrePickP[_zzi][_zti]) < 0) _zRes.push(_zPrePickP[_zzi][_zti]);
+          }
+        }
       } else if (_zndc === 7) {
-        /* 选7：多因子+集中区（35码池） */
+        /* 选7：集中区策略（41-80区间）+ 增量 */
         var _zAllVotes = [];
         for (var _n = 1; _n <= 80; _n++) _zAllVotes.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zAllVotes.sort(function(a,b){ return b.v - a.v; });
@@ -3520,7 +3541,7 @@ function renderRecommend(type, data) {
         var _zZoneCount = [0,0,0,0];
         _zTop30.forEach(function(item) {
           for (var _zzi = 0; _zzi < 4; _zzi++) {
-            if (item.n >= _zZones[_zzi][0] && item.n <= _zZones[_zzi][1]) { _zZoneCount[_zzi]++; break; }
+            if (item.n >= _zZonesP[_zzi][0] && item.n <= _zZonesP[_zzi][1]) { _zZoneCount[_zzi]++; break; }
           }
         });
         var _zRankZones = [];
@@ -3528,38 +3549,18 @@ function renderRecommend(type, data) {
         _zRankZones.sort(function(a,b){ return b.c - a.c; });
         var _zTop3 = [_zRankZones[0].i, _zRankZones[1].i, _zRankZones[2].i];
         var _zPer7 = Math.floor(_zndc / 3);
-        var _zPParity = { tO: Math.round(_zndc / 2), tE: _zndc - Math.round(_zndc / 2), cO: 0, cE: 0 };
         for (var _ti = 0; _ti < 3; _ti++) {
-          var _zZNums = [];
-          for (var _zn = _zZones[_zTop3[_ti]][0]; _zn <= _zZones[_zTop3[_ti]][1]; _zn++) _zZNums.push(_zn);
-          _zZNums.sort(function(a,b){ return (_zvVotes40plus[b]||0) - (_zvVotes40plus[a]||0); });
-          /* ★ 跳过全禁用的区 */
-          var _allPZDisabled = true;
-          for (var _pzd = 0; _pzd < _zZNums.length; _pzd++) {
-            if ((_zvVotes40plus[_zZNums[_pzd]]||0) > -900) { _allPZDisabled = false; break; }
+          var _zi = _zTop3[_ti];
+          for (var _zti = 0; _zti < _zPer7 && _zti < _zPrePickP[_zi].length; _zti++) {
+            if (_zRes.indexOf(_zPrePickP[_zi][_zti]) < 0) _zRes.push(_zPrePickP[_zi][_zti]);
           }
-          if (_allPZDisabled) continue;
-          /* ★ 奇偶平衡选号 */
-          var _zPPool = _zZNums.slice(0, Math.min(_zZNums.length, Math.max(6, _zPer7*3)));
-          _zPPool.sort(function(a,b){
-            var no = _zPParity.tO - _zPParity.cO, ne = _zPParity.tE - _zPParity.cE;
-            var sa = (_zvVotes40plus[a]||0), sb = (_zvVotes40plus[b]||0);
-            if (no>ne && a%2!==b%2) return a%2===1?-1:1;
-            if (ne>no && a%2!==b%2) return a%2===0?-1:1;
-            return sb-sa;
-          });
-          for (var _zt = 0; _zt < _zPer7 && _zt < _zPPool.length; _zt++) {
-            if (_zRes.indexOf(_zPPool[_zt]) < 0) { _zRes.push(_zPPool[_zt]); }
-          }
-          _zPParity.cO = _zRes.filter(function(n){ return n%2===1; }).length;
-          _zPParity.cE = _zRes.length - _zPParity.cO;
         }
       } else if (_zndc === 8) {
-        /* 选8：重点覆盖（35码池）+ 奇偶平衡 */
+        /* 选8：重点覆盖（41-80区间）+ 增量 */
         var _zRankZones = [];
         for (var _zzi = 0; _zzi < 4; _zzi++) {
           var _sum = 0;
-          for (var _n = _zZones[_zzi][0]; _n <= _zZones[_zzi][1]; _n++) _sum += _zvVotes40plus[_n]||0;
+          for (var _n = _zZonesP[_zzi][0]; _n <= _zZonesP[_zzi][1]; _n++) _sum += _zvVotes40plus[_n]||0;
           _zRankZones.push({ i: _zzi, a: _sum/20 });
         }
         _zRankZones.sort(function(a,b){ return b.a - a.a; });
@@ -3569,7 +3570,7 @@ function renderRecommend(type, data) {
         var _zPParity = { tO: Math.round(_zndc / 2), tE: _zndc - Math.round(_zndc / 2), cO: 0, cE: 0 };
         /* 主要区：取Top65%含奇偶平衡 */
         var _zPriPool = [];
-        for (var _n = _zZones[_zPri][0]; _n <= _zZones[_zPri][1]; _n++) _zPriPool.push({ n: _n, v: _zvVotes40plus[_n]||0 });
+        for (var _n = _zZonesP[_zPri][0]; _n <= _zZonesP[_zPri][1]; _n++) _zPriPool.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zPriPool.sort(function(a,b){
           var no = _zPParity.tO - _zPParity.cO, ne = _zPParity.tE - _zPParity.cE;
           if (no>ne && a.n%2!==b.n%2) return a.n%2===1?-1:1;
@@ -3581,7 +3582,7 @@ function renderRecommend(type, data) {
         _zPParity.cE = _zRes.length - _zPParity.cO;
         /* 次要区：补满 */
         var _zSecPool = [];
-        for (var _n = _zZones[_zSec][0]; _n <= _zZones[_zSec][1]; _n++) _zSecPool.push({ n: _n, v: _zvVotes40plus[_n]||0 });
+        for (var _n = _zZonesP[_zSec][0]; _n <= _zZonesP[_zSec][1]; _n++) _zSecPool.push({ n: _n, v: _zvVotes40plus[_n]||0 });
         _zSecPool.sort(function(a,b){
           var no = _zPParity.tO - _zPParity.cO, ne = _zPParity.tE - _zPParity.cE;
           if (no>ne && a.n%2!==b.n%2) return a.n%2===1?-1:1;
