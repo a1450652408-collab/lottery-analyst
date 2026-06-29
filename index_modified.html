@@ -4982,17 +4982,48 @@ function renderRecommend(type, data) {
     // V3优化版已在上方替换
   }
 
-  /* ===== 快乐8 重号·连号缩水工具 ===== */
+  /* ===== 快乐8 断区分析 + 重号·连号缩水工具 ===== */
   if (cfg.type === "keno") {
+    /* 断区分析：计算各区热度 */
+    var _zoneWin = Math.min(20, data.length);
+    var _zoneData = data.slice(0, _zoneWin);
+    var _zoneHits = [0,0,0,0,0,0,0,0];
+    var _zoneLabels = ["01-10","11-20","21-30","31-40","41-50","51-60","61-70","71-80"];
+    _zoneData.forEach(function(item) {
+      var ns = getNums(item);
+      ns.forEach(function(n) {
+        var zi = Math.floor((n-1)/10);
+        if (zi >= 0 && zi < 8) _zoneHits[zi]++;
+      });
+    });
+    var _coldest = 0, _hottest = 0;
+    for (var _zi = 1; _zi < 8; _zi++) {
+      if (_zoneHits[_zi] < _zoneHits[_coldest]) _coldest = _zi;
+      if (_zoneHits[_zi] > _zoneHits[_hottest]) _hottest = _zi;
+    }
+    var _coldZoneStr = _zoneLabels[_coldest];
+    var _excludedNums = [];
+    for (var _xn = _coldest*10+1; _xn <= (_coldest+1)*10; _xn++) _excludedNums.push(_xn);
+    
     _reHtml += '<div class="rec-card" style="border-left-color:#00897b;background:linear-gradient(135deg,#e0f2f1,#b2dfdb)">';
-    _reHtml += '<div class="rec-header">✂️ 重号·连号缩水</div>';
+    _reHtml += '<div class="rec-header">✂️ 断区排除·重号连号缩水</div>';
     _reHtml += '<div style="padding:4px 6px;font-size:11px;color:#333;line-height:1.8">';
-    _reHtml += '<div>📊 <b>上期开奖</b>: <span id=\"kl8_shrink_prev\" style=\"color:#1565c0\">' + (data[0] ? getNums(data[0]).map(function(n){return String(n).padStart(2,\"0\");}).join(\" \") : \"暂无\") + '</span></div>';
-    _reHtml += '<div style=\"margin:4px 0\">输入心水号码(逗号或空格分隔):<br>';
-    _reHtml += '<input id=\"kl8_sr_input\" style=\"width:220px;font-size:11px;padding:3px 6px;border:1px solid #bdbdbd;border-radius:3px\" placeholder=\"如 05 08 12 15 18 22 35 42 55 68\">';
-    _reHtml += '<select id=\"kl8_sr_play\" style=\"font-size:11px;margin:0 4px;padding:2px\"><option value=\"5\">选五</option><option value=\"4\">选四</option><option value=\"6\">选六</option><option value=\"3\">选三</option></select>';
-    _reHtml += '<button onclick=\"_kl8Shrink()\" style=\"font-size:11px;padding:3px 12px;cursor:pointer;background:#00897b;color:#fff;border:none;border-radius:3px\">缩水</button></div>';
-    _reHtml += '<div id=\"kl8_sr_result\" style=\"font-size:10px;color:#555;line-height:1.6;max-height:250px;overflow-y:auto;padding:4px;background:#fff;border-radius:3px\">等待缩水...</div>';
+    /* 断区分析 */
+    _reHtml += '<div style="margin-bottom:4px">📊 <b>区间热度</b> (近' + _zoneWin + '期): ';
+    for (var _zi = 0; _zi < 8; _zi++) {
+      var _cls = _zi === _coldest ? 'background:#ffcdd2;color:#c62828' : (_zi === _hottest ? 'background:#c8e6c9;color:#2e7d32' : 'background:#e0e0e0;color:#555');
+      _reHtml += '<span style="' + _cls + ';padding:1px 5px;border-radius:3px;margin:0 1px;font-size:9px">' + _zoneLabels[_zi] + '×' + _zoneHits[_zi] + '</span>';
+    }
+    _reHtml += '</div>';
+    _reHtml += '<div style="margin-bottom:4px">🔴 最冷区: <b>' + _coldZoneStr + '</b> (排除此区→<b>70码池</b>，平均命中17.5个/期)';
+    _reHtml += ' <button onclick="_kl8ExcludeZone()" style="font-size:10px;padding:1px 8px;cursor:pointer;background:#c62828;color:#fff;border:none;border-radius:3px">排除此区</button></div>';
+    /* 上期开奖 */
+    _reHtml += '<div>📊 <b>上期开奖</b>: <span id="kl8_shrink_prev" style="color:#1565c0">' + (data[0] ? getNums(data[0]).map(function(n){return String(n).padStart(2,"0");}).join(" ") : "暂无") + '</span></div>';
+    _reHtml += '<div style="margin:4px 0">输入心水号码(逗号或空格分隔):<br>';
+    _reHtml += '<input id="kl8_sr_input" style="width:220px;font-size:11px;padding:3px 6px;border:1px solid #bdbdbd;border-radius:3px" placeholder="如 05 08 12 15 18 22 35 42 55 68">';
+    _reHtml += '<select id="kl8_sr_play" style="font-size:11px;margin:0 4px;padding:2px"><option value="5">选五</option><option value="4">选四</option><option value="6">选六</option><option value="3">选三</option></select>';
+    _reHtml += '<button onclick="_kl8Shrink()" style="font-size:11px;padding:3px 12px;cursor:pointer;background:#00897b;color:#fff;border:none;border-radius:3px">缩水</button></div>';
+    _reHtml += '<div id="kl8_sr_result" style="font-size:10px;color:#555;line-height:1.6;max-height:250px;overflow-y:auto;padding:4px;background:#fff;border-radius:3px">等待缩水...</div>';
     _reHtml += '</div></div>';
   }
   /* _kl8Shrink 函数定义（缩水工具逻辑） */
@@ -5030,6 +5061,28 @@ function renderRecommend(type, data) {
     if (valid > 50) html += "<div style='color:#999'>显示前50组，共" + valid + "组</div>";
     if (valid === 0 && total > 0) html += "<div style='color:#e53935'>无符合条件的组合，试试扩大心水号码范围</div>";
     document.getElementById("kl8_sr_result").innerHTML = html;
+  };
+  window._kl8ExcludeZone = window._kl8ExcludeZone || function() {
+    /* 自动填入排除最冷区后的号码 */
+    var excluded = [];
+    // 用同样的断区计算逻辑重新算
+    var zoneWin = Math.min(20, data.length);
+    var zoneDat = data.slice(0, zoneWin);
+    var zHits = [0,0,0,0,0,0,0,0];
+    zoneDat.forEach(function(item) {
+      var ns = getNums(item);
+      ns.forEach(function(n) { var zi = Math.floor((n-1)/10); if (zi>=0&&zi<8) zHits[zi]++; });
+    });
+    var cz = 0;
+    for (var i = 1; i < 8; i++) { if (zHits[i] < zHits[cz]) cz = i; }
+    var remaining = [];
+    for (var n = 1; n <= 80; n++) {
+      var zoneIdx = Math.floor((n-1)/10);
+      if (zoneIdx !== cz) remaining.push(n);
+    }
+    var inp = document.getElementById("kl8_sr_input");
+    if (inp) inp.value = remaining.join(" ");
+    document.getElementById("kl8_sr_result").innerHTML = "<span style='color:#00897b'>已自动填入选" + cz + "区(" + ["01-10","11-20","21-30","31-40","41-50","51-60","61-70","71-80"][cz] + ")外的70个号，点击「缩水」筛选</span>";
   };
 
   var _reEs = document.getElementById("enhancedSection");
