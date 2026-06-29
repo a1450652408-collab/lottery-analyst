@@ -1,11 +1,11 @@
 {
-  "report_time": "2026-06-28T18:19:03.675510",
+  "report_time": "2026-06-29T17:02:52.347141",
   "summary": {
-    "total": 16,
+    "total": 12,
     "correct": 7,
-    "accuracy_pct": 43.8,
-    "roi_pct": -38.9,
-    "value_bets_count": 3
+    "accuracy_pct": 58.3,
+    "roi_pct": -18.6,
+    "value_bets_count": 0
   },
   "details": [
     {
@@ -127,46 +127,6 @@
       "hit": true,
       "odds": 1.22,
       "ev": 0
-    },
-    {
-      "date": "2026-06-19",
-      "home": "加拿大",
-      "away": "卡塔尔",
-      "pred": "客胜",
-      "act": "主胜",
-      "hit": false,
-      "odds": 9.1,
-      "ev": 176.3
-    },
-    {
-      "date": "2026-06-19",
-      "home": "瑞士",
-      "away": "波黑",
-      "pred": "客胜",
-      "act": "主胜",
-      "hit": false,
-      "odds": 6.9,
-      "ev": 109.5
-    },
-    {
-      "date": "2026-06-19",
-      "home": "捷克",
-      "away": "南非",
-      "pred": "客胜",
-      "act": "平局",
-      "hit": false,
-      "odds": 4.35,
-      "ev": 32.1
-    },
-    {
-      "date": "2026-06-19",
-      "home": "墨西哥",
-      "away": "韩国",
-      "pred": "客胜",
-      "act": "主胜",
-      "hit": false,
-      "odds": 3.87,
-      "ev": 8.8
     }
   ],
   "pending": [
@@ -177,9 +137,33 @@
       "pred": "主胜"
     },
     {
+      "date": "2026-06-19",
+      "home": "加拿大",
+      "away": "卡塔尔",
+      "pred": "客胜"
+    },
+    {
+      "date": "2026-06-19",
+      "home": "瑞士",
+      "away": "波黑",
+      "pred": "客胜"
+    },
+    {
       "date": "2026-06-20",
       "home": "美国",
       "away": "澳大利亚",
+      "pred": "客胜"
+    },
+    {
+      "date": "2026-06-19",
+      "home": "捷克",
+      "away": "南非",
+      "pred": "客胜"
+    },
+    {
+      "date": "2026-06-19",
+      "home": "墨西哥",
+      "away": "韩国",
       "pred": "客胜"
     },
     {
