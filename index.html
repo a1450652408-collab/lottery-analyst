@@ -5170,7 +5170,19 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-header">🎯 25码选七·旋转矩阵（固定守号·50注=100元/天）</div>';
     _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
     _reHtml += '<div style="margin-bottom:3px">📊 25码池: <span style="color:#1565c0">' + _zxPool.map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span></div>';
-    _reHtml += '<div style="margin-bottom:3px">📈 回测319期: 中7=2次 中6=10次 中5=178次 | ROI <b style="color:#00897b">+6.5%</b></div>';
+    _reHtml += '<div style="margin-bottom:3px">📈 回测319期: 中7=2次 中6=10次 中5=178次 | ROI <b>-1.5%</b> (接近盈亏平衡)</div>';
+    /* 奇偶走势分析 */
+    var _zxOddData = data.slice(0, Math.min(20, data.length));
+    var _zxOddInfo = '';
+    _zxOddData.forEach(function(item) {
+      var ns = getNums(item);
+      var poolHits = ns.filter(function(n){ return _zxPool.indexOf(n) >= 0; });
+      if (poolHits.length > 0) {
+        var oddCount = poolHits.filter(function(n){ return n % 2 === 1; }).length;
+        _zxOddInfo += '<span style="background:' + (oddCount/poolHits.length > 0.5 ? '#ffcdd2' : '#c8e6c9') + ';padding:0 3px;border-radius:2px;font-size:8px;margin:0 1px">' + Math.round(oddCount/poolHits.length*100) + '%</span>';
+      }
+    });
+    _reHtml += '<div style="margin-bottom:3px;font-size:8px;color:#666">🔄 近20期奇偶趋势(红=偏奇&nbsp;绿=偏偶): ' + _zxOddInfo + '</div>';
     _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:3px">';
     for (var _zxi = 0; _zxi < _zxTickets.length; _zxi++) {
       _reHtml += '<span style="background:#fff8e1;border:1px solid #ffe0b2;padding:1px 4px;border-radius:3px;font-size:9px">' + _zxTickets[_zxi].map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span>';
