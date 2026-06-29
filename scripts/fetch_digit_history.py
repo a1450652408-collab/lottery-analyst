@@ -51,35 +51,50 @@ def merge_with_existing(new_data, existing_path):
     return existing
 
 def main():
+    # 各彩种起始期号格式不同：fc3d=2025xxx, pl3/pl5=25xxx
+    INITIAL_PERIODS = {
+        "fc3d": 2025001,
+        "pl3": 25001,
+        "pl5": 25001,
+    }
+    
     for ltype_key, ltype_base in LOTTERY_BASE.items():
         out_path = os.path.join(DATA_DIR, f"{ltype_key}_full.json")
         
-        # 先检查已有的数量
-        existing_count = 0
+        # 先检查已有的数据，从最新一期+1开始扫描
+        existing = []
+        latest_period = None
         if os.path.exists(out_path):
             with open(out_path, "r") as f:
-                existing_count = len(json.load(f))
+                existing = json.load(f)
         
-        print(f"\n{ltype_key}: 已有{existing_count}期")
+        if existing:
+            latest_period = max(existing, key=lambda x: int(x["p"]) if x["p"].isdigit() else 0)
+            latest_num = int(latest_period["p"])
+            print(f"{ltype_key}: 已有{len(existing)}期, 最新={latest_period['p']}({latest_period.get('d','?')}), 从{latest_num+1}开始")
+        else:
+            latest_num = 0
+            start_from = INITIAL_PERIODS.get(ltype_key, 2025001)
+            print(f"{ltype_key}: 空数据, 从{start_from}开始")
         
         new_records = []
-        years = ["2025", "2026"]
         failed_streak = 0
+        scan_num = max(latest_num + 1, INITIAL_PERIODS.get(ltype_key, 2025001))
+        max_scan = scan_num + 500
         
-        for year in years:
-            for base in range(1, 200):
-                period = f"{year}{base:03d}"
-                result = fetch_period(ltype_base, period)
-                if result:
-                    new_records.append(result)
-                    failed_streak = 0
-                    if len(new_records) % 50 == 0:
-                        print(f"  已抓取{len(new_records)}期...")
-                else:
-                    failed_streak += 1
-                    if failed_streak >= 15:
-                        break  # 连续15期无数据就跳过该年
-                time.sleep(0.2)
+        for period_num in range(scan_num, max_scan):
+            period = str(period_num)
+            result = fetch_period(ltype_base, period)
+            if result:
+                new_records.append(result)
+                failed_streak = 0
+                if len(new_records) % 20 == 0:
+                    print(f"  已抓取{len(new_records)}期...")
+            else:
+                failed_streak += 1
+                if failed_streak >= 15:
+                    break  # 连续15期无数据就停
+            time.sleep(0.15)
         
         merged = merge_with_existing(new_records, out_path)
         
