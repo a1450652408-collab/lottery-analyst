@@ -3433,7 +3433,7 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2·41-80区间）</div>';
     /* ★ 改进版选取函数：从Top40%池中加权随机选，杜绝钉子户 */
     function _zonePickWeighted(scores, selectN) {
-      var zones = [[1,20],[21,40],[41,60],[61,80]];
+      var zones = [[41,50],[51,60],[61,70],[71,80]];
       var result = [];
       if (selectN <= 6 || selectN >= 10) {
         var zPer = Math.floor(selectN / 4);
@@ -3480,7 +3480,7 @@ function renderRecommend(type, data) {
     }
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
-      var _zZones = [[1,20],[21,40],[41,60],[61,80]];
+      var _zZones = [[41,50],[51,60],[61,70],[71,80]];
       
       if (_zndc <= 6 || _zndc >= 10) {
         /* ★ 改进：加权随机选号（35码池） */
