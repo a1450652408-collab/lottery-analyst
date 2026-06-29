@@ -3342,6 +3342,7 @@ function renderRecommend(type, data) {
     }
     _reHtml += '<div class="rec-card" style="border-left-color:#ff5722"><div class="rec-header">📐 区间均衡·EMA评分（回测最优·分玩法优化·1-40区间）</div>';
     /* ★ 先为每个区预排序号码（第1名=最热） */
+    var _zZones = [[1,20],[21,40],[41,60],[61,80]];
     var _zPrePick = [[],[],[],[]];
     for (var _zpi = 0; _zpi < 4; _zpi++) {
       var _zpNums = [];
