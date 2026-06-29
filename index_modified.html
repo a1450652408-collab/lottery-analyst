@@ -5104,8 +5104,12 @@ function renderRecommend(type, data) {
     }
     _ks_combine(nums, play, 0, []);
     var html = "";
+    /* ★ 诊断信息 */
+    var _srRepeats = nums.filter(function(n){ return prevSet[n]; }).length;
+    var _srHasConsec = false; for (var _sri=1;_sri<nums.length;_sri++){if(nums[_sri]-nums[_sri-1]===1){_srHasConsec=true;break;}}
     html += "<div style='margin-bottom:4px'><b>" + nums.length + "码选" + play + "</b>: 共" + total + "注=" + (total*2) + "元 → 缩水后<b style='color:#00897b'>" + valid + "注=" + (valid*2) + "元</b> (节省" + ((total-valid)*2) + "元)</div>";
-    html += "<div style='font-size:9px;color:#666;margin-bottom:4px'>条件: ≥3个重号 + 含连号</div>";
+    html += "<div style='font-size:9px;color:#666;margin-bottom:2px'>条件: ≥3个重号 + 含连号</div>";
+    html += "<div style='font-size:9px;color:#999;margin-bottom:4px'>你选的号码: " + _srRepeats + "个重号 | " + (_srHasConsec ? "有✅" : "无❌") + "连号" + (_srRepeats<3?" | ⚠️重号不足，可点「排除此区」换70码再选":"") + "</div>";
     if (valid > 0 && valid <= 50) {
       html += "<div style='display:flex;flex-wrap:wrap;gap:2px'>";
       for (var i = 0; i < Math.min(valid, 50); i++) {
