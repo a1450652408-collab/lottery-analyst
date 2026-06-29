@@ -4994,34 +4994,43 @@ function renderRecommend(type, data) {
     _reHtml += '<button onclick=\"_kl8Shrink()\" style=\"font-size:11px;padding:3px 12px;cursor:pointer;background:#00897b;color:#fff;border:none;border-radius:3px\">缩水</button></div>';
     _reHtml += '<div id=\"kl8_sr_result\" style=\"font-size:10px;color:#555;line-height:1.6;max-height:250px;overflow-y:auto;padding:4px;background:#fff;border-radius:3px\">等待缩水...</div>';
     _reHtml += '</div></div>';
-    _reHtml += '<script>function _kl8Shrink(){';
-    _reHtml += 'var inp=document.getElementById(\"kl8_sr_input\").value.trim();';
-    _reHtml += 'if(!inp){document.getElementById(\"kl8_sr_result\").innerHTML=\"<span style=color:#e53935>请输入心水号码</span>\";return;}';
-    _reHtml += 'var nums=inp.split(/[,\\s]+/).map(Number).filter(function(n){return n>=1&&n<=80&&!isNaN(n);});';
-    _reHtml += 'nums=[...new Set(nums)].sort(function(a,b){return a-b;});';
-    _reHtml += 'if(nums.length<3){document.getElementById(\"kl8_sr_result\").innerHTML=\"<span style=color:#e53935>至少输入3个号码</span>\";return;}';
-    _reHtml += 'var play=parseInt(document.getElementById(\"kl8_sr_play\").value);';
-    _reHtml += 'if(nums.length<play){document.getElementById(\"kl8_sr_result\").innerHTML=\"<span style=color:#e53935>心水号码少于选' + "' + ' + '玩法所需个数</span>\";return;}';
-    _reHtml += 'var prevNums=' + JSON.stringify(getNums(data[0])) + ';';
-    _reHtml += 'var prevSet={};prevNums.forEach(function(n){prevSet[n]=true;});';
-    _reHtml += 'function hasConsec(arr){for(var i=1;i<arr.length;i++){if(arr[i]-arr[i-1]===1)return true;}return false;}';
-    _reHtml += 'function countRepeat(arr){var c=0;for(var i=0;i<arr.length;i++){if(prevSet[arr[i]])c++;}return c;}';
-    _reHtml += 'var total=0,valid=0,results=[];';
-    _reHtml += 'function combos(arr,k,start,cur){if(cur.length===k){total++;';
-    _reHtml += 'if(countRepeat(cur)>=3&&hasConsec(cur)){valid++;results.push(cur.slice());}';
-    _reHtml += 'return;}for(var i=start;i<arr.length;i++){cur.push(arr[i]);combos(arr,k,i+1,cur);cur.pop();}}';
-    _reHtml += 'combos(nums,play,0,[]);';
-    _reHtml += 'var html=\"\";';
-    _reHtml += 'html+=\"<div style=margin-bottom:4px><b>\"+nums.length+\"码选\"+play+\"</b>: 共\"+total+\"注=\"+(total*2)+\"元 → 缩水后<b style=color:#00897b>\"+valid+\"注=\"+(valid*2)+\"元</b> (节省\"+((total-valid)*2)+\"元)</div>\";';
-    _reHtml += 'html+=\"<div style=font-size:9px;color:#666;margin-bottom:4px>条件: ≥3个重号 + 含连号</div>\";';
-    _reHtml += 'if(valid>0&&valid<=50){html+=\"<div style=display:flex;flex-wrap:wrap;gap:2px>\";';
-    _reHtml += 'for(var i=0;i<Math.min(valid,50);i++){';
-    _reHtml += 'html+=\"<span style=background:#e0f2f1;padding:1px 4px;border-radius:3px;font-size:9px>\"+results[i].map(function(n){return String(n).padStart(2,\"0\");}).join(\" \")+\"</span>\";';
-    _reHtml += '}html+=\"</div>\";}';
-    _reHtml += 'if(valid>50)html+=\"<div style=color:#999>显示前50组，共\"+valid+\"组</div>\";';
-    _reHtml += 'document.getElementById(\"kl8_sr_result\").innerHTML=html;';
-    _reHtml += '}</script>';
   }
+  /* _kl8Shrink 函数定义（缩水工具逻辑） */
+  window._kl8Shrink = window._kl8Shrink || function() {
+    var inp = document.getElementById("kl8_sr_input");
+    if (!inp) return;
+    var val = inp.value.trim();
+    if (!val) { document.getElementById("kl8_sr_result").innerHTML = "<span style='color:#e53935'>请输入心水号码</span>"; return; }
+    var nums = val.split(/[,\s]+/).map(Number).filter(function(n){ return n>=1 && n<=80 && !isNaN(n); });
+    nums = [...new Set(nums)].sort(function(a,b){ return a-b; });
+    if (nums.length < 3) { document.getElementById("kl8_sr_result").innerHTML = "<span style='color:#e53935'>至少输入3个号码</span>"; return; }
+    var play = parseInt(document.getElementById("kl8_sr_play").value);
+    if (nums.length < play) { document.getElementById("kl8_sr_result").innerHTML = "<span style='color:#e53935'>心水号码少于选" + play + "所需个数</span>"; return; }
+    var prevData = document.getElementById("kl8_shrink_prev");
+    var prevNums = prevData ? prevData.textContent.trim().split(/\s+/).map(Number) : [];
+    var prevSet = {}; prevNums.forEach(function(n){ prevSet[n] = true; });
+    function _ks_hasConsec(arr) { for (var i = 1; i < arr.length; i++) { if (arr[i] - arr[i-1] === 1) return true; } return false; }
+    function _ks_countRepeat(arr) { var c = 0; for (var i = 0; i < arr.length; i++) { if (prevSet[arr[i]]) c++; } return c; }
+    var total = 0, valid = 0, results = [];
+    function _ks_combine(arr, k, start, cur) {
+      if (cur.length === k) { total++; if (_ks_countRepeat(cur) >= 3 && _ks_hasConsec(cur)) { valid++; results.push(cur.slice()); } return; }
+      for (var i = start; i < arr.length; i++) { cur.push(arr[i]); _ks_combine(arr, k, i+1, cur); cur.pop(); }
+    }
+    _ks_combine(nums, play, 0, []);
+    var html = "";
+    html += "<div style='margin-bottom:4px'><b>" + nums.length + "码选" + play + "</b>: 共" + total + "注=" + (total*2) + "元 → 缩水后<b style='color:#00897b'>" + valid + "注=" + (valid*2) + "元</b> (节省" + ((total-valid)*2) + "元)</div>";
+    html += "<div style='font-size:9px;color:#666;margin-bottom:4px'>条件: ≥3个重号 + 含连号</div>";
+    if (valid > 0 && valid <= 50) {
+      html += "<div style='display:flex;flex-wrap:wrap;gap:2px'>";
+      for (var i = 0; i < Math.min(valid, 50); i++) {
+        html += "<span style='background:#e0f2f1;padding:1px 4px;border-radius:3px;font-size:9px'>" + results[i].map(function(n){ return String(n).padStart(2,"0"); }).join(" ") + "</span>";
+      }
+      html += "</div>";
+    }
+    if (valid > 50) html += "<div style='color:#999'>显示前50组，共" + valid + "组</div>";
+    if (valid === 0 && total > 0) html += "<div style='color:#e53935'>无符合条件的组合，试试扩大心水号码范围</div>";
+    document.getElementById("kl8_sr_result").innerHTML = html;
+  };
 
   var _reEs = document.getElementById("enhancedSection");
   var _reEr = document.getElementById("enhancedRecs");
