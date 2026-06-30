@@ -1,28 +1,65 @@
 {
-  "date": "2026-06-29",
-  "updateTime": "2026-06-29 17:02:46",
+  "date": "2026-06-30",
+  "updateTime": "2026-06-30 21:54:39",
   "totalMatches": 9,
   "recommendations": [
     {
-      "homeTeam": "巴西",
-      "awayTeam": "日本",
+      "homeTeam": "西班牙",
+      "awayTeam": "奥地利",
       "league": "世界杯",
-      "matchDate": "2026-06-30",
-      "matchTime": "01:00",
+      "matchDate": "2026-07-03",
+      "matchTime": "03:00",
+      "confidence": "★★★",
+      "score": 4.0,
+      "recommend": "平局",
+      "recommend_odds": 4.5,
+      "fav_team": "西班牙",
+      "fav_odds": 1.26,
+      "fav_label": "主胜",
+      "overrated_reason": "1场0胜, 场均0.0球(vs弱队)",
+      "reasons": [
+        "西班牙被高估: 1场0胜, 场均0.0球(vs弱队)",
+        "平局@4.5",
+        "极端热门"
+      ],
+      "team_stats": {
+        "西班牙": {
+          "played": 1,
+          "gf": 0,
+          "ga": 0,
+          "wins": 0,
+          "draws": 1,
+          "losses": 0,
+          "opponents": [
+            "佛得角"
+          ],
+          "results": [
+            "D"
+          ],
+          "opp_quality": 0.0
+        }
+      }
+    },
+    {
+      "homeTeam": "葡萄牙",
+      "awayTeam": "克罗地亚",
+      "league": "世界杯",
+      "matchDate": "2026-07-03",
+      "matchTime": "07:00",
       "confidence": "★★",
       "score": 2.0,
       "recommend": "平局",
-      "recommend_odds": 3.72,
-      "fav_team": "巴西",
-      "fav_odds": 1.49,
+      "recommend_odds": 3.4,
+      "fav_team": "葡萄牙",
+      "fav_odds": 1.59,
       "fav_label": "主胜",
       "overrated_reason": "1场0胜, 场均1.0球(vs弱队)",
       "reasons": [
-        "巴西被高估: 1场0胜, 场均1.0球(vs弱队)",
-        "平局@3.72"
+        "葡萄牙被高估: 1场0胜, 场均1.0球(vs弱队)",
+        "平局@3.4"
       ],
       "team_stats": {
-        "巴西": {
+        "葡萄牙": {
           "played": 1,
           "gf": 1,
           "ga": 1,
@@ -30,7 +67,7 @@
           "draws": 1,
           "losses": 0,
           "opponents": [
-            "摩洛哥"
+            "刚果"
           ],
           "results": [
             "D"
@@ -40,7 +77,7 @@
       }
     }
   ],
-  "no_signal": 8,
+  "no_signal": 7,
   "stats_info": {
     "teams": 48
   },
