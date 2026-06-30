@@ -5014,7 +5014,8 @@ function renderRecommend(type, data) {
       return sb - sa;
     });
     var _zShowCount = Math.min(_zValid.length, 30);
-    /* 生成卡片 */
+    /* 有信号才展示卡片，无信号隐藏 */
+    if (_zValid.length > 0) {
     _reHtml += '<div class="rec-card" style="border-left-color:#00897b;background:linear-gradient(135deg,#e0f2f1,#b2dfdb)">';
     _reHtml += '<div class="rec-header">🎯 选五·断区缩水推荐</div>';
     _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
@@ -5034,6 +5035,7 @@ function renderRecommend(type, data) {
     _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _zValid.map(function(c){return c.map(function(n){return String(n).padStart(2,"0");}).join(" ");}).join("\\n") + '\')" style="font-size:10px;cursor:pointer;color:#00897b">📋复制全部</span>';
     _reHtml += '<span style="font-size:9px;color:#999">回测299期ROI +2.1% | 约45%天数有信号</span>';
     _reHtml += '</div></div></div>';
+    } /* end: 有信号才展示 */
   }
 
   /* ===== 快乐8 断区分析 + 重号·连号缩水工具 ===== */
