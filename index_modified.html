@@ -5013,7 +5013,6 @@ function renderRecommend(type, data) {
       var sa=0,sb=0; a.forEach(function(n){sa+=_knEma[n]||0;}); b.forEach(function(n){sb+=_knEma[n]||0;});
       return sb - sa;
     });
-    var _zShowCount = Math.min(_zValid.length, 30);
     /* 有信号才展示卡片，无信号隐藏 */
     if (_zValid.length > 0) {
     _reHtml += '<div class="rec-card" style="border-left-color:#00897b;background:linear-gradient(135deg,#e0f2f1,#b2dfdb)">';
@@ -5025,11 +5024,22 @@ function renderRecommend(type, data) {
     _reHtml += '<div style="margin:3px 0"><b>心水12码</b>: <span style="color:#1565c0">' + _zTop12.map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span></div>';
     if (_zValid.length > 0) {
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px">';
-      for (var _zvi=0; _zvi<_zShowCount; _zvi++) {
+      var _zShow1 = Math.min(_zValid.length, 30);
+      for (var _zvi=0; _zvi<_zShow1; _zvi++) {
         _reHtml += '<span style="background:#e0f2f1;padding:1px 4px;border-radius:3px;font-size:9px">' + _zValid[_zvi].map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span>';
       }
       _reHtml += '</div>';
-      if (_zValid.length > 30) _reHtml += '<div style="color:#999">显示Top30组，共' + _zValid.length + '组</div>';
+      if (_zValid.length > 30) {
+        var _zMoreId = 'zmore_' + Date.now();
+        _reHtml += '<div id="' + _zMoreId + '" style="display:none"><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px">';
+        for (var _zvi=30; _zvi<_zValid.length; _zvi++) {
+          _reHtml += '<span style="background:#e0f2f1;padding:1px 4px;border-radius:3px;font-size:9px">' + _zValid[_zvi].map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span>';
+        }
+        _reHtml += '</div></div>';
+        _reHtml += '<div style="text-align:center;margin:2px 0">';
+        _reHtml += '<span onclick="var d=document.getElementById(\'' + _zMoreId + '\');d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent==\'▼ 展开全部(' + _zValid.length + '组)\'?\'▲ 收起\':\'▼ 展开全部(' + _zValid.length + '组)\'" style="cursor:pointer;font-size:10px;color:#00897b">▼ 展开全部(' + _zValid.length + '组)</span>';
+        _reHtml += '</div>';
+      }
     }
     _reHtml += '<div style="display:flex;gap:6px;margin-top:3px">';
     _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _zValid.map(function(c){return c.map(function(n){return String(n).padStart(2,"0");}).join(" ");}).join("\\n") + '\')" style="font-size:10px;cursor:pointer;color:#00897b">📋复制全部</span>';
