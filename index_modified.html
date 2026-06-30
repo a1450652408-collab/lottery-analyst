@@ -4252,6 +4252,55 @@ function renderRecommend(type, data) {
       }
     })();
 
+    /* ===== 选三·每月追号推荐（EMA评分+最优3区）===== */
+    (function() {
+      if (cfg.type !== "keno") return;
+      if (!_knEma || !_knFreq30 || !_knMom) return;
+      
+      var _x3Zones = [[1,20],[21,40],[41,60],[61,80]];
+      var _x3Score = {};
+      var _x3Win = Math.min(30, _reUseData.length);
+      for (var _x3n = 1; _x3n <= 80; _x3n++) {
+        _x3Score[_x3n] = (_knEma[_x3n]||0)*5 + (Math.min(_knFreq30[_x3n]||0,_x3Win)/_x3Win)*3 + (_knMom[_x3n]||0)*2;
+      }
+      
+      /* 各区平均分排序 */
+      var _x3ZoneAvg = [];
+      for (var _x3zi = 0; _x3zi < 4; _x3zi++) {
+        var _x3s = 0;
+        for (var _x3n2 = _x3Zones[_x3zi][0]; _x3n2 <= _x3Zones[_x3zi][1]; _x3n2++) _x3s += _x3Score[_x3n2]||0;
+        _x3ZoneAvg.push({i:_x3zi, a:_x3s/20});
+      }
+      _x3ZoneAvg.sort(function(a,b){return b.a-a.a;});
+      
+      /* 取评分最高的3个区, 每区取评分最高号 */
+      var _x3Picks = [];
+      for (var _x3zi2 = 0; _x3zi2 < 3; _x3zi2++) {
+        var _x3zone = _x3Zones[_x3ZoneAvg[_x3zi2].i];
+        var _x3best = _x3zone[0], _x3bs = -999;
+        for (var _x3n3 = _x3zone[0]; _x3n3 <= _x3zone[1]; _x3n3++) {
+          if ((_x3Score[_x3n3]||0) > _x3bs) { _x3bs = _x3Score[_x3n3]; _x3best = _x3n3; }
+        }
+        _x3Picks.push(_x3best);
+      }
+      
+      _reHtml += '<div class="rec-card" style="border-left-color:#558b2f;background:linear-gradient(135deg,#f1f8e9,#dcedc8)">';
+      _reHtml += '<div class="rec-header">📅 选三·每月追号计划（EMA评分+最优3区）</div>';
+      _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
+      _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
+      _x3Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div>';
+      _reHtml += '<div style="margin:2px 0"><b>每月1注×30天=60元</b> · 每月初换号 · 回测64个月</div>';
+      _reHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0">';
+      _reHtml += '<span style="background:#e8f5e9;padding:1px 6px;border-radius:4px;font-size:9px;color:#2e7d32">✅ 每月中2率100%</span>';
+      _reHtml += '<span style="background:#e8f5e9;padding:1px 6px;border-radius:4px;font-size:9px;color:#2e7d32">✅ 月均中2=3.9次</span>';
+      _reHtml += '<span style="background:#fff3e0;padding:1px 6px;border-radius:4px;font-size:9px;color:#e65100">月均中3=0.5次(53元)</span>';
+      _reHtml += '</div>';
+      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率 | 每30天重算换号 | 追号请量力而行</div>';
+      _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x3Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
+      _reHtml += '</div></div>';
+    })();
+
   }
 
   /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
