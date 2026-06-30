@@ -5030,14 +5030,14 @@ function renderRecommend(type, data) {
       }
       _reHtml += '</div>';
       if (_zValid.length > 30) {
-        var _zMoreId = 'zmore_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+        var _zMoreId = 'zm' + Date.now().toString(36);
         _reHtml += '<div id="' + _zMoreId + '" style="display:none"><div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px">';
         for (var _zvi=30; _zvi<_zValid.length; _zvi++) {
           _reHtml += '<span style="background:#e0f2f1;padding:1px 4px;border-radius:3px;font-size:9px">' + _zValid[_zvi].map(function(n){return String(n).padStart(2,"0");}).join(" ") + '</span>';
         }
         _reHtml += '</div></div>';
         _reHtml += '<div style="text-align:center;margin:2px 0">';
-        _reHtml += '<span class="zexpand" data-target="' + _zMoreId + '" style="cursor:pointer;font-size:10px;color:#00897b" onclick="var d=document.getElementById(this.getAttribute(\'data-target\'));if(d){d.style.display=d.style.display===\'none\'?\'block\':\'none\';this.innerHTML=d.style.display===\'block\'?\'&#9650; \u6536\u8d77\':\'&#9660; \u5c55\u5f00\u5168\u90e8\';}">&#9660; 展开全部(' + _zValid.length + '组)</span>';
+        _reHtml += '<a href="javascript:void(0)" onclick="var x=document.getElementById(\'' + _zMoreId + '\');x.style.display=x.style.display===\'none\'?\'block\':\'none\';this.textContent=x.style.display===\'block\'?\'[+] 展开全部(' + _zValid.length + '组)\':\'[-] 收起\';return false" style="font-size:10px;color:#00897b;text-decoration:none">[+] 展开全部(' + _zValid.length + '组)</a>';
         _reHtml += '</div>';
       }
     }
