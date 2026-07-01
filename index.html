@@ -4298,6 +4298,80 @@ function renderRecommend(type, data) {
       _reHtml += '</div>';
       _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率 | 每30天重算换号 | 追号请量力而行</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x3Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
+
+      /* ===== 每日追号详情（localStorage 持久化，次月自动清零）===== */
+      (function() {
+        var _now = new Date();
+        var _ym = _now.getFullYear() + '-' + String(_now.getMonth()+1).padStart(2,'0');
+        var _chKey = 'kl8_x3_chase_v2';
+
+        // 读取本地存储
+        var _chData = null;
+        try { _chData = JSON.parse(localStorage.getItem(_chKey)); } catch(e) {}
+
+        // 次月换号/换号 → 重置
+        var _numsStr = _x3Picks.join(',');
+        if (!_chData || _chData.month !== _ym || _chData.numbers !== _numsStr) {
+          _chData = { month: _ym, numbers: _numsStr, recs: {} };
+        }
+
+        // 遍历数据，补充当天追号记录
+        var _found = 0;
+        try {
+          for (var _di = 0; _di < data.length; _di++) {
+            var _it = data[_di];
+            if (!_it || !_it.d) continue;
+            var _dStr = _it.d.slice(0,10);
+            if (_dStr.slice(0,7) !== _ym) continue;
+            if (_chData.recs[_dStr]) continue; // 已有记录
+
+            var _draw = getNums(_it);
+            if (!_draw || _draw.length === 0) continue;
+
+            var _hit = 0, _hitNs = [];
+            for (var _hi = 0; _hi < 3; _hi++) {
+              if (_draw.indexOf(_x3Picks[_hi]) >= 0) { _hit++; _hitNs.push(_x3Picks[_hi]); }
+            }
+            _chData.recs[_dStr] = { h: _hit, p: _hit >= 3 ? 53 : _hit >= 2 ? 3 : 0, hn: _hitNs };
+            _found++;
+          }
+        } catch(e) {}
+
+        // 保存到 localStorage（仅保存精简字段 h/p/hn）
+        if (_found > 0) {
+          try { localStorage.setItem(_chKey, JSON.stringify(_chData)); } catch(e) {}
+        }
+
+        // 提取日期列表并排序
+        var _dates = Object.keys(_chData.recs).sort();
+
+        // 渲染追号详情表格
+        if (_dates.length > 0) {
+          var _totalP = 0;
+          _reHtml += '<div style="margin-top:5px;border-top:1px dashed #c8e6c9;padding-top:4px">';
+          _reHtml += '<div style="font-size:10px;font-weight:700;color:#558b2f;margin-bottom:2px">📋 本月追号详情（' + _ym + '）</div>';
+          _reHtml += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
+          _reHtml += '<tr style="background:#e8f5e9"><th style="padding:1px 3px;text-align:left;width:38px">日期</th><th style="padding:1px 3px;text-align:center;width:28px">中</th><th style="padding:1px 3px;text-align:left">命中号码</th><th style="padding:1px 3px;text-align:right;width:32px">奖金</th></tr>';
+          for (var _di2 = 0; _di2 < _dates.length; _di2++) {
+            var _d = _dates[_di2];
+            var _r = _chData.recs[_d];
+            _totalP += _r.p;
+            var _c = _r.h === 3 ? '#2e7d32' : _r.h === 2 ? '#e65100' : '#bbb';
+            _reHtml += '<tr><td style="padding:1px 3px;color:#666">' + _d.slice(5) + '</td>';
+            _reHtml += '<td style="padding:1px 3px;text-align:center;color:' + _c + ';font-weight:' + (_r.h > 0 ? '700' : '400') + '">' + (_r.h > 0 ? '中' + _r.h : '-') + '</td>';
+            _reHtml += '<td style="padding:1px 3px;color:' + _c + '">' + (_r.hn.length > 0 ? _r.hn.join(',') : '-') + '</td>';
+            _reHtml += '<td style="padding:1px 3px;text-align:right;color:' + (_r.p > 0 ? '#2e7d32' : '#ccc') + '">' + (_r.p > 0 ? '+' + _r.p : '-') + '</td></tr>';
+          }
+          // 合计行
+          _reHtml += '<tr style="background:#f1f8e9;font-weight:700"><td style="padding:2px 3px;color:#333">合计</td>';
+          _reHtml += '<td style="padding:2px 3px;text-align:center;color:#558b2f">' + _dates.length + '天</td>';
+          _reHtml += '<td style="padding:2px 3px;color:#558b2f">¥' + _totalP + '</td>';
+          var _net = _totalP - _dates.length;
+          _reHtml += '<td style="padding:2px 3px;text-align:right;color:' + (_net >= 0 ? '#2e7d32' : '#c62828') + '">' + (_net >= 0 ? '+' : '') + _net + '</td></tr>';
+          _reHtml += '</table></div>';
+        }
+      })();
+
       _reHtml += '</div></div>';
     })();
 
