@@ -1,30 +1,371 @@
 {
   "date": "2026-07-02",
-  "updateTime": "2026-07-02 13:47:56",
+  "updateTime": "2026-07-02 18:32:18",
   "matches": [
     {
-      "homeTeam": "西班牙",
-      "awayTeam": "奥地利",
-      "recommend": "平局",
-      "recommend_odds": 5.15,
-      "confidence": "★★★",
-      "fav_team": "西班牙",
-      "fav_odds": 1.19,
-      "reason": "1场0胜, 场均0.0球(vs弱队)"
+      "homeTeam": "Australia",
+      "awayTeam": "Egypt",
+      "matchDate": "2026-07-03",
+      "matchTime": "18:00",
+      "stage": "LAST_32",
+      "recommend": "主胜",
+      "recommend_odds": 2.12,
+      "confidence": "★★",
+      "fav_team": "Australia",
+      "fav_odds": 2.12,
+      "reasons": [
+        "ELO评分支持(Australia:1500, Egypt:1523)",
+        "泊松模型看好主胜(47%)"
+      ],
+      "team_stats": {
+        "Australia": {
+          "played": 3,
+          "wins": 1,
+          "draws": 1,
+          "losses": 1,
+          "gf": 2,
+          "ga": 2,
+          "opponents": [
+            "Turkey",
+            "United States",
+            "Paraguay"
+          ]
+        },
+        "Egypt": {
+          "played": 3,
+          "wins": 1,
+          "draws": 2,
+          "losses": 0,
+          "gf": 5,
+          "ga": 3,
+          "opponents": [
+            "Belgium",
+            "New Zealand",
+            "Iran"
+          ]
+        }
+      }
     },
     {
-      "homeTeam": "葡萄牙",
-      "awayTeam": "克罗地亚",
+      "homeTeam": "Argentina",
+      "awayTeam": "Cape Verde Islands",
+      "matchDate": "2026-07-03",
+      "matchTime": "22:00",
+      "stage": "LAST_32",
+      "recommend": "主胜",
+      "recommend_odds": 1.55,
+      "confidence": "★★★",
+      "fav_team": "Argentina",
+      "fav_odds": 1.55,
+      "reasons": [
+        "ELO评分支持(Argentina:1568, Cape Verde Islands:1499)",
+        "泊松模型看好主胜(64%)"
+      ],
+      "team_stats": {
+        "Argentina": {
+          "played": 3,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "gf": 8,
+          "ga": 1,
+          "opponents": [
+            "Algeria",
+            "Austria",
+            "Jordan"
+          ]
+        },
+        "Cape Verde Islands": {
+          "played": 3,
+          "wins": 0,
+          "draws": 3,
+          "losses": 0,
+          "gf": 2,
+          "ga": 2,
+          "opponents": [
+            "Spain",
+            "Uruguay",
+            "Saudi Arabia"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "Colombia",
+      "awayTeam": "Ghana",
+      "matchDate": "2026-07-04",
+      "matchTime": "01:30",
+      "stage": "LAST_32",
       "recommend": "平局",
-      "recommend_odds": 3.32,
+      "recommend_odds": 1.5,
+      "confidence": "★★★",
+      "fav_team": "Colombia",
+      "fav_odds": 4.39,
+      "reasons": [
+        "ELO评分支持(Colombia:1543, Ghana:1499)",
+        "泊松模型看好平局(67%)"
+      ],
+      "team_stats": {
+        "Colombia": {
+          "played": 3,
+          "wins": 2,
+          "draws": 1,
+          "losses": 0,
+          "gf": 4,
+          "ga": 1,
+          "opponents": [
+            "Uzbekistan",
+            "Congo DR",
+            "Portugal"
+          ]
+        },
+        "Ghana": {
+          "played": 3,
+          "wins": 1,
+          "draws": 1,
+          "losses": 1,
+          "gf": 2,
+          "ga": 2,
+          "opponents": [
+            "Panama",
+            "England",
+            "Croatia"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "Canada",
+      "awayTeam": "Morocco",
+      "matchDate": "2026-07-04",
+      "matchTime": "17:00",
+      "stage": "1/8决赛",
+      "recommend": "主胜",
+      "recommend_odds": 1.34,
+      "confidence": "★★★",
+      "fav_team": "Canada",
+      "fav_odds": 1.34,
+      "reasons": [
+        "ELO评分支持(Canada:1529, Morocco:1563)",
+        "泊松模型看好主胜(75%)"
+      ],
+      "team_stats": {
+        "Canada": {
+          "played": 4,
+          "wins": 2,
+          "draws": 1,
+          "losses": 1,
+          "gf": 9,
+          "ga": 3,
+          "opponents": [
+            "Bosnia-Herzegovina",
+            "Qatar",
+            "Switzerland",
+            "South Africa"
+          ]
+        },
+        "Morocco": {
+          "played": 4,
+          "wins": 3,
+          "draws": 1,
+          "losses": 0,
+          "gf": 10,
+          "ga": 6,
+          "opponents": [
+            "Brazil",
+            "Scotland",
+            "Haiti",
+            "Netherlands"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "Paraguay",
+      "awayTeam": "France",
+      "matchDate": "2026-07-04",
+      "matchTime": "21:00",
+      "stage": "1/8决赛",
+      "recommend": "客胜",
+      "recommend_odds": 1.68,
+      "confidence": "★★★",
+      "fav_team": "France",
+      "fav_odds": 1.68,
+      "reasons": [
+        "ELO评分支持(Paraguay:1518, France:1593)",
+        "泊松模型看好客胜(60%)"
+      ],
+      "team_stats": {
+        "Paraguay": {
+          "played": 4,
+          "wins": 2,
+          "draws": 1,
+          "losses": 1,
+          "gf": 7,
+          "ga": 8,
+          "opponents": [
+            "United States",
+            "Turkey",
+            "Australia",
+            "Germany"
+          ]
+        },
+        "France": {
+          "played": 4,
+          "wins": 4,
+          "draws": 0,
+          "losses": 0,
+          "gf": 13,
+          "ga": 2,
+          "opponents": [
+            "Senegal",
+            "Iraq",
+            "Norway",
+            "Sweden"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "Brazil",
+      "awayTeam": "Norway",
+      "matchDate": "2026-07-05",
+      "matchTime": "20:00",
+      "stage": "1/8决赛",
+      "recommend": "客胜",
+      "recommend_odds": 2.02,
       "confidence": "★★",
-      "fav_team": "葡萄牙",
-      "fav_odds": 1.57,
-      "reason": "1场0胜, 场均1.0球(vs弱队)"
+      "fav_team": "Norway",
+      "fav_odds": 2.02,
+      "reasons": [
+        "ELO评分支持(Brazil:1568, Norway:1540)",
+        "泊松模型看好客胜(49%)"
+      ],
+      "team_stats": {
+        "Brazil": {
+          "played": 4,
+          "wins": 3,
+          "draws": 1,
+          "losses": 0,
+          "gf": 9,
+          "ga": 2,
+          "opponents": [
+            "Morocco",
+            "Haiti",
+            "Scotland",
+            "Japan"
+          ]
+        },
+        "Norway": {
+          "played": 4,
+          "wins": 3,
+          "draws": 0,
+          "losses": 1,
+          "gf": 10,
+          "ga": 8,
+          "opponents": [
+            "Iraq",
+            "Senegal",
+            "France",
+            "Ivory Coast"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "Mexico",
+      "awayTeam": "England",
+      "matchDate": "2026-07-06",
+      "matchTime": "00:00",
+      "stage": "1/8决赛",
+      "recommend": "平局",
+      "recommend_odds": 2.27,
+      "confidence": "★",
+      "fav_team": "England",
+      "fav_odds": 3.2,
+      "reasons": [],
+      "team_stats": {
+        "Mexico": {
+          "played": 4,
+          "wins": 4,
+          "draws": 0,
+          "losses": 0,
+          "gf": 8,
+          "ga": 0,
+          "opponents": [
+            "South Africa",
+            "South Korea",
+            "Czechia",
+            "Ecuador"
+          ]
+        },
+        "England": {
+          "played": 4,
+          "wins": 3,
+          "draws": 1,
+          "losses": 0,
+          "gf": 8,
+          "ga": 3,
+          "opponents": [
+            "Croatia",
+            "Ghana",
+            "Panama",
+            "Congo DR"
+          ]
+        }
+      }
+    },
+    {
+      "homeTeam": "United States",
+      "awayTeam": "Belgium",
+      "matchDate": "2026-07-07",
+      "matchTime": "00:00",
+      "stage": "1/8决赛",
+      "recommend": "客胜",
+      "recommend_odds": 2.57,
+      "confidence": "★",
+      "fav_team": "Belgium",
+      "fav_odds": 2.57,
+      "reasons": [
+        "伯仲之间，建议观望"
+      ],
+      "team_stats": {
+        "United States": {
+          "played": 4,
+          "wins": 3,
+          "draws": 0,
+          "losses": 1,
+          "gf": 10,
+          "ga": 4,
+          "opponents": [
+            "Paraguay",
+            "Australia",
+            "Turkey",
+            "Bosnia-Herzegovina"
+          ]
+        },
+        "Belgium": {
+          "played": 4,
+          "wins": 2,
+          "draws": 2,
+          "losses": 0,
+          "gf": 9,
+          "ga": 4,
+          "opponents": [
+            "Egypt",
+            "Iran",
+            "New Zealand",
+            "Senegal"
+          ]
+        }
+      }
     }
   ],
   "summary": {
-    "total": 2,
-    "strategy": "V6 Fade Overrated Favorite"
+    "total": 8,
+    "no_signal": 3,
+    "strategy": "V6 ELO + Poisson 混合模型",
+    "data_source": "football-data.org API",
+    "total_upcoming": 11
   }
 }

@@ -24,11 +24,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Fetch data
+      - name: Fetch data (数字彩)
         run: python3 scripts/fetch_data.py
 
-      - name: Compute recommendations
+      - name: Compute recommendations (数字彩)
         run: python3 scripts/gen_recommendations.py
+
+      # ========== 竞彩管道 ==========
+      - name: Fetch WC results (竞彩)
+        run: python3 scripts/jc_results.py
+
+      - name: V6 ELO+Poisson analysis (竞彩)
+        run: python3 scripts/jc_analysis_v6.py
 
       - name: Commit & push data changes
         env:
@@ -44,9 +51,9 @@ jobs:
           # === 先拉取远程避免冲突 ===
           git pull --rebase "$PUSH_URL" master
 
-          # === 提交数据变化（index.html + saved_recs.json）===
+          # === 提交数据变化（数字彩 + 竞彩）===
           DATA_CHANGED=false
-          git add index.html data/saved_recs.json
+          git add index.html data/saved_recs.json data/jc_results.json data/jc_matches.json data/poisson_trained.json
           if ! git diff --staged --quiet; then
             DATA_CHANGED=true
             git commit -m "data: auto-update $(date +%Y-%m-%d)"
