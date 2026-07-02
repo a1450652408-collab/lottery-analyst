@@ -1439,7 +1439,7 @@ function recommendDigit(data, cfg) {
     posNames: pos === 3 ? ['百位','十位','个位'] : (pos === 5 ? ['万位','千位','百位','十位','个位'] : ['第1位','第2位','第3位','第4位','第5位','第6位','第7位']),
     /* 和值预测 */
     sumPredict: (function() {
-      if (recent.length < 5) return { low: 0, high: 27 };
+      if (recent.length < 5) return { low: 0, high: pos * 9 };
       var sumArr = [];
       recent.forEach(function(d) {
         var ns = getNums(d);
@@ -1452,7 +1452,7 @@ function recommendDigit(data, cfg) {
       for (var si = 1; si < Math.min(20, rev.length); si++) {
         e = 0.3 * rev[si] + 0.7 * e;
       }
-      return { low: Math.max(0, Math.round(e - 3)), high: Math.min(27, Math.round(e + 3)), center: Math.round(e) };
+      return { low: Math.max(0, Math.round(e - 3)), high: Math.min(pos * 9, Math.round(e + 3)), center: Math.round(e) };
     })(),
     /* 跨度预测 */
     spanPredict: (function() {
@@ -5405,7 +5405,9 @@ function renderRecommend(type, data) {
         });
         _pHtml += '</div></div></div>';
       });
-      _pHtml += '<div style="font-size:10px;color:#999;margin-top:2px;text-align:center">每位置5码共125注250元 · 自行缩水至目标注数</div>';
+      var _posCount = rec.posHotEma.length;
+      var _comboCount = Math.pow(5, _posCount);
+      _pHtml += '<div style="font-size:10px;color:#999;margin-top:2px;text-align:center">每位置5码共' + _comboCount + '注' + (_comboCount*2) + '元 · 自行缩水至目标注数</div>';
       
       /* 和值+跨度预测 */
       if (rec.sumPredict && rec.spanPredict) {
@@ -5428,25 +5430,33 @@ function renderRecommend(type, data) {
       }
       
       /* ===== 自动缩水：和值+跨度联合过滤 ===== */
-      if (rec.sumPredict && rec.spanPredict && rec.posHotEma && rec.posHotEma.length >= 3) {
-        var _b5 = rec.posHotEma[0], _s5 = rec.posHotEma[1], _g5 = rec.posHotEma[2];
-        var _all125 = [];
-        for (var _ba = 0; _ba < _b5.length; _ba++) {
-          for (var _sa = 0; _sa < _s5.length; _sa++) {
-            for (var _ga = 0; _ga < _g5.length; _ga++) {
-              _all125.push([_b5[_ba], _s5[_sa], _g5[_ga]]);
+      if (rec.sumPredict && rec.spanPredict && rec.posHotEma && rec.posHotEma.length >= 2) {
+        var _posCount2 = rec.posHotEma.length;
+        // 递归生成所有位置组合
+        function _generateCombos(arrays, prefix) {
+          if (!prefix) prefix = [];
+          if (arrays.length === 0) return [prefix];
+          var result = [];
+          var first = arrays[0];
+          var rest = arrays.slice(1);
+          for (var _gi = 0; _gi < first.length; _gi++) {
+            var more = _generateCombos(rest, prefix.concat([first[_gi]]));
+            for (var _mj = 0; _mj < more.length; _mj++) {
+              result.push(more[_mj]);
             }
           }
+          return result;
         }
+        var _allCombos = _generateCombos(rec.posHotEma);
         var _szL = rec.sumPredict.low, _szH = rec.sumPredict.high;
         var _kdL = rec.spanPredict.low, _kdH = rec.spanPredict.high;
-        var _autoFiltered = _all125.filter(function(c) {
-          var _s = c[0]+c[1]+c[2];
-          var _k = Math.max(c[0],c[1],c[2]) - Math.min(c[0],c[1],c[2]);
+        var _autoFiltered = _allCombos.filter(function(c) {
+          var _s = c.reduce(function(a, b) { return a + b; }, 0);
+          var _k = Math.max.apply(null, c) - Math.min.apply(null, c);
           return _s >= _szL && _s <= _szH && _k >= _kdL && _k <= _kdH;
         });
-        
-        if (_autoFiltered.length > 0) {
+
+        if (_autoFiltered.length > 0 && _autoFiltered.length <= 3000) {
           _pHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;margin:4px 0;background:#f3e5f5">';
           _pHtml += '<div class="rec-header" style="color:#7b1fa2;font-weight:700">🤖 智能缩水结果（和值+跨度自动过滤）</div>';
           var _copyArr = [];
@@ -5454,8 +5464,8 @@ function renderRecommend(type, data) {
           for (var _ai = 0; _ai < _autoFiltered.length; _ai++) {
             var _c = _autoFiltered[_ai];
             _copyArr.push(_c.join(''));
-            var _cs = _c[0]+_c[1]+_c[2];
-            var _ck = Math.max(_c[0],_c[1],_c[2]) - Math.min(_c[0],_c[1],_c[2]);
+            var _cs = _c.reduce(function(a, b) { return a + b; }, 0);
+            var _ck = Math.max.apply(null, _c) - Math.min.apply(null, _c);
             _pHtml += '<div class="shrink-item" style="font-size:12px;padding:4px 8px">' + _c.join('') + ' <span style="font-size:9px;color:#999">和' + _cs + ' 跨' + _ck + '</span></div>';
           }
           _pHtml += '</div>';
@@ -5465,6 +5475,11 @@ function renderRecommend(type, data) {
           _pHtml += ' <button onclick="navigator.clipboard.writeText(\'' + _copyAll.replace(/'/g,"\\'") + '\')" style="font-size:10px;padding:1px 8px;border:1px solid #7b1fa2;border-radius:10px;background:#fff;color:#7b1fa2;cursor:pointer">📋 复制全部</button>';
           _pHtml += '</div>';
           _pHtml += '<div style="font-size:9px;color:#999;margin-top:2px;text-align:center">基于EMA自动预测的和值+跨度，每日更新</div>';
+          _pHtml += '</div>';
+        } else if (_autoFiltered.length > 3000) {
+          _pHtml += '<div class="rec-card" style="border-left-color:#7b1fa2;margin:4px 0;background:#f3e5f5">';
+          _pHtml += '<div class="rec-header" style="color:#7b1fa2;font-weight:700">🤖 智能缩水过滤后注数过多</div>';
+          _pHtml += '<div style="font-size:10px;color:#999;margin-top:2px;text-align:center">当前组合 ' + _autoFiltered.length + ' 注，建议手动精选</div>';
           _pHtml += '</div>';
         }
       }
