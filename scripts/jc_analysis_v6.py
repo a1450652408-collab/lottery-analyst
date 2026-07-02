@@ -26,6 +26,38 @@ COMPETITION_ID = 2000
 ELO_K = 32
 ELO_DEFAULT = 1500
 
+# ===== 球队名称映射 (竞彩中文 → football-data.org 英文) =====
+CN_TO_EN = {
+    "西班牙": "Spain", "奥地利": "Austria",
+    "葡萄牙": "Portugal", "克罗地亚": "Croatia",
+    "瑞士": "Switzerland", "阿尔及利亚": "Algeria",
+    "澳大利亚": "Australia", "埃及": "Egypt",
+    "哥伦比亚": "Colombia", "加纳": "Ghana",
+    "加拿大": "Canada", "摩洛哥": "Morocco",
+    "巴拉圭": "Paraguay", "法国": "France",
+    "巴西": "Brazil", "挪威": "Norway",
+    "墨西哥": "Mexico", "英格兰": "England",
+    "美国": "United States", "比利时": "Belgium",
+    "阿根廷": "Argentina", "佛得角": "Cape Verde Islands",
+    "乌拉圭": "Uruguay", "沙特": "Saudi Arabia",
+    "伊朗": "Iran", "荷兰": "Netherlands",
+    "日本": "Japan", "韩国": "South Korea",
+    "德国": "Germany", "塞内加尔": "Senegal",
+    "厄瓜多尔": "Ecuador", "卡塔尔": "Qatar",
+    "瑞典": "Sweden", "突尼斯": "Tunisia",
+    "土耳其": "Turkey", "库拉索": "Curaçao",
+    "捷克": "Czechia", "南非": "South Africa",
+    "新西兰": "New Zealand", "苏格兰": "Scotland",
+    "波黑": "Bosnia-Herzegovina", "海地": "Haiti",
+    "科特迪瓦": "Ivory Coast", "伊拉克": "Iraq",
+    "乌兹别克斯坦": "Uzbekistan", "约旦": "Jordan",
+    "刚果": "Congo DR", "巴拿马": "Panama",
+    "巴拉": "Paraguay",
+}
+
+# 英文 → 中文 (用于展示)
+EN_TO_CN = {v: k for k, v in CN_TO_EN.items()}
+
 
 # ===== ELO 评分系统 =====
 
@@ -203,42 +235,98 @@ def generate_recommendations(upcoming, coefficients, league_avg_home, league_avg
 # ===== 反热门分析 =====
 
 def fade_overrated_favorites(recs):
+    """
+    用真实市场赔率检测被高估热门
+    逻辑: 市场热门赔率<1.6 但泊松模型不看好该方向(模型认为另一方向更可能)
+    """
     faded = []
     for r in recs:
+        market_odds = r.get("market_odds")
+        if not market_odds or len(market_odds) != 3:
+            continue
+
+        had = market_odds
+        total_implied = 1/had[0] + 1/had[1] + 1/had[2]
+        labels = ["主胜", "平局", "客胜"]
+
+        # 市场热门方向(去水后概率最高)
+        market_fair = [1/o/total_implied for o in had]
+        market_fav_idx = market_fair.index(max(market_fair))
+        market_fav_odds = had[market_fav_idx]
+
+        # 泊松模型看好方向
         hp = r["model_prob"]["home_pct"] / 100
         dp = r["model_prob"]["draw_pct"] / 100
         ap = r["model_prob"]["away_pct"] / 100
+        model_probs = [hp, dp, ap]
+        model_fav_idx = model_probs.index(max(model_probs))
+        model_max = max(model_probs)
 
-        probs = [hp, dp, ap]
-        labels = ["主胜", "平局", "客胜"]
-        max_idx = probs.index(max(probs))
-        fav_prob = probs[max_idx]
-        fav_odds = r["fair_odds"][max_idx]
+        # 判断: 市场热门赔率低(<1.6) 但模型方向和市场方向不一致
+        is_market_hot = market_fav_odds < 1.6
+        is_disagreed = market_fav_idx != model_fav_idx
+        is_model_uncertain = model_max < 0.55  # 模型也不是特别有把握
 
-        if fav_odds < 1.6 and fav_prob < 0.50:
-            other_probs = [probs[i] for i in range(3) if i != max_idx]
-            alt_idx = [i for i in range(3) if i != max_idx][other_probs.index(max(other_probs))]
-            alt_label = labels[alt_idx]
-            alt_odds = r["fair_odds"][alt_idx]
+        if is_market_hot and is_disagreed:
+            alt_label = labels[model_fav_idx]
+            alt_odds = had[model_fav_idx]
 
-            team_name = r["homeTeam"] if max_idx == 0 else (r["awayTeam"] if max_idx == 2 else "双方")
             team_stats_text = ""
+            hot_team = r["homeTeam"] if market_fav_idx == 0 else (r["awayTeam"] if market_fav_idx == 2 else "双方")
             if r.get("team_stats"):
-                ts = r["team_stats"].get(r["homeTeam"] if max_idx == 0 else r["awayTeam"] if max_idx == 2 else r["homeTeam"], {})
+                ts = r["team_stats"].get(r["homeTeam"] if market_fav_idx == 0 else r["awayTeam"] if market_fav_idx == 2 else r["homeTeam"], {})
                 if ts:
                     team_stats_text = f"{ts.get('played',0)}场{ts.get('wins',0)}胜, 场均{round(ts.get('gf',0)/max(1,ts.get('played',1)),1)}球"
 
             r_copy = dict(r)
             r_copy["recommend"] = alt_label
             r_copy["recommend_odds"] = alt_odds
-            r_copy["confidence"] = "★★" if fav_prob > 0.40 else "★"
+            r_copy["fav_odds"] = market_fav_odds
+            r_copy["fav_team"] = hot_team
+            r_copy["confidence"] = "★★" if model_max > 0.40 else "★"
             r_copy["reasons"] = list(r.get("reasons", []))
-            r_copy["reasons"].append(f"热门({labels[max_idx]}@{fav_odds:.2f})被高估, 推荐{alt_label}@{alt_odds:.2f}")
+            reason = (f"市场热门({labels[market_fav_idx]}@{market_fav_odds:.2f})与模型分歧, "
+                      f"模型看好{alt_label}({model_max*100:.0f}%), 推荐{alt_label}@{alt_odds:.2f}")
+            r_copy["reasons"].append(reason)
             if team_stats_text:
                 r_copy["reasons"].append(f"热门表现: {team_stats_text}")
             faded.append(r_copy)
 
     return faded
+
+
+# ===== 竞彩赔率获取 =====
+
+def fetch_real_odds():
+    """从竞彩官网(sporttery.cn)获取实时赔率"""
+    from urllib.request import Request, urlopen
+    url = "https://webapi.sporttery.cn/gateway/uniform/football/getMatchListV1.qry?clientCode=3001"
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.sporttery.cn/", "Origin": "https://www.sporttery.cn"}
+    req = Request(url, headers=headers)
+    try:
+        with urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        result = {}
+        for day in data.get("value", {}).get("matchInfoList", []):
+            for m in day.get("subMatchList", []):
+                home_cn = m.get("homeTeamAllName", "")
+                away_cn = m.get("awayTeamAllName", "")
+                home_en = CN_TO_EN.get(home_cn, home_cn)
+                away_en = CN_TO_EN.get(away_cn, away_cn)
+                odds_info = {"home_cn": home_cn, "away_cn": away_cn}
+                for od in m.get("oddsList", []):
+                    code = od.get("poolCode")
+                    if code == "HAD":
+                        odds_info["had"] = [float(od.get("h",0)), float(od.get("d",0)), float(od.get("a",0))]
+                    elif code == "HHAD":
+                        odds_info["hhad"] = [float(od.get("h",0)), float(od.get("d",0)), float(od.get("a",0))]
+                        odds_info["goal_line"] = od.get("goalLine", "")
+                key = (home_en, away_en)
+                result[key] = odds_info
+        return result
+    except Exception as e:
+        print(f"  ⚠️ 竞彩赔率获取失败: {e}")
+        return {}
 
 
 # ===== 主流程 =====
@@ -315,6 +403,31 @@ def main():
     recs = generate_recommendations(upcoming_raw, coefficients, league_avg_home, league_avg_away, elo, results_simple)
     print(f"  常规推荐: {len(recs)} 场")
 
+    # 5. 获取竞彩真实赔率
+    print("\n💰 获取竞彩实时赔率...")
+    real_odds = fetch_real_odds()
+    odds_available = len(real_odds)
+    if odds_available > 0:
+        print(f"  ✅ 获取到 {odds_available} 场比赛的赔率")
+        for (he, ae), o in real_odds.items():
+            had = o.get("had", [])
+            if had:
+                print(f"    {he:20s} vs {ae:20s}  {had[0]:.2f} / {had[1]:.2f} / {had[2]:.2f}")
+    else:
+        print("  ⚠️ 使用模型公平赔率代替")
+
+    # 整合真实赔率到推荐
+    for r in recs:
+        key = (r["homeTeam"], r["awayTeam"])
+        if key in real_odds:
+            o = real_odds[key]
+            if o.get("had"):
+                r["market_odds"] = o["had"]
+                r["had_odds_cn"] = o.get("had", [])
+                r["hhad_odds"] = o.get("hhad", [])
+                r["goal_line"] = o.get("goal_line", "")
+
+    # 6. 反热门分析（用真实赔率检测被高估热门）
     print("\n🔥 反被高估热门分析...")
     fade_recs = fade_overrated_favorites(recs)
     print(f"  发现 {len(fade_recs)} 场被高估热门")
@@ -335,13 +448,17 @@ def main():
     # 输出精简
     matches_json = []
     for r in output_matches:
+        hm = EN_TO_CN.get(r["homeTeam"], r["homeTeam"])
+        aw = EN_TO_CN.get(r["awayTeam"], r["awayTeam"])
         entry = {
             "homeTeam": r["homeTeam"], "awayTeam": r["awayTeam"],
+            "homeTeamCn": hm, "awayTeamCn": aw,
             "matchDate": r["matchDate"], "matchTime": r["matchTime"],
             "stage": r.get("stage", ""),
             "recommend": r["recommend"], "recommend_odds": r["recommend_odds"],
             "confidence": r["confidence"],
             "fav_team": r.get("fav_team", ""), "fav_odds": r.get("fav_odds", 0),
+            "market_odds": r.get("market_odds", []),
             "reasons": r.get("reasons", []),
         }
         stats_simple = {}
@@ -377,7 +494,13 @@ def main():
 
     print("\n📋 今日推荐:")
     for m in matches_json:
-        print(f"  {m['homeTeam']:20s} vs {m['awayTeam']:20s}")
+        cn = m.get("homeTeamCn", m["homeTeam"])
+        cw = m.get("awayTeamCn", m["awayTeam"])
+        market_str = ""
+        if m.get("market_odds"):
+            mo = m["market_odds"]
+            market_str = f" | 市场赔率 {mo[0]:.2f}/{mo[1]:.2f}/{mo[2]:.2f}"
+        print(f"  {cn:12s}({m['homeTeam']:20s}) vs {cw:12s}({m['awayTeam']:20s}){market_str}")
         print(f"  → 推荐: {m['recommend']} @{m['recommend_odds']:.2f} [{m['confidence']}]")
         for reason in m.get("reasons", [])[:2]:
             print(f"    ├ {reason}")
