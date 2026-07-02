@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>竞彩足球 · 双盘分析</title>
+<title>竞彩足球 · V6 反热门分析</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,system-ui,Segoe UI,sans-serif;background:#f5f5f5;color:#333;max-width:480px;margin:0 auto;padding:12px;padding-bottom:80px}
@@ -19,6 +19,7 @@ body{font-family:-apple-system,system-ui,Segoe UI,sans-serif;background:#f5f5f5;
 .odds-val{font-weight:700}
 .strategy-box{background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:8px;padding:10px;margin-top:6px}
 .strategy-box.negative{background:linear-gradient(135deg,#fce4ec,#ffebee)}
+.strategy-box.neutral{background:linear-gradient(135deg,#e3f2fd,#e8eaf6)}
 .roi-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700}
 .roi-high{background:#2e7d32;color:#fff}
 .roi-mid{background:#f9a825;color:#fff}
@@ -26,236 +27,150 @@ body{font-family:-apple-system,system-ui,Segoe UI,sans-serif;background:#f5f5f5;
 .bet-detail{font-size:12px;color:#555;margin-top:6px;line-height:1.6}
 .section-title{font-size:14px;font-weight:700;margin:12px 0 8px;display:flex;align-items:center;gap:6px}
 .section-title .dot{width:8px;height:8px;border-radius:50%}
-.filter-bar{display:flex;gap:6px;margin:8px 0;overflow-x:auto}
-.filter-btn{padding:6px 14px;border:1px solid #ddd;border-radius:16px;font-size:12px;background:#fff;cursor:pointer;white-space:nowrap}
-.filter-btn.active{background:#1565c0;color:#fff;border-color:#1565c0}
 .passed{opacity:.5;filter:grayscale(.3)}
 .footer{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fff;padding:12px;border-top:1px solid #eee;text-align:center;font-size:11px;color:#999}
 .note{font-size:11px;color:#999;padding:8px;text-align:center}
 table td,table th{border-bottom:1px solid #eee}
+.league-tag{font-size:10px;background:#e3f2fd;color:#1565c0;padding:1px 6px;border-radius:4px}
+.reason-item{font-size:11px;color:#555;margin:2px 0 2px 8px;list-style:disc}
+.team-stat{font-size:11px;color:#666;background:#fafafa;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5}
+.odds-compare{display:flex;gap:10px;margin:4px 0;font-size:12px}
+.odds-item{text-align:center;flex:1;background:#f8f8f8;border-radius:6px;padding:4px}
+.odds-item .label{font-size:10px;color:#999}
+.odds-item .value{font-size:14px;font-weight:700}
+.odds-item.hot .value{color:#e53935}
+.odds-item.rec .value{color:#2e7d32}
+.nosignal-note{text-align:center;padding:20px;color:#999;font-size:13px}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>⚽ 竞彩足球 · 单选推荐</h1>
-  <p>泊松模型 最优期望值 | 数据更新: <span id="updateTime">—</span></p>
-</div>
-
-<div class="filter-bar" id="filterBar">
-  <button class="filter-btn active" onclick="filter('all',event)">全部</button>
-  <button class="filter-btn" onclick="filter('today',event)">今天可买</button>
+  <h1>⚽ 竞彩足球 · 反热门策略</h1>
+  <p>V6 世界杯表现验证 | 数据更新: <span id="updateTime">—</span></p>
 </div>
 
 <div id="matchList"></div>
 
 <div class="footer">
-  <a href="index.html" style="color:#1565c0;text-decoration:none">← 返回数字彩</a> | 基于HHAD让球盘泊松拟合 | 模型仅供参考
+  <a href="index.html" style="color:#1565c0;text-decoration:none">← 返回数字彩</a> | 反被高估热门策略 | 模型仅供参考
 </div>
 
 <script>
-// ===== 动态加载数据 =====
-var JC_DATA = {"date": "2026-06-20", "updateTime": "09:13", "modelVersion": "V5 (Poisson + 泊松模型)", "totalMatches": 7, "topRecommend": {"matchId": 2040249, "matchNum": "周日039", "league": "世界杯", "homeTeam": "乌拉圭", "awayTeam": "佛得角", "matchDate": "2026-06-22", "matchTime": "06:00", "had_h": 1.31, "had_d": 4.0, "had_a": 8.6, "hhad_goalLine": -1.0, "hhad_h": 2.16, "hhad_d": 3.23, "hhad_a": 2.8, "home_strength": 10.0, "away_strength": 0.0, "strength_diff": 10.0, "home_detail": {"eng_name": "Uruguay", "position": 1, "group": "Group H", "points": 1, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Cape Verde Islands", "position": 4, "group": "Group H", "points": 1, "played": 1, "form": null, "has_data": true}, "home_coach": "Marcelo Bielsa", "home_player_count": 26, "home_avg_age": 28.2, "home_pos_dist": {"GK": 3, "DF": 9, "MF": 10, "FW": 4}, "home_players": ["GK Fernando Muslera(40)", "GK Santiago Mele(28)", "GK Sergio Rochet(33)", "DF Guillermo Varela(33)", "DF Ronald Araújo(27)", "DF Sebastían Cáceres(26)", "DF Matías Viña(28)", "DF Joaquín Piquerez(27)"], "recommend": "平局", "best_odds": 4.0, "best_value": 313.0, "ev": 300.0, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+300%)", "模型看好+78%"], "poisson_source": "poisson_historical", "home_prob": 0.0, "draw_prob": 100.0, "away_prob": 0.0, "all_options": [{"label": "平局", "odds": 4.0, "model_prob": 100.0, "market_prob": 22.1, "value_gap": 77.9, "ev": 300.0, "is_value": true}], "kelly_advice": {"suggest_stake": 25000, "kelly_pct": 25.0, "bankroll_ref": 100000, "note": "1/4凯利建议投25000元"}}, "recommendations": [{"matchId": 2040249, "matchNum": "周日039", "league": "世界杯", "homeTeam": "乌拉圭", "awayTeam": "佛得角", "matchDate": "2026-06-22", "matchTime": "06:00", "had_h": 1.31, "had_d": 4.0, "had_a": 8.6, "hhad_goalLine": -1.0, "hhad_h": 2.16, "hhad_d": 3.23, "hhad_a": 2.8, "home_strength": 10.0, "away_strength": 0.0, "strength_diff": 10.0, "home_detail": {"eng_name": "Uruguay", "position": 1, "group": "Group H", "points": 1, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Cape Verde Islands", "position": 4, "group": "Group H", "points": 1, "played": 1, "form": null, "has_data": true}, "home_coach": "Marcelo Bielsa", "home_player_count": 26, "home_avg_age": 28.2, "home_pos_dist": {"GK": 3, "DF": 9, "MF": 10, "FW": 4}, "home_players": ["GK Fernando Muslera(40)", "GK Santiago Mele(28)", "GK Sergio Rochet(33)", "DF Guillermo Varela(33)", "DF Ronald Araújo(27)", "DF Sebastían Cáceres(26)", "DF Matías Viña(28)", "DF Joaquín Piquerez(27)"], "recommend": "平局", "best_odds": 4.0, "best_value": 313.0, "ev": 300.0, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+300%)", "模型看好+78%"], "poisson_source": "poisson_historical", "home_prob": 0.0, "draw_prob": 100.0, "away_prob": 0.0, "all_options": [{"label": "平局", "odds": 4.0, "model_prob": 100.0, "market_prob": 22.1, "value_gap": 77.9, "ev": 300.0, "is_value": true}], "kelly_advice": {"suggest_stake": 25000, "kelly_pct": 25.0, "bankroll_ref": 100000, "note": "1/4凯利建议投25000元"}}, {"matchId": 2040243, "matchNum": "周六033", "league": "世界杯", "homeTeam": "荷兰", "awayTeam": "瑞典", "matchDate": "2026-06-21", "matchTime": "01:00", "had_h": 1.59, "had_d": 3.58, "had_a": 4.52, "hhad_goalLine": -1.0, "hhad_h": 2.86, "hhad_d": 3.45, "hhad_a": 2.04, "home_strength": 10.0, "away_strength": 100.0, "strength_diff": -90.0, "home_detail": {"eng_name": "Netherlands", "position": 2, "group": "Group F", "points": 1, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Sweden", "position": 1, "group": "Group F", "points": 3, "played": 1, "form": null, "has_data": true}, "home_coach": "Ronald Koeman", "home_player_count": 26, "home_avg_age": 27.4, "home_pos_dist": {"GK": 3, "DF": 7, "MF": 11, "FW": 5}, "home_players": ["GK Mark Flekken(33)", "GK Bart Verbruggen(23)", "GK Robin Roefs(23)", "DF Denzel Dumfries(30)", "DF Virgil van Dijk(34)", "DF Nathan Aké(31)", "DF Jan Paul van Hecke(26)", "DF Jurrien Timber(25)"], "away_coach": "Graham Potter", "away_player_count": 26, "away_avg_age": 27.0, "away_pos_dist": {"GK": 3, "DF": 10, "MF": 7, "FW": 6}, "away_players": ["GK Kristoffer Nordfeldt(36)", "GK Viktor Johansson(27)", "GK Jacob Widell Zetterström(27)", "DF Victor Nilsson-Lindelöf(31)", "DF Carl Starfelt(31)", "DF Gabriel Gudmundsson(27)", "DF Hjalmar Ekdal(27)", "DF Eric Smith(29)"], "recommend": "客胜", "best_odds": 4.52, "best_value": 261.0, "ev": 248.2, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+248%)", "模型看好+57%"], "poisson_source": "poisson_historical", "home_prob": 11.8, "draw_prob": 11.2, "away_prob": 77.0, "all_options": [{"label": "客胜", "odds": 4.52, "model_prob": 77.0, "market_prob": 19.6, "value_gap": 57.4, "ev": 248.2, "is_value": true}, {"label": "平局", "odds": 3.58, "model_prob": 11.2, "market_prob": 24.7, "value_gap": -13.5, "ev": -59.9, "is_value": false}, {"label": "主胜", "odds": 1.59, "model_prob": 11.8, "market_prob": 55.7, "value_gap": -43.9, "ev": -81.3, "is_value": false}], "kelly_advice": {"suggest_stake": 17616, "kelly_pct": 17.6, "bankroll_ref": 100000, "note": "1/4凯利建议投17616元"}}, {"matchId": 2040250, "matchNum": "周日040", "league": "世界杯", "homeTeam": "新西兰", "awayTeam": "埃及", "matchDate": "2026-06-22", "matchTime": "09:00", "had_h": 5.7, "had_d": 3.72, "had_a": 1.46, "hhad_goalLine": 1.0, "hhad_h": 2.3, "hhad_d": 3.4, "hhad_a": 2.5, "home_strength": 10.0, "away_strength": 10.0, "strength_diff": 0.0, "home_detail": {"eng_name": "New Zealand", "position": 1, "group": "Group G", "points": 1, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Egypt", "position": 4, "group": "Group G", "points": 1, "played": 1, "form": null, "has_data": true}, "home_coach": "Darren Bazeley", "home_player_count": 26, "home_avg_age": 27.7, "home_pos_dist": {"GK": 3, "DF": 9, "MF": 7, "FW": 7}, "home_players": ["GK Max Crocombe(32)", "GK Michael Woud(27)", "GK Alex Paulsen(23)", "DF Liberato Cacace(25)", "DF Tommy Smith(36)", "DF Michael Boxall(37)", "DF Francis De Vries(31)", "DF Callan Elliot(26)"], "away_coach": "Hossam Hassan", "away_player_count": 26, "away_avg_age": 28.7, "away_pos_dist": {"GK": 4, "DF": 8, "MF": 9, "FW": 5}, "away_players": ["GK Mohamed El Shenawy(37)", "GK Mohamed Alaa(26)", "GK Oufa Shobeir(26)", "GK El Mahdi Soliman(39)", "DF Karim Hafez(30)", "DF Mohamed Hany(30)", "DF Yasser Ibrahim(33)", "DF Ahmed El Fotouh(28)"], "recommend": "主胜", "best_odds": 5.7, "best_value": 256.6, "ev": 243.4, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+243%)", "模型看好+45%"], "poisson_source": "poisson_historical", "home_prob": 60.3, "draw_prob": 22.9, "away_prob": 16.9, "all_options": [{"label": "主胜", "odds": 5.7, "model_prob": 60.3, "market_prob": 15.5, "value_gap": 44.7, "ev": 243.4, "is_value": true}, {"label": "平局", "odds": 3.72, "model_prob": 22.9, "market_prob": 23.8, "value_gap": -0.9, "ev": -14.9, "is_value": false}, {"label": "客胜", "odds": 1.46, "model_prob": 16.9, "market_prob": 60.7, "value_gap": -43.8, "ev": -75.4, "is_value": false}], "kelly_advice": {"suggest_stake": 12963, "kelly_pct": 13.0, "bankroll_ref": 100000, "note": "1/4凯利建议投12963元"}}, {"matchId": 2040244, "matchNum": "周六034", "league": "世界杯", "homeTeam": "德国", "awayTeam": "科特迪瓦", "matchDate": "2026-06-21", "matchTime": "04:00", "had_h": 1.4, "had_d": 4.15, "had_a": 5.75, "hhad_goalLine": -1.0, "hhad_h": 2.23, "hhad_d": 3.65, "hhad_a": 2.46, "home_strength": 100.0, "away_strength": 100.0, "strength_diff": 0.0, "home_detail": {"eng_name": "Germany", "position": 1, "group": "Group E", "points": 3, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Ivory Coast", "position": 2, "group": "Group E", "points": 3, "played": 1, "form": null, "has_data": true}, "recommend": "平局", "best_odds": 4.15, "best_value": 188.1, "ev": 175.2, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+175%)", "模型看好+45%"], "poisson_source": "poisson_historical", "home_prob": 0.0, "draw_prob": 66.3, "away_prob": 33.7, "all_options": [{"label": "平局", "odds": 4.15, "model_prob": 66.3, "market_prob": 21.3, "value_gap": 45.0, "ev": 175.2, "is_value": true}, {"label": "客胜", "odds": 5.75, "model_prob": 33.7, "market_prob": 15.4, "value_gap": 18.3, "ev": 93.7, "is_value": true}], "kelly_advice": {"suggest_stake": 13900, "kelly_pct": 13.9, "bankroll_ref": 100000, "note": "1/4凯利建议投13900元"}}, {"matchId": 2040242, "matchNum": "周五032", "league": "世界杯", "homeTeam": "土耳其", "awayTeam": "巴拉圭", "matchDate": "2026-06-20", "matchTime": "11:00", "had_h": 1.72, "had_d": 3.42, "had_a": 3.92, "hhad_goalLine": -1.0, "hhad_h": 3.5, "hhad_d": 3.3, "hhad_a": 1.85, "home_strength": 0.0, "away_strength": 0.0, "strength_diff": 0.0, "home_detail": {"eng_name": "Turkey", "position": 3, "group": "Group D", "points": 0, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Paraguay", "position": 4, "group": "Group D", "points": 0, "played": 1, "form": null, "has_data": true}, "recommend": "客胜", "best_odds": 3.92, "best_value": 132.4, "ev": 119.7, "score": 5.5, "confidence": "★★★★★", "reasons": ["高价值(EV+120%)", "模型看好+33%"], "poisson_source": "poisson_historical", "home_prob": 0.0, "draw_prob": 44.0, "away_prob": 56.0, "all_options": [{"label": "客胜", "odds": 3.92, "model_prob": 56.0, "market_prob": 22.6, "value_gap": 33.4, "ev": 119.7, "is_value": true}, {"label": "平局", "odds": 3.42, "model_prob": 44.0, "market_prob": 25.9, "value_gap": 18.1, "ev": 50.4, "is_value": true}], "kelly_advice": {"suggest_stake": 10233, "kelly_pct": 10.2, "bankroll_ref": 100000, "note": "1/4凯利建议投10233元"}}, {"matchId": 2040246, "matchNum": "周六036", "league": "世界杯", "homeTeam": "突尼斯", "awayTeam": "日本", "matchDate": "2026-06-21", "matchTime": "12:00", "had_h": 6.55, "had_d": 3.96, "had_a": 1.38, "hhad_goalLine": 1.0, "hhad_h": 2.5, "hhad_d": 3.4, "hhad_a": 2.3, "home_strength": 0.0, "away_strength": 10.0, "strength_diff": -10.0, "home_detail": {"eng_name": "Tunisia", "position": 4, "group": "Group F", "points": 0, "played": 1, "form": null, "has_data": true}, "away_detail": {"eng_name": "Japan", "position": 2, "group": "Group F", "points": 1, "played": 1, "form": null, "has_data": true}, "home_coach": "Hervé Renard", "home_player_count": 26, "home_avg_age": 26.3, "home_pos_dist": {"GK": 3, "DF": 10, "MF": 7, "FW": 6}, "home_players": ["GK Aymen Dahmen(29)", "GK Sabri Ben Hessen(30)", "GK Abdelmouhib Chamakh(24)", "DF Dylan Bronn(31)", "DF Ali El Abdi(32)", "DF Yan Valery(27)", "DF Mortadha Ben Ouanes(31)", "DF Omar Rekik(24)"], "away_coach": "Hajime Moriyasu", "away_player_count": 26, "away_avg_age": 27.2, "away_pos_dist": {"GK": 3, "DF": 9, "MF": 7, "FW": 7}, "away_players": ["GK Keisuke Ōsako(26)", "GK Zion Suzuki(23)", "GK Tomoki Hayakawa(27)", "DF Yūto Nagatomo(39)", "DF Takehiro Tomiyasu(27)", "DF Hiroki Ito(27)", "DF Yukinari Sugawara(25)", "DF Ko Itakura(29)"], "recommend": "客胜", "best_odds": 1.38, "best_value": 19.2, "ev": 6.3, "score": 3.5, "confidence": "★★★", "reasons": ["微价值(EV+6%)"], "poisson_source": "poisson_historical", "home_prob": 11.8, "draw_prob": 11.2, "away_prob": 77.0, "all_options": [{"label": "客胜", "odds": 1.38, "model_prob": 77.0, "market_prob": 64.1, "value_gap": 12.9, "ev": 6.3, "is_value": true}, {"label": "主胜", "odds": 6.55, "model_prob": 11.8, "market_prob": 13.5, "value_gap": -1.7, "ev": -22.8, "is_value": false}, {"label": "平局", "odds": 3.96, "model_prob": 11.2, "market_prob": 22.4, "value_gap": -11.2, "ev": -55.7, "is_value": false}], "kelly_advice": {"suggest_stake": 4118, "kelly_pct": 4.1, "bankroll_ref": 100000, "note": "1/4凯利建议投4118元"}}], "s2recommend": {"match1": "乌拉圭 vs 佛得角", "match1_rec": "平局 @4.0", "match1_ev": "+300.0%", "match2": "土耳其 vs 巴拉圭", "match2_rec": "客胜 @3.92", "match2_ev": "+119.7%", "combined_odds": 15.68}, "valueBets": [{"league": "世界杯", "matchNum": "周日039", "homeTeam": "乌拉圭", "awayTeam": "佛得角", "recommend": "平局", "odds": 4.0, "ev": 300.0, "market_prob": 22.1, "fair_prob": 100.0, "value_gap": 77.9, "reasons": ["高价值(EV+300%)", "模型看好+78%"], "kelly_advice": {"suggest_stake": 25000, "kelly_pct": 25.0, "bankroll_ref": 100000, "note": "1/4凯利建议投25000元"}}, {"league": "世界杯", "matchNum": "周六033", "homeTeam": "荷兰", "awayTeam": "瑞典", "recommend": "客胜", "odds": 4.52, "ev": 248.2, "market_prob": 19.6, "fair_prob": 77.0, "value_gap": 57.4, "reasons": ["高价值(EV+248%)", "模型看好+57%"], "kelly_advice": {"suggest_stake": 17616, "kelly_pct": 17.6, "bankroll_ref": 100000, "note": "1/4凯利建议投17616元"}}, {"league": "世界杯", "matchNum": "周日040", "homeTeam": "新西兰", "awayTeam": "埃及", "recommend": "主胜", "odds": 5.7, "ev": 243.4, "market_prob": 15.5, "fair_prob": 60.3, "value_gap": 44.7, "reasons": ["高价值(EV+243%)", "模型看好+45%"], "kelly_advice": {"suggest_stake": 12963, "kelly_pct": 13.0, "bankroll_ref": 100000, "note": "1/4凯利建议投12963元"}}, {"league": "世界杯", "matchNum": "周六034", "homeTeam": "德国", "awayTeam": "科特迪瓦", "recommend": "平局", "odds": 4.15, "ev": 175.2, "market_prob": 21.3, "fair_prob": 66.3, "value_gap": 45.0, "reasons": ["高价值(EV+175%)", "模型看好+45%"], "kelly_advice": {"suggest_stake": 13900, "kelly_pct": 13.9, "bankroll_ref": 100000, "note": "1/4凯利建议投13900元"}}, {"league": "世界杯", "matchNum": "周五032", "homeTeam": "土耳其", "awayTeam": "巴拉圭", "recommend": "客胜", "odds": 3.92, "ev": 119.7, "market_prob": 22.6, "fair_prob": 56.0, "value_gap": 33.4, "reasons": ["高价值(EV+120%)", "模型看好+33%"], "kelly_advice": {"suggest_stake": 10233, "kelly_pct": 10.2, "bankroll_ref": 100000, "note": "1/4凯利建议投10233元"}}, {"league": "世界杯", "matchNum": "周六034", "homeTeam": "德国", "awayTeam": "科特迪瓦", "recommend": "客胜", "odds": 5.75, "ev": 93.7, "market_prob": 15.4, "fair_prob": 33.7, "value_gap": 18.3, "reasons": ["高价值(EV+175%)", "模型看好+45%"], "kelly_advice": {"suggest_stake": 13900, "kelly_pct": 13.9, "bankroll_ref": 100000, "note": "1/4凯利建议投13900元"}}, {"league": "世界杯", "matchNum": "周五032", "homeTeam": "土耳其", "awayTeam": "巴拉圭", "recommend": "平局", "odds": 3.42, "ev": 50.4, "market_prob": 25.9, "fair_prob": 44.0, "value_gap": 18.1, "reasons": ["高价值(EV+120%)", "模型看好+33%"], "kelly_advice": {"suggest_stake": 10233, "kelly_pct": 10.2, "bankroll_ref": 100000, "note": "1/4凯利建议投10233元"}}, {"league": "世界杯", "matchNum": "周日038", "homeTeam": "比利时", "awayTeam": "伊朗", "recommend": "客胜", "odds": 7.0, "ev": 18.1, "market_prob": 12.6, "fair_prob": 16.9, "value_gap": 4.2, "reasons": ["正价值(EV+18%)"], "kelly_advice": {"suggest_stake": 762, "kelly_pct": 0.8, "bankroll_ref": 100000, "note": "1/4凯利建议投762元"}}, {"league": "世界杯", "matchNum": "周六036", "homeTeam": "突尼斯", "awayTeam": "日本", "recommend": "客胜", "odds": 1.38, "ev": 6.3, "market_prob": 64.1, "fair_prob": 77.0, "value_gap": 12.9, "reasons": ["微价值(EV+6%)"], "kelly_advice": {"suggest_stake": 4118, "kelly_pct": 4.1, "bankroll_ref": 100000, "note": "1/4凯利建议投4118元"}}], "scorePredictions": [{"homeTeam": "土耳其", "awayTeam": "巴拉圭", "homeProb": 0.0, "drawProb": 44.0, "awayProb": 56.0, "topScores": [["0-0", 44.0], ["0-1", 36.1], ["0-2", 14.8], ["0-3", 4.1], ["0-4", 0.8]], "valueBets": [{"label": "客胜", "odds": 3.92, "model_prob": 56.0, "market_prob": 22.6, "value_gap": 33.4, "ev": 119.7, "is_value": true}, {"label": "平局", "odds": 3.42, "model_prob": 44.0, "market_prob": 25.9, "value_gap": 18.1, "ev": 50.4, "is_value": true}]}, {"homeTeam": "荷兰", "awayTeam": "瑞典", "homeProb": 11.8, "drawProb": 11.2, "awayProb": 77.0, "topScores": [["1-4", 5.8], ["1-3", 5.7], ["2-4", 5.2], ["2-3", 5.1], ["1-5", 4.8]], "valueBets": [{"label": "客胜", "odds": 4.52, "model_prob": 77.0, "market_prob": 19.6, "value_gap": 57.4, "ev": 248.2, "is_value": true}, {"label": "平局", "odds": 3.58, "model_prob": 11.2, "market_prob": 24.7, "value_gap": -13.5, "ev": -59.9, "is_value": false}, {"label": "主胜", "odds": 1.59, "model_prob": 11.8, "market_prob": 55.7, "value_gap": -43.9, "ev": -81.3, "is_value": false}]}, {"homeTeam": "德国", "awayTeam": "科特迪瓦", "homeProb": 0.0, "drawProb": 66.3, "awayProb": 33.7, "topScores": [["0-0", 66.3], ["0-1", 27.2], ["0-2", 5.6], ["0-3", 0.8], ["0-4", 0.1]], "valueBets": [{"label": "平局", "odds": 4.15, "model_prob": 66.3, "market_prob": 21.3, "value_gap": 45.0, "ev": 175.2, "is_value": true}, {"label": "客胜", "odds": 5.75, "model_prob": 33.7, "market_prob": 15.4, "value_gap": 18.3, "ev": 93.7, "is_value": true}]}, {"homeTeam": "突尼斯", "awayTeam": "日本", "homeProb": 11.8, "drawProb": 11.2, "awayProb": 77.0, "topScores": [["1-4", 5.8], ["1-3", 5.7], ["2-4", 5.2], ["2-3", 5.1], ["1-5", 4.8]], "valueBets": [{"label": "客胜", "odds": 1.38, "model_prob": 77.0, "market_prob": 64.1, "value_gap": 12.9, "ev": 6.3, "is_value": true}, {"label": "主胜", "odds": 6.55, "model_prob": 11.8, "market_prob": 13.5, "value_gap": -1.7, "ev": -22.8, "is_value": false}, {"label": "平局", "odds": 3.96, "model_prob": 11.2, "market_prob": 22.4, "value_gap": -11.2, "ev": -55.7, "is_value": false}]}, {"homeTeam": "比利时", "awayTeam": "伊朗", "homeProb": 60.3, "drawProb": 22.9, "awayProb": 16.9, "topScores": [["1-0", 13.2], ["2-0", 11.8], ["1-1", 10.8], ["2-1", 9.7], ["0-0", 7.4]], "valueBets": [{"label": "客胜", "odds": 7.0, "model_prob": 16.9, "market_prob": 12.6, "value_gap": 4.2, "ev": 18.1, "is_value": true}, {"label": "平局", "odds": 4.26, "model_prob": 22.9, "market_prob": 20.8, "value_gap": 2.1, "ev": -2.5, "is_value": false}, {"label": "主胜", "odds": 1.33, "model_prob": 60.3, "market_prob": 66.6, "value_gap": -6.3, "ev": -19.9, "is_value": false}]}], "posEvCount": 7, "valueBetCount": 9, "poissonDataAvailable": true, "dataSource": {"odds": "webapi.sporttery.cn", "teamData": "api.football-data.org (排名+阵容+比赛)", "model": "Poisson Distribution (泊松分布)", "poissonTeams": 48}};
+// ===== 动态加载 V6 数据 =====
 var MATCHES = [];
 var DATA_READY = false;
+var STRATEGY = '';
+var NOSIGNAL_COUNT = 0;
 
 fetch('data/jc_matches.json?' + Date.now())
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    MATCHES = data;
+    MATCHES = data.matches || [];
+    STRATEGY = data.summary ? data.summary.strategy : 'V6';
+    NOSIGNAL_COUNT = data.summary ? (data.summary.total || 0) : 0;
     DATA_READY = true;
-    render('all');
+    render();
   })
   .catch(function(e) {
-    document.getElementById('matchList').innerHTML = '<div class="card" style="text-align:center;color:#e53935;padding:30px">数据加载失败: ' + e.message + '<br><small>请刷新重试</small></div>';
+    // fallback: 尝试加载 jc_recommend_v6.json
+    return fetch('jc_recommend_v6.json?' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        MATCHES = data.recommendations || [];
+        NOSIGNAL_COUNT = data.no_signal || 0;
+        STRATEGY = data.strategy || 'V6';
+        DATA_READY = true;
+        render();
+      })
+      .catch(function(e2) {
+        document.getElementById('matchList').innerHTML = '<div class="card" style="text-align:center;color:#e53935;padding:30px">数据加载失败: ' + e2.message + '<br><small>请刷新重试</small></div>';
+      });
   });
 
-// ===== 泊松 =====
-function poisson(k, lam) {
-  if (k > 150 || lam <= 0) return 0;
-  var r = Math.exp(-lam);
-  for (var i = 1; i <= k; i++) r *= lam / i;
-  return r;
-}
-
-function analyze(m) {
-  var h = m.had, hh = m.hhad, gl = parseFloat(m.gl);
-  // HAD去水
-  var hs = 1/h[0]+1/h[1]+1/h[2];
-  var ph = 1/h[0]/hs, pd = 1/h[1]/hs, pa = 1/h[2]/hs;
-  // HHAD去水
-  var hhs = 1/hh[0]+1/hh[1]+1/hh[2];
-  var phc = 1/hh[0]/hhs, php = 1/hh[1]/hhs, pac = 1/hh[2]/hhs;
-
-  // 泊松拟合
-  var bestErr = 999, bl = 1, bu = 1, agl = Math.abs(gl);
-
-  if (gl < 0) {
-    for (var lh = 0.5; lh <= 4; lh += 0.1) {
-      for (var la = 0; la <= 2; la += 0.1) {
-        var p1 = 0, p2 = 0, p3 = 0;
-        for (var h0 = 0; h0 < 11; h0++) for (var a0 = 0; a0 < 7; a0++) {
-          var prob = poisson(h0,lh)*poisson(a0,la);
-          if (h0-a0 >= agl+1) p1 += prob;
-          else if (h0-a0 === agl) p2 += prob;
-          else p3 += prob;
-        }
-        var err = Math.abs(p1-phc)+Math.abs(p2-php)+Math.abs(p3-pac);
-        if (err < bestErr) { bestErr = err; bl = lh; bu = la; }
-      }
-    }
-    // 概率
-    var by1 = 0, by2p = 0;
-    for (var h0=0;h0<11;h0++) for(var a0=0;a0<7;a0++) {
-      var prob = poisson(h0,bl)*poisson(a0,bu);
-      if (h0>a0 && h0-a0===1) by1 += prob;
-      else if (h0>a0 && h0-a0>=2) by2p += prob;
-    }
-    var pd2 = 0; for (var s=0;s<11;s++) pd2 += poisson(s,bl)*poisson(s,bu);
-    var pa2 = 1 - by1 - by2p - pd2;
-    
-    // 单选: 只买一个方向，HAD主胜 vs HHAD客受让
-    var ev_had = (by1+by2p)*h[0];           // 只买HAD主胜
-    var ev_hhad = (by1+pd2+pa2)*hh[2];      // 只买HHAD客受让
-    var pick = ev_had > ev_hhad ? 'had' : 'hhad';
-    // 碾压保护: 强队打弱队首轮易打穿，HAD主胜<1.35时强制买HAD
-    var crushed = false;
-    if (h[0] <= 1.35 && pick === 'hhad') { pick = 'had'; crushed = true; }
-    
-    return {
-      pick: pick,
-      market: pick === 'had' ? '胜平负' : '让球('+m.gl+')胜平负',
-      sel: pick === 'had' ? '胜' : '负',
-      desc: crushed ? (m.home+'赢（碾压保护）') : (pick === 'had' ? (m.home+'赢') : (m.away+'+'+Math.abs(gl)+'球不败')),
-      odds: pick === 'had' ? h[0] : hh[2],
-      ev: crushed ? ev_had : Math.max(ev_had, ev_hhad),
-      roi: crushed ? Math.round((ev_had-1)*1000)/10 : Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
-      hWin: Math.round((by1+by2p)*1000)/10,
-      draw: Math.round(pd2*1000)/10,
-      aWin: Math.round(pa2*1000)/10,
-      err: Math.round(bestErr*1000)/10,
-      lam: bl+'/'+bu,
-      altMarket: pick === 'had' ? '让球('+m.gl+')胜平负' : '胜平负',
-      altSel: pick === 'had' ? '负' : '胜',
-      altDesc: pick === 'had' ? (m.away+'+'+Math.abs(gl)+'球不败') : (m.home+'赢'),
-      altOdds: pick === 'had' ? hh[2] : h[0]
-    };
-  } else { // gl > 0
-    for (var lh = 0; lh <= 2; lh += 0.1) {
-      for (var la = 0.5; la <= 4; la += 0.1) {
-        var p1 = 0, p2 = 0, p3 = 0;
-        for (var h0 = 0; h0 < 11; h0++) for (var a0 = 0; a0 < 7; a0++) {
-          var prob = poisson(h0,lh)*poisson(a0,la);
-          var diff = h0 - a0;
-          if (diff >= -1) p1 += prob;
-          else if (diff === -2) p2 += prob;
-          else p3 += prob;
-        }
-        var err = Math.abs(p1-phc)+Math.abs(p2-php)+Math.abs(p3-pac);
-        if (err < bestErr) { bestErr = err; bl = lh; bu = la; }
-      }
-    }
-    var awBy1 = 0, awBy2p = 0;
-    for (var h0=0;h0<11;h0++) for(var a0=0;a0<7;a0++) {
-      var prob = poisson(h0,bl)*poisson(a0,bu);
-      if (a0>h0 && a0-h0===1) awBy1 += prob;
-      else if (a0>h0 && a0-h0>=2) awBy2p += prob;
-    }
-    var pd2 = 0; for (var s=0;s<11;s++) pd2 += poisson(s,bl)*poisson(s,bu);
-    var ph2 = 0; for (var h0=1;h0<11;h0++) for(var a0=0;a0<h0;a0++) ph2 += poisson(h0,bl)*poisson(a0,bu);
-    
-    // 单选: 只买一个方向，HAD客胜 vs HHAD主受让
-    var ev_had = (awBy1+awBy2p)*h[2];      // 只买HAD客胜
-    var ev_hhad = (awBy1+ph2+pd2)*hh[0];   // 只买HHAD主受让
-    var pick = ev_had > ev_hhad ? 'had' : 'hhad';
-    // 碾压保护: 强队打弱队首轮易打穿，HAD客胜<1.35时强制买HAD
-    var crushed2 = false;
-    if (h[2] <= 1.35 && pick === 'hhad') { pick = 'had'; crushed2 = true; }
-    
-    return {
-      pick: pick,
-      market: pick === 'had' ? '胜平负' : '让球(+'+Math.abs(gl)+')胜平负',
-      sel: pick === 'had' ? '负' : '胜',
-      desc: crushed2 ? (m.away+'赢（碾压保护）') : (pick === 'had' ? (m.away+'赢') : (m.home+'+'+Math.abs(gl)+'球不败')),
-      odds: pick === 'had' ? h[2] : hh[0],
-      ev: crushed2 ? ev_had : Math.max(ev_had, ev_hhad),
-      roi: crushed2 ? Math.round((ev_had-1)*1000)/10 : Math.round((Math.max(ev_had, ev_hhad)-1)*1000)/10,
-      hWin: Math.round(ph2*1000)/10,
-      draw: Math.round(pd2*1000)/10,
-      aWin: Math.round((awBy1+awBy2p)*1000)/10,
-      err: Math.round(bestErr*1000)/10,
-      lam: bl+'/'+bu,
-      altMarket: pick === 'had' ? '让球(+'+Math.abs(gl)+')胜平负' : '胜平负',
-      altSel: pick === 'had' ? '胜' : '负',
-      altDesc: pick === 'had' ? (m.home+'+'+Math.abs(gl)+'球不败') : (m.away+'赢'),
-      altOdds: pick === 'had' ? hh[0] : h[2]
-    };
-  }
-}
-
-// 判断是否已过
-function isPassed(m) {
-  var dt = new Date(m.date + 'T' + m.time + ':00+08:00');
-  return dt < new Date();
-}
-
-// 渲染
-function render(filterMode) {
+function render() {
   var html = '';
   var now = new Date();
-  var today = now.toISOString().slice(0,10);
-  
+
+  // 策略概览
+  html += '<div class="card" style="padding:10px;text-align:center;background:linear-gradient(135deg,#fff8e1,#fff3e0)">';
+  html += '<div style="font-size:12px;color:#888">' + STRATEGY + '</div>';
+  html += '<div style="font-size:13px;color:#666;margin-top:4px">有信号 <b style="color:#2e7d32;font-size:18px">' + MATCHES.length + '</b> 场 | 无信号 <b style="color:#999;font-size:18px">' + NOSIGNAL_COUNT + '</b> 场</div>';
+  html += '</div>';
+
+  if (MATCHES.length === 0) {
+    html += '<div class="card" style="text-align:center;color:#999;padding:30px">今天没有符合条件的热门被高估信号</div>';
+    document.getElementById('matchList').innerHTML = html;
+    document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
+    return;
+  }
+
   MATCHES.forEach(function(m) {
-    var r = analyze(m);
-    var h = m.had, hh = m.hhad, gl = parseFloat(m.gl);
-    var passed = isPassed(m);
-    
-    // 根据匹配筛选
-    var matchDay = m.date;
-    if (filterMode === 'today' && (passed || matchDay < today)) return;
+    var matchTime = m.matchDate ? (m.matchDate.slice(5) + ' ' + (m.matchTime || '')) : '—';
+    var isPassed = false;
+    if (m.matchDate && m.matchTime) {
+      var dt = new Date(m.matchDate + 'T' + m.matchTime + ':00+08:00');
+      isPassed = dt < now;
+    }
 
-    var roiClass = r.roi > 10 ? 'roi-high' : (r.roi > 0 ? 'roi-mid' : 'roi-low');
-    var boxClass = r.roi < 0 ? 'negative' : '';
-    var statusTag = passed ? '<span style="color:#999;font-size:11px">已结束</span>' 
-      : (matchDay === today ? '<span style="color:#e65100;font-size:11px;font-weight:700">🔥 今天</span>' 
-        : '<span style="color:#1565c0;font-size:11px">即将</span>');
+    // 信心星级
+    var stars = m.confidence || '★★';
 
-    html += '<div class="card' + (passed ? ' passed' : '') + '">';
+    // 赔率比较: 热门赔率 vs 推荐赔率
+    var favOdds = m.fav_odds || '—';
+    var recOdds = m.recommend_odds || '—';
+
+    html += '<div class="card' + (isPassed ? ' passed' : '') + '">';
     html += '<div class="match-header">';
-    html += '<div class="match-teams">' + m.match + ' ' + m.home + ' vs ' + m.away + '</div>';
-    html += '<div class="match-time">' + m.date.slice(5) + ' ' + m.time + ' ' + statusTag + '</div>';
+    html += '<div class="match-teams"><span class="league-tag">' + (m.league || '竞彩') + '</span> ' + m.homeTeam + ' vs ' + m.awayTeam + '</div>';
+    html += '<div class="match-time">' + matchTime +
+      (isPassed ? ' <span style="color:#999">已结束</span>' : ' <span style="color:#e65100;font-weight:700">🔥 未开赛</span>') +
+      '</div>';
     html += '</div>';
 
-    html += '<div style="font-size:12px;color:#888;margin-bottom:8px">';
-    html += 'HAD ' + m.had[0].toFixed(2) + '/' + m.had[1].toFixed(2) + '/' + m.had[2].toFixed(2);
-    html += ' | HHAD' + m.gl + ' ' + m.hhad[0].toFixed(2) + '/' + m.hhad[1].toFixed(2) + '/' + m.hhad[2].toFixed(2);
+    // 热门 vs 推荐 赔率对比
+    html += '<div class="odds-compare">';
+    html += '<div class="odds-item hot"><div class="label">🔥 热门 ' + (m.fav_label || '') + '</div><div class="value">@' + favOdds.toFixed(2) + '</div></div>';
+    html += '<div class="odds-item rec"><div class="label">🎯 推荐</div><div class="value" style="color:#2e7d32">@' + recOdds.toFixed(2) + '</div></div>';
     html += '</div>';
 
-    // 单选推荐
+    // 推荐详情
+    var boxClass = isPassed ? '' : 'neutral';
     html += '<div class="strategy-box ' + boxClass + '" style="padding:12px">';
-    html += '<span class="roi-badge ' + roiClass + '">期望' + (r.roi > 0 ? '+' : '') + r.roi.toFixed(0) + '%</span>';
-    html += '<div style="font-size:13px;color:#888;margin-top:2px">' + m.home + ' vs ' + m.away + '</div>';
-    html += '<div style="font-size:15px;font-weight:700;margin:6px 0">';
-    html += '📌 [' + r.market + '] 选 <b style="color:#e65100;font-size:17px">「' + r.sel + '」</b>';
-    html += ' <span style="color:#e65100">@' + r.odds.toFixed(2) + '</span>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<div>';
+    html += '<span style="font-size:15px;font-weight:700">🎯 ' + m.recommend + '</span>';
+    html += ' <span style="color:#e65100;font-weight:700;font-size:16px">@' + recOdds.toFixed(2) + '</span>';
     html += '</div>';
-    html += '<div style="font-size:12px;color:#666">' + r.desc + ' 即中奖 | 1元→' + r.ev.toFixed(2) + '元</div>';
-    html += '<div style="font-size:11px;color:#999;margin-top:6px;border-top:1px dashed #ddd;padding-top:6px">';
-    html += '备选: [' + r.altMarket + '] 选「' + r.altSel + '」(' + r.altDesc + ') @' + r.altOdds.toFixed(2);
+    html += '<span style="font-size:13px;color:#888">' + stars + '</span>';
     html += '</div>';
-    html += '</div></div>';
+
+    // 理由
+    if (m.reasons && m.reasons.length > 0) {
+      html += '<div style="margin-top:8px">';
+      m.reasons.forEach(function(r) {
+        html += '<div class="reason-item">' + r + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // 球队统计
+    if (m.team_stats) {
+      for (var team in m.team_stats) {
+        var s = m.team_stats[team];
+        if (s) {
+          html += '<div class="team-stat">📊 ' + team + ': ' + s.played + '场 ' + s.wins + '胜 ' + s.draws + '平 ' + s.losses + '负 | 进' + s.gf + '失' + s.ga + (s.opponents && s.opponents.length ? ' | 对手: ' + s.opponents.join(',') : '') + '</div>';
+        }
+      }
+    }
+
+    html += '</div>'; // strategy-box
+    html += '</div>'; // card
   });
 
-  document.getElementById('matchList').innerHTML = html || '<div class="card" style="text-align:center;color:#999;padding:30px">没有符合条件的比赛</div>';
+  document.getElementById('matchList').innerHTML = html;
   document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
 }
-
-function filter(mode, e) {
-  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-  e.target.classList.add('active');
-  render(mode);
-}
-
 </script>
 </body>
 </html>
