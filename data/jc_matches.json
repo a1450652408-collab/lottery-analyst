@@ -1,66 +1,9 @@
 {
-  "date": "2026-07-02",
-  "updateTime": "2026-07-02 18:52:34",
-  "matches": [
-    {
-      "homeTeam": "Colombia",
-      "awayTeam": "Ghana",
-      "homeTeamCn": "哥伦比亚",
-      "awayTeamCn": "加纳",
-      "matchDate": "2026-07-04",
-      "matchTime": "01:30",
-      "stage": "LAST_32",
-      "recommend": "平局",
-      "recommend_odds": 4.0,
-      "confidence": "★★",
-      "fav_team": "Colombia",
-      "fav_odds": 1.32,
-      "market_odds": [
-        1.32,
-        4.0,
-        8.2
-      ],
-      "reasons": [
-        "ELO评分支持(Colombia:1543, Ghana:1499)",
-        "泊松模型看好平局(67%)",
-        "市场热门(主胜@1.32)与模型分歧, 模型看好平局(67%), 推荐平局@4.00",
-        "热门表现: 3场2胜, 场均1.3球"
-      ],
-      "team_stats": {
-        "Colombia": {
-          "played": 3,
-          "wins": 2,
-          "draws": 1,
-          "losses": 0,
-          "gf": 4,
-          "ga": 1,
-          "opponents": [
-            "Uzbekistan",
-            "Congo DR",
-            "Portugal"
-          ]
-        },
-        "Ghana": {
-          "played": 3,
-          "wins": 1,
-          "draws": 1,
-          "losses": 1,
-          "gf": 2,
-          "ga": 2,
-          "opponents": [
-            "Panama",
-            "England",
-            "Croatia"
-          ]
-        }
-      }
-    }
-  ],
+  "date": "2026-07-03",
+  "updateTime": "2026-07-03 15:56:34",
+  "matches": [],
   "summary": {
-    "total": 1,
-    "no_signal": 10,
-    "strategy": "V6 ELO + Poisson 混合模型",
-    "data_source": "football-data.org API",
-    "total_upcoming": 11
+    "total": 0,
+    "strategy": "V6 Fade Overrated Favorite"
   }
 }
