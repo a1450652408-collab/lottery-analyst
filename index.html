@@ -4257,11 +4257,55 @@ function renderRecommend(type, data) {
       if (cfg.type !== "keno") return;
       if (!_knEma || !_knFreq30 || !_knMom) return;
       
+      // 当月号码应基于上月及之前的数据生成，确保"每月初换号"后本月内不变
+      var _now = new Date();
+      var _ym = _now.getFullYear() + '-' + String(_now.getMonth()+1).padStart(2,'0');
+      var _x3Data = [];
+      for (var _xi = 0; _xi < data.length; _xi++) {
+        var _it = data[_xi];
+        if (!_it || !_it.d) continue;
+        if (_it.d.slice(0,7) < _ym) _x3Data.push(_it);
+        if (_x3Data.length >= 50) break;
+      }
+      if (_x3Data.length < 10) _x3Data = data.slice(0, Math.min(50, data.length));
+      var _x3Period = _x3Data.length;
+      
+      // 基于上月及之前的数据重新计算 EMA / 频率 / 动量
+      var _x3Ema = {};
+      for (var _x3n = 1; _x3n <= 80; _x3n++) {
+        var _seq = [];
+        for (var _j2 = 0; _j2 < _x3Period; _j2++) _seq.push(getNums(_x3Data[_j2]).indexOf(_x3n) >= 0 ? 1 : 0);
+        if (_seq.length === 0) { _x3Ema[_x3n] = 0; continue; }
+        var _e = _seq[_seq.length - 1];
+        for (var _j3 = _seq.length - 2; _j3 >= 0; _j3--) _e = 0.5 * _seq[_j3] + 0.5 * _e;
+        _x3Ema[_x3n] = _e;
+      }
+      
+      var _x3R5 = {}, _x3P5 = {};
+      for (var _x3n = 1; _x3n <= 80; _x3n++) { _x3R5[_x3n] = 0; _x3P5[_x3n] = 0; }
+      for (var _j = 0; _j < Math.min(10, _x3Period); _j++) {
+        var _nd = getNums(_x3Data[_j]);
+        _nd.forEach(function(n) {
+          if (_j < 5) _x3R5[n]++; else _x3P5[n]++;
+        });
+      }
+      var _x3Mom = {};
+      for (var _x3n = 1; _x3n <= 80; _x3n++) {
+        var _m = (_x3R5[_x3n] - _x3P5[_x3n]) / Math.max(_x3P5[_x3n], 1);
+        _x3Mom[_x3n] = Math.max(-2, Math.min(2, _m));
+      }
+      
+      var _x3Freq30 = {};
+      for (var _x3n = 1; _x3n <= 80; _x3n++) _x3Freq30[_x3n] = 0;
+      for (var _j = 0; _j < Math.min(30, _x3Period); _j++) {
+        getNums(_x3Data[_j]).forEach(function(n) { _x3Freq30[n]++; });
+      }
+      
       var _x3Zones = [[1,20],[21,40],[41,60],[61,80]];
       var _x3Score = {};
-      var _x3Win = Math.min(30, _reUseData.length);
+      var _x3Win = Math.min(30, _x3Data.length);
       for (var _x3n = 1; _x3n <= 80; _x3n++) {
-        _x3Score[_x3n] = (_knEma[_x3n]||0)*5 + (Math.min(_knFreq30[_x3n]||0,_x3Win)/_x3Win)*3 + (_knMom[_x3n]||0)*2;
+        _x3Score[_x3n] = (_x3Ema[_x3n]||0)*5 + (Math.min(_x3Freq30[_x3n]||0,_x3Win)/_x3Win)*3 + (_x3Mom[_x3n]||0)*2;
       }
       
       /* 各区平均分排序 */
