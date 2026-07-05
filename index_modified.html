@@ -3402,63 +3402,6 @@ function renderRecommend(type, data) {
     for (var _zvn = 1; _zvn <= 80; _zvn++) { _zvVotes40plus[_zvn] = (_knTop30List.indexOf(_zvn) >= 0) ? (_zvVotes[_zvn] || 0) : -999; }
     
     _reHtml += '<div class="rec-card" style="border-left-color:#7c4dff"><div class="rec-header">🧠 区间均衡·多因子投票（分玩法优化·V2·基于Top30池）</div>';
-    /* ★ 改进版选取函数：从Top40%池中加权随机选，杜绝钉子户 */
-    function _zonePickWeighted(scores, selectN) {
-      var zones = [[1,20],[21,40],[41,60],[61,80]];
-      var result = [];
-      if (selectN <= 6 || selectN >= 10) {
-        /* ★ 奇偶平衡目标 */
-        var _zParity = { tO: Math.round(selectN / 2), tE: selectN - Math.round(selectN / 2) };
-        var zPer = Math.floor(selectN / 4);
-        var zExtra = selectN % 4;
-        for (var zi = 0; zi < 4; zi++) {
-          var zTake = zPer + (zi < zExtra ? 1 : 0);
-          if (zTake <= 0) continue;
-          var zNums = [];
-          for (var n = zones[zi][0]; n <= zones[zi][1]; n++) zNums.push(n);
-          zNums.sort(function(a,b){ return (scores[b]||0) - (scores[a]||0); });
-          /* ★ 检查该区是否所有号码都被禁用(score≤-900=哨兵值) → 跳过此区 */
-          var _allPDisabled = true;
-          for (var _pd = 0; _pd < zNums.length; _pd++) {
-            if ((scores[zNums[_pd]]||0) > -900) { _allPDisabled = false; break; }
-          }
-          if (_allPDisabled) continue;
-          /* 从Top40%中加权随机选 */
-          var poolSize = Math.max(zTake, Math.ceil(zNums.length * 0.4));
-          var pool = zNums.slice(0, poolSize);
-          /* ★ 当前奇偶统计 */
-          var _zCurOdd = 0, _zCurEven = 0;
-          result.forEach(function(n){ if(n%2===1) _zCurOdd++; else _zCurEven++; });
-          var _zNeedOdd = Math.max(0, _zParity.tO - _zCurOdd);
-          var _zNeedEven = Math.max(0, _zParity.tE - _zCurEven);
-          var weighted = pool.map(function(n) {
-            var w = Math.max(0.1, (scores[n]||0) + 1);
-            if (result.indexOf(n) >= 0) w = 0;
-            /* ★ 奇偶平衡加成 */
-            if (_zNeedOdd > _zNeedEven && n % 2 === 1) w *= 3;
-            if (_zNeedEven > _zNeedOdd && n % 2 === 0) w *= 3;
-            return { n: n, w: w };
-          });
-          var taken = 0;
-          while (taken < zTake && weighted.length > 0) {
-            var totalW = 0; weighted.forEach(function(x){ totalW += x.w; });
-            if (totalW <= 0) break;
-            var r = Math.random() * totalW;
-            var pickIdx = 0;
-            for (var i = 0; i < weighted.length; i++) { r -= weighted[i].w; if (r <= 0) { pickIdx = i; break; } }
-            var picked = weighted[pickIdx].n;
-            if (result.indexOf(picked) < 0) { result.push(picked); taken++; }
-            weighted.splice(pickIdx, 1);
-          }
-          if (taken < zTake) {
-            for (var t = 0; t < zNums.length && taken < zTake; t++) {
-              if (result.indexOf(zNums[t]) < 0) { result.push(zNums[t]); taken++; }
-            }
-          }
-        }
-      }
-      return result;
-    }
     /* ★ 紫卡增量选号：先预排序各区 */
     var _zZonesP = [[1,20],[21,40],[41,60],[61,80]];
     var _zPrePickP = [[],[],[],[]];
