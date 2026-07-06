@@ -3236,7 +3236,7 @@ function renderRecommend(type, data) {
     }
     /* ===== V2优化结束 ===== */
     
-    /* ★ V5优化: 平衡评分(热号频率×0.6 + 冷号遗漏×0.4 + 重号+近期) */
+    /* ★ V5优化: 冷主导评分(热×0.3 + 冷×0.7 + 遗漏×0.8 + 重号+近期补偿) */
     var _knScores = {};
     var _knExpectedFreq = _knPeriod * 20 / 80;
     for (var _kni = 1; _kni <= _knTotal; _kni++) {
@@ -3245,13 +3245,13 @@ function renderRecommend(type, data) {
       /* 热号成分 */
       var _heatS = _freqRatio * 8.0;
       /* 冷号成分(遗漏越大分越高) */
-      var _coldS = Math.max(0, (1 - _freqRatio)) * 4.0 + _missVal * 1.0;
+      var _coldS = Math.max(0, (1 - _freqRatio)) * 4.0;
       /* 重号 */
-      var _repB = _knPrevSet.has(_kni) ? 6.0 : 0.0;
+      var _repB = _knPrevSet.has(_kni) ? 5.0 : 0.0;
       /* 近期未出补偿 */
-      var _recB = (_knR5[_kni] > 0) ? Math.min(_knR5[_kni], 5) * 0.5 : 3.0;
+      var _recB = (_knR5[_kni] > 0) ? Math.min(_knR5[_kni], 5) * 0.5 : 5.0;
       
-      var _s = _heatS * 0.6 + _coldS * 0.4 + _repB + _recB;
+      var _s = _heatS * 0.3 + _coldS * 0.7 + _missVal * 0.8 + _repB + _recB;
       if (_reKillSet.has(_kni)) _s = -999;
       _knScores[_kni] = _s;
     }
@@ -3312,19 +3312,14 @@ function renderRecommend(type, data) {
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
       
-      if (_zndc === 2) {
-        /* ★ V5: 选二用2区(半区各取1个), 提高命中率 */
-        var _zZones2 = [[1,40],[41,80]];
-        for (var _zzi2 = 0; _zzi2 < 2; _zzi2++) {
-          var _zHalfNums = [];
-          for (var _zn2 = _zZones2[_zzi2][0]; _zn2 <= _zZones2[_zzi2][1]; _zn2++) {
-            if (_knTop30List.indexOf(_zn2) >= 0) _zHalfNums.push(_zn2);
-          }
-          _zHalfNums.sort(function(a,b){ return (_knScores30[b]||-999) - (_knScores30[a]||-999); });
-          if (_zHalfNums.length > 0 && _zRes.indexOf(_zHalfNums[0]) < 0) _zRes.push(_zHalfNums[0]);
+      if (_zndc === 2 || _zndc === 3) {
+        /* ★ 最终版: 选二/选三无分区, 直接从Top30取Top N */
+        var _zAll = _knRanked.filter(function(item){ return _knTop30List.indexOf(item.n) >= 0; });
+        for (var _zi2 = 0; _zi2 < _zndc && _zi2 < _zAll.length; _zi2++) {
+          if (_zRes.indexOf(_zAll[_zi2].n) < 0) _zRes.push(_zAll[_zi2].n);
         }
       } else if (_zndc <= 6 || _zndc >= 10) {
-        /* 选3~选6、选10~13：区间均衡（基于Top30池）+ 增量选号 */
+        /* 选4~选6、选10~13：区间均衡（基于Top30池）+ 增量选号 */
         var _zPer = Math.floor(_zndc / 4);
         var _zExtra = _zndc % 4;
         for (var _zzi = 0; _zzi < 4; _zzi++) {
@@ -3396,8 +3391,8 @@ function renderRecommend(type, data) {
       _zRes.forEach(function(n) { _reHtml += '<span class="dt-ball dan">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><span style="font-size:8px;color:#999">' + _zc10Str + '</span><span class="rec-row-copy" onclick="_copyKenoRow(this)">📋</span></div>';
     }
-    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fff3e0;border-radius:4px;margin-top:4px">📊 选2: 半区均衡 | 选3~6/10~13: 区间均衡 | 选7: 集中3区 | 选8: 重点覆盖(65%/35%) | 选9: 冷热混合(7:3)</div>';
-    _reHtml += '<div class="rec-reason">各玩法独立优化策略 | V5平衡评分(热×0.6+冷×0.4)消除热号偏差</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
+    _reHtml += '<div style="font-size:9px;color:#666;padding:3px 6px;background:#fff3e0;border-radius:4px;margin-top:4px">📊 选2/3: Top30直选 | 选4~6/10~13: 区间均衡 | 选7: 集中3区 | 选8: 重点覆盖(65%/35%) | 选9: 冷热混合(7:3)</div>';
+    _reHtml += '<div class="rec-reason">V5冷主导评分(热×0.3+冷×0.7+遗漏×0.8)消除热号偏差</div><div class="rec-copy" onclick="_copyNums(this)" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     
     /* ===== 区间均衡·多因子投票 2胆~13胆（四区覆盖·V2·35码池）===== */
     /* 计算全局多因子投票分（全80号计算，但最后只取Top35号码池） */
@@ -3441,16 +3436,11 @@ function renderRecommend(type, data) {
     for (var _zndc = 2; _zndc <= 13; _zndc++) {
       var _zRes = [];
       
-      if (_zndc === 2) {
-        /* ★ V5: 紫卡选二用2区(半区各取1个) */
-        var _zZonesP2 = [[1,40],[41,80]];
-        for (var _zzi2 = 0; _zzi2 < 2; _zzi2++) {
-          var _zHalfNums = [];
-          for (var _zn2 = _zZonesP2[_zzi2][0]; _zn2 <= _zZonesP2[_zzi2][1]; _zn2++) {
-            if (_knTop30List.indexOf(_zn2) >= 0) _zHalfNums.push(_zn2);
-          }
-          _zHalfNums.sort(function(a,b){ return (_zvVotes40plus[b]||-999) - (_zvVotes40plus[a]||-999); });
-          if (_zHalfNums.length > 0 && _zRes.indexOf(_zHalfNums[0]) < 0) _zRes.push(_zHalfNums[0]);
+      if (_zndc === 2 || _zndc === 3) {
+        /* ★ 最终版: 选二/选三无分区, 直接从Top30取Top N */
+        var _zAllP = _knTop30List.slice().sort(function(a,b){ return (_zvVotes40plus[b]||-999) - (_zvVotes40plus[a]||-999); });
+        for (var _zi2 = 0; _zi2 < _zndc && _zi2 < _zAllP.length; _zi2++) {
+          if (_zRes.indexOf(_zAllP[_zi2]) < 0) _zRes.push(_zAllP[_zi2]);
         }
       } else if (_zndc <= 6 || _zndc >= 10) {
         /* 选3~选6、选10~13：区间均衡（基于Top30池）+ 增量选号 */
@@ -3557,8 +3547,8 @@ function renderRecommend(type, data) {
       _zRes.forEach(function(n) { _reHtml += '<span class=\"dt-ball dan\">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div><span style=\"font-size:8px;color:#999\">' + _zc10Str + '</span><span class=\"rec-row-copy\" onclick=\"_copyKenoRow(this)\">📋</span></div>';
     }
-    _reHtml += '<div style=\"font-size:9px;color:#666;padding:3px 6px;background:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2: 半区均衡 | 选3~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
-    _reHtml += '<div class=\"rec-reason\">各玩法独立优化策略 | 多因子评分(含冷号修正) | V5平衡版</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
+    _reHtml += '<div style=\"font-size:9px;color:#f3e5ff;border-radius:4px;margin-top:4px\">📊 选2~6/10~13: 区间均衡 | 选7: 集中3区(多因子) | 选8: 重点覆盖 | 选9: 冷热混合(7:3)</div>';
+    _reHtml += '<div class=\"rec-reason\">多因子评分(含冷号修正) | V5冷主导 | Top30码池</div><div class=\"rec-copy\" onclick=\"_copyNums(this)\" style=\"text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none\">📋复制</div></div>';
 
     /* ===== 冷温热深度分析卡片 ===== */
     _reHtml += '<div class="rec-card" style="border-left-color:#e91e63;background:linear-gradient(135deg,#fce4ec,#fff)"><div class="rec-header">🔥 号码走势·冷温热深度分析</div><div id="kl8_trend_box" style="padding:6px;font-size:12px;line-height:1.6;color:#333">';

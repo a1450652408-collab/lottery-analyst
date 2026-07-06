@@ -59,10 +59,11 @@ function computeAllScores(trainingData, lastDraw) {
     
     const heatScore = freqRatio * 8.0;
     const coldScore = Math.max(0, (1 - freqRatio)) * 4.0 + missVal * 1.0;
-    const repeatBonus = prevSet.has(n) ? 6.0 : 0.0;
-    const recentBonus = freq5[n] > 0 ? freq5[n] * 0.5 : 3.0;
+    const repeatBonus = prevSet.has(n) ? 5.0 : 0.0;
+    const recentBonus = freq5[n] > 0 ? freq5[n] * 0.5 : 5.0;
     
-    scores[n] = heatScore * 0.6 + coldScore * 0.4 + repeatBonus + recentBonus;
+    /* 冷主导: 热×0.3 + 冷×0.7 + 遗漏×0.8 + 重号+近期补偿 */
+    scores[n] = heatScore * 0.3 + coldScore * 0.7 + missVal * (0.8 - 0.4) + repeatBonus + recentBonus;
   }
   return scores;
 }
@@ -84,9 +85,21 @@ function buildTop30Pool(allScores) {
 
 // ========== 自适应分区选号（基于Top30过滤后评分） ==========
 function zoneSelectFromPool(scores, selectN, avoidSet, rangeStart, rangeEnd) {
-  /* 选二=2大区(各20号)，选三=4小区(各10号) */
-  const nZones = (selectN === 2) ? 2 : 4;
+  /* 选二/选三: 无分区, 直接从范围内取Top30内的Top N */
+  if (selectN === 2 || selectN === 3) {
+    const candidates = [];
+    for (let n = rangeStart; n <= rangeEnd; n++) {
+      const s = scores[n] || -999;
+      if (s <= -999) continue;
+      if (avoidSet && avoidSet.has(n)) continue;
+      candidates.push({ n, s });
+    }
+    candidates.sort((a, b) => b.s - a.s);
+    return candidates.slice(0, selectN).map(x => x.n);
+  }
   
+  /* 选4+ (前端用): 分区均衡 */
+  const nZones = 4;
   const zones = [];
   const step = Math.ceil((rangeEnd - rangeStart + 1) / nZones);
   for (let z = 0; z < nZones; z++) {
@@ -94,28 +107,23 @@ function zoneSelectFromPool(scores, selectN, avoidSet, rangeStart, rangeEnd) {
     const ez = Math.min(rangeEnd, sz + step - 1);
     zones.push([sz, ez]);
   }
-  
   let result = [];
   const perZone = Math.ceil(selectN / zones.length);
-  
   for (let zi = 0; zi < zones.length; zi++) {
     const zNums = [];
     for (let n = zones[zi][0]; n <= zones[zi][1]; n++) {
       zNums.push({ n, s: scores[n] || -999 });
     }
     zNums.sort((a, b) => b.s - a.s);
-    
     let taken = 0;
     for (let i = 0; i < zNums.length && taken < perZone; i++) {
       const cand = zNums[i].n;
-      /* 跳过非Top30(s=-999) 和 已选/避集 */
       if (zNums[i].s <= -999) continue;
       if (result.indexOf(cand) >= 0) continue;
       if (avoidSet && avoidSet.has(cand)) continue;
       result.push(cand);
       taken++;
     }
-    /* 补漏：同一个区里如果有非Top30但需要凑数 */
     if (taken < perZone) {
       for (let i = 0; i < zNums.length && taken < perZone; i++) {
         const cand = zNums[i].n;
@@ -123,7 +131,6 @@ function zoneSelectFromPool(scores, selectN, avoidSet, rangeStart, rangeEnd) {
       }
     }
   }
-  
   return result.slice(0, selectN);
 }
 
