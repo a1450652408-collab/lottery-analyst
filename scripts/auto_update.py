@@ -563,6 +563,20 @@ def main():
     except Exception as e:
         print(f"\n  ⚠️ 橙紫卡备份异常: {e}")
 
+    # ===== 全彩种推荐历史备份（选一~选十 + 数字彩 + 乐透型） =====
+    print("\n--- 全彩种推荐历史备份 ---")
+    try:
+        backup_all_script = os.path.join(PROJECT_ROOT, "scripts", "backup_all_recs.py")
+        r = subprocess.run([sys.executable, backup_all_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=300)
+        if r.returncode == 0:
+            for line in r.stdout.strip().split("\n"):
+                if line.strip() and not line.startswith("kl8(") and not line.startswith("ssq(") and not line.startswith("dlt(") and not line.startswith("qlc(") and "=" not in line[:3]:
+                    print(f"  {line}")
+        else:
+            print(f"  ⚠️ 全彩种备份失败 (code={r.returncode}): {r.stderr[:200]}")
+    except Exception as e:
+        print(f"  ⚠️ 全彩种备份异常: {e}")
+
     # ===== 生成所有彩种推荐号码并保存 =====
     print("\n--- 生成所有彩种推荐号码 ---")
     try:
@@ -652,7 +666,7 @@ def _auto_git_push(project_root, has_changes):
     try:
         today_str = datetime.now().strftime("%Y-%m-%d")
         r = subprocess.run(
-            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py"],
+            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js", "scripts/backup_all_recs.py", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py", "scripts/gen_recommendations.py"],
             cwd=project_root, capture_output=True, text=True, timeout=30
         )
         if r.returncode != 0:

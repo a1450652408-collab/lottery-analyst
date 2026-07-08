@@ -503,7 +503,24 @@ def main():
             if poisson_coefficients:
                 teams_with_data = sum(1 for c in poisson_coefficients.values() if c['matches'] > 0)
                 print(f'[泊松模型] 其中 {teams_with_data} 队有实际比赛数据')
-        else:
+        
+        # 后备：加载本地训练的泊松模型 (来自 jc_results.json 24场赛果训练)
+        if not poisson_coefficients:
+            trained_path = os.path.join(os.path.dirname(__file__), 'data', 'poisson_trained.json')
+            if os.path.exists(trained_path):
+                try:
+                    with open(trained_path, encoding='utf-8') as f:
+                        trained = json.load(f)
+                    poisson_coefficients = trained.get('coefficients', {})
+                    league_avg_home = trained.get('league_avg_home', 1.5)
+                    league_avg_away = trained.get('league_avg_away', 1.2)
+                    total_teams = len(poisson_coefficients)
+                    trained_at = trained.get('trained_at', '?')
+                    print(f'[泊松模型] ✅ 加载本地训练模型 ({total_teams}队, {trained.get("total_matches",0)}场, 训练于{trained_at[:10]})')
+                except Exception as e:
+                    print(f'[泊松模型] ⚠️ 加载本地模型失败: {e}')
+        
+        if not poisson_coefficients:
             print('[泊松模型] ⚠️ 无历史比赛数据，将使用实力评分近似')
     else:
         print('[数据] 使用独立赔率分析模式')

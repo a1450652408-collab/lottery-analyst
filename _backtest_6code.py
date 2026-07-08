@@ -47,7 +47,8 @@ def _window_score(data_pool, window_size, pos_count=3):
             for i in range(n):
                 ns = ws[i]['n']
                 s.append(1 if len(ns) > pos and ns[pos] == d else 0)
-            e = s[0] if s else 0
+            s_rev = s[::-1]
+            e = s_rev[0]
             for v in s[1:]: e = 0.5*v + 0.5*e
             shortE = s[0] if s else 0
             longE = s[0] if s else 0

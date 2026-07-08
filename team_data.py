@@ -283,6 +283,46 @@ def calc_team_strength(standings):
     return scores
 
 
+def fetch_wc_matches():
+    """
+    获取世界杯历史比赛结果（用于泊松模型训练）
+    返回: [{homeTeam, awayTeam, homeGoals, awayGoals, date, stage}]
+    """
+    data = api_request('/competitions/WC/matches')
+    if 'error' in data:
+        print(f'  [比赛数据] API错误: {data.get("error")}')
+        return []
+    
+    matches = []
+    for m in data.get('matches', []):
+        # 只取已结束的比赛（有比分）
+        if m.get('status') != 'FINISHED':
+            continue
+        
+        home_team = m.get('homeTeam', {}).get('name', '')
+        away_team = m.get('awayTeam', {}).get('name', '')
+        score = m.get('score', {})
+        full_time = score.get('fullTime', {})
+        home_goals = full_time.get('home')
+        away_goals = full_time.get('away')
+        
+        if None in (home_goals, away_goals):
+            continue
+        
+        matches.append({
+            'homeTeam': home_team,
+            'awayTeam': away_team,
+            'homeGoals': home_goals,
+            'awayGoals': away_goals,
+            'date': m.get('utcDate', '')[:10],
+            'stage': m.get('stage', ''),
+            'matchday': m.get('matchday', 0)
+        })
+    
+    print(f'  [比赛数据] 获取到 {len(matches)} 场已结束比赛')
+    return matches
+
+
 def get_team_score(cn_name, standings, team_scores):
     """
     获取中文队名的实力评分
@@ -316,9 +356,10 @@ def fetch_and_cache_all():
     1. 从缓存加载
     2. 获取世界杯排名 + 球队ID
     3. 获取每队阵容（教练+球员）
-    4. 计算实力评分
-    5. 保存缓存
-    返回 (standings, team_scores, team_squads)
+    4. 获取历史比赛结果（泊松模型用）
+    5. 计算实力评分
+    6. 保存缓存
+    返回 (standings, team_scores, team_squads, matches)
     """
     cache = load_cache()
     result = fetch_wc_standings()
@@ -326,8 +367,9 @@ def fetch_and_cache_all():
     if result is None:
         # 使用缓存
         if cache.get('standings'):
-            return cache['standings'], cache.get('team_scores', {}), cache.get('team_squads', {})
-        return {}, {}, {}
+            return (cache['standings'], cache.get('team_scores', {}),
+                    cache.get('team_squads', {}), cache.get('matches', []))
+        return {}, {}, {}, []
     
     standings, team_id_map = result
     team_scores = calc_team_strength(standings)
@@ -335,13 +377,17 @@ def fetch_and_cache_all():
     # 获取阵容数据
     team_squads = fetch_all_team_squads(team_id_map, cache)
     
+    # 获取历史比赛结果
+    matches = fetch_wc_matches()
+    
     # 更新缓存
     cache['standings'] = standings
     cache['team_scores'] = team_scores
     cache['team_squads'] = team_squads
+    cache['matches'] = matches
     save_cache(cache)
     
-    return standings, team_scores, team_squads
+    return standings, team_scores, team_squads, matches
 
 
 def enrich_match_with_team_data(match, standings, team_scores, team_squads=None):
@@ -383,7 +429,7 @@ def enrich_match_with_team_data(match, standings, team_scores, team_squads=None)
 if __name__ == '__main__':
     print(f'[{datetime.now().strftime("%H:%M:%S")}] 测试 football-data.org API...')
     
-    standings, team_scores = fetch_and_cache_all()
+    standings, team_scores, team_squads, matches = fetch_and_cache_all()
     
     if standings:
         print(f'✅ 成功获取 {len(standings)} 支球队数据')

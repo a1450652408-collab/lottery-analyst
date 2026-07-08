@@ -50,10 +50,12 @@ def comb_n(arr, n):
     return r
 
 def compute_ema(vals, alpha=0.3):
-    """EMA平滑"""
+    """从旧到新计算EMA，让近期数据权重更高"""
     if not vals: return 0
-    ema = vals[0]
-    for v in vals[1:]:
+    # vals[0]=最新, vals[-1]=最旧 → 反转后计算
+    vals_rev = vals[::-1]
+    ema = vals_rev[0]
+    for v in vals_rev[1:]:
         ema = alpha * v + (1-alpha) * ema
     return ema
 
@@ -154,6 +156,10 @@ print("获取排列五数据...")
 pl5_data = fetch_pl5(1200)
 print(f"{len(pl5_data)}期: {pl5_data[-1]['d']} ~ {pl5_data[0]['d']}")
 
+# ⚠️ 数据反转：[0]=最旧, [-1]=最新，才能正向回测
+pl5_rev = pl5_data[::-1]
+print(f"反转后: {pl5_rev[0]['d']} ~ {pl5_rev[-1]['d']} (从旧到新)")
+
 WINDOW = 80
 GROUPS = 5
 
@@ -162,9 +168,9 @@ wb_hit_dist = {i:0 for i in range(6)}
 wb_all = []
 best_wb = {}
 
-for i in range(WINDOW, len(pl5_data)):
-    train = pl5_data[i-WINDOW:i]
-    test = pl5_data[i]
+for i in range(WINDOW, len(pl5_rev)):
+    train = pl5_rev[i-WINDOW:i]   # 历史80期
+    test = pl5_rev[i]                  # 当前期（待预测）
     test_nums = get_nums(test)
     test_set = set(test_nums)
     
@@ -237,7 +243,7 @@ wb4 = best_wb.get(4, 0)
 wb3 = best_wb.get(3, 0)
 
 wb_cost = wb_trials * 240
-wb_prize = wb5 * 100000 + wb4 * 1000 + wb3 * 50
+wb_prize = wb5 * 100000 + wb4 * 10 + wb3 * 3
 
 print(f"\n{'='*80}")
 print(f"排列五 五不同 V2优化版 回测报告")
