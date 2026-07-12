@@ -3798,18 +3798,16 @@ function renderRecommend(type, data) {
       });
       _ztDan.sort(function(a,b){return a-b;});
       
-      // 拖码: 全区1-80热号(去掉胆码), 按近10期频次取前7
+      // 拖码: 剩下的1-15里去胆, 按近10期频次排前7
       var _ztFreq10 = {};
-      for (var _n = 1; _n <= 80; _n++) _ztFreq10[_n] = 0;
+      _ztZ15.forEach(function(n) { _ztFreq10[n] = 0; });
       _ztData.slice(0, 10).forEach(function(d) {
-        getNums(d).forEach(function(x) { _ztFreq10[x]++; });
+        getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq10[x]++; });
       });
-      var _ztAllNums = [];
-      for (var _n = 1; _n <= 80; _n++) _ztAllNums.push(_n);
-      var _ztTuo = _ztAllNums.filter(function(n){ return _ztDan.indexOf(n) < 0; })
-                             .sort(function(a,b){ return (_ztFreq10[b]||0) - (_ztFreq10[a]||0); })
-                             .slice(0, 7)
-                             .sort(function(a,b){return a-b;});
+      var _ztTuo = _ztZ15.filter(function(n){ return _ztDan.indexOf(n) < 0; })
+                         .sort(function(a,b){ return (_ztFreq10[b]||0) - (_ztFreq10[a]||0); })
+                         .slice(0, 7)
+                         .sort(function(a,b){return a-b;});
       
       // 显示胆码频率统计
       var _ztDanFreqStr = '';
