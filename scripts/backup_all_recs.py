@@ -111,6 +111,46 @@ def make_kl8_per_play_recommendations(voted_list, recent):
 
 
 # ====== 各彩种备份函数 ======
+def calc_zone15_dantuo(training, period_data):
+    """
+    三区均衡法：1-5/6-10/11-15各取最热号做胆，剩余取近10期最热7个做拖
+    返回: {dan, tuo, dan_hit, tuo_hit}
+    """
+    from collections import Counter
+    
+    # 近5期各区间最热号 (training是oldest-first, 最后5个是最新的)
+    zones = [(1,5), (6,10), (11,15)]
+    recent5 = training[-5:] if len(training) >= 5 else training
+    freq5 = Counter()
+    for item in recent5:
+        for n in item.get("n", item.get("r", [])):
+            if 1 <= n <= 15: freq5[n] += 1
+    
+    dans = []
+    for lo, hi in zones:
+        zone_nums = [n for n in range(lo, hi+1)]
+        best = max(zone_nums, key=lambda x: freq5.get(x, 0))
+        dans.append(best)
+    dans.sort()
+    
+    # 近10期取拖（排除胆码, training是oldest-first, 最后10个是最新的）
+    recent10 = training[-10:] if len(training) >= 10 else training
+    freq10 = Counter()
+    for item in recent10:
+        for n in item.get("n", item.get("r", [])):
+            if 1 <= n <= 15 and n not in dans: freq10[n] += 1
+    
+    tuos = [n for n, _ in freq10.most_common(7)]
+    tuos.sort()
+    
+    # 命中
+    drawn = set(period_data.get("n", period_data.get("r", [])))
+    dan_hit = sorted([n for n in dans if n in drawn])
+    tuo_hit = sorted([n for n in tuos if n in drawn])
+    
+    return {"dan": dans, "tuo": tuos, "dan_hit": dan_hit, "tuo_hit": tuo_hit, "dan_hit_count": len(dan_hit), "tuo_hit_count": len(tuo_hit)}
+
+
 def backup_kl8(all_data):
     """快乐8全推荐备份（含选一~选十 + 20码 + 胆拖 + 9胆 + 橙紫卡）"""
     records = []
@@ -180,6 +220,9 @@ def backup_kl8(all_data):
             
             d9_hit = sorted([n for n in d9 if n in drawn_set])
             
+            # 三区均衡法（1-15 选五3胆7拖）
+            zone15 = calc_zone15_dantuo(training, period_data)
+            
             records.append({
                 "period": period, "date": date,
                 "basic": {"rec": sorted(voted_20), "hit": hit_20, "hit_count": len(hit_20)},
@@ -189,6 +232,7 @@ def backup_kl8(all_data):
                 "d9dan": {"rec": d9, "hit": d9_hit, "hit_count": len(d9_hit)},
                 "per_play": per_play_hits,
                 "enhanced_per_play": e_per_play_hits,
+                "zone15_xuan5": zone15,
             })
         except Exception as ex:
             records.append({"period": period, "date": date, "error": str(ex)[:100]})
