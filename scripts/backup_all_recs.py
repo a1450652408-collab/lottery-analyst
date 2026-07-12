@@ -133,12 +133,12 @@ def calc_zone15_dantuo(training, period_data):
         dans.append(best)
     dans.sort()
     
-    # 近10期取拖（排除胆码, training是oldest-first, 最后10个是最新的）
+    # 近10期全区取拖（排除胆码, training是oldest-first, 最后10个是最新的）
     recent10 = training[-10:] if len(training) >= 10 else training
     freq10 = Counter()
     for item in recent10:
         for n in item.get("n", item.get("r", [])):
-            if 1 <= n <= 15 and n not in dans: freq10[n] += 1
+            if n not in dans: freq10[n] += 1
     
     tuos = [n for n, _ in freq10.most_common(7)]
     tuos.sort()
