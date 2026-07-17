@@ -1,10 +1,10 @@
 {
-  "report_time": "2026-07-15T11:24:13.075389",
+  "report_time": "2026-07-17T09:52:52.849465",
   "summary": {
     "total": 33,
-    "correct": 12,
-    "accuracy_pct": 36.4,
-    "roi_pct": -14.7,
+    "correct": 10,
+    "accuracy_pct": 30.3,
+    "roi_pct": -42.2,
     "value_bets_count": 8
   },
   "details": [
@@ -33,8 +33,8 @@
       "home": "法国",
       "away": "塞内加尔",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.4,
       "ev": 0
     },
@@ -43,7 +43,7 @@
       "home": "海地",
       "away": "苏格兰",
       "pred": "主胜",
-      "act": "平局",
+      "act": "客胜",
       "hit": false,
       "odds": 2.5,
       "ev": 0
@@ -53,8 +53,8 @@
       "home": "加纳",
       "away": "巴拿马",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.5,
       "ev": 0
     },
@@ -73,8 +73,8 @@
       "home": "瑞典",
       "away": "突尼斯",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.5,
       "ev": 0
     },
@@ -93,8 +93,8 @@
       "home": "阿根廷",
       "away": "阿尔及利亚",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.25,
       "ev": 0
     },
@@ -103,8 +103,8 @@
       "home": "奥地利",
       "away": "约旦",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.3,
       "ev": 0
     },
@@ -113,8 +113,8 @@
       "home": "英格兰",
       "away": "克罗地亚",
       "pred": "主胜",
-      "act": "平局",
-      "hit": false,
+      "act": "主胜",
+      "hit": true,
       "odds": 1.6,
       "ev": 0
     },
@@ -123,8 +123,8 @@
       "home": "乌兹别克",
       "away": "哥伦比亚",
       "pred": "客胜",
-      "act": "平局",
-      "hit": false,
+      "act": "客胜",
+      "hit": true,
       "odds": 1.22,
       "ev": 0
     },
@@ -133,7 +133,7 @@
       "home": "苏格兰",
       "away": "摩洛哥",
       "pred": "主胜",
-      "act": "平局",
+      "act": "客胜",
       "hit": false,
       "odds": 5.1,
       "ev": 207.0
@@ -143,7 +143,7 @@
       "home": "加拿大",
       "away": "卡塔尔",
       "pred": "客胜",
-      "act": "平局",
+      "act": "主胜",
       "hit": false,
       "odds": 9.1,
       "ev": 176.3
@@ -153,7 +153,7 @@
       "home": "瑞士",
       "away": "波黑",
       "pred": "客胜",
-      "act": "平局",
+      "act": "主胜",
       "hit": false,
       "odds": 6.9,
       "ev": 109.5
@@ -163,7 +163,7 @@
       "home": "美国",
       "away": "澳大利亚",
       "pred": "客胜",
-      "act": "平局",
+      "act": "主胜",
       "hit": false,
       "odds": 5.6,
       "ev": 0.0
@@ -183,7 +183,7 @@
       "home": "墨西哥",
       "away": "韩国",
       "pred": "客胜",
-      "act": "平局",
+      "act": "主胜",
       "hit": false,
       "odds": 3.87,
       "ev": 8.8
@@ -193,8 +193,8 @@
       "home": "突尼斯",
       "away": "日本",
       "pred": "客胜",
-      "act": "平局",
-      "hit": false,
+      "act": "客胜",
+      "hit": true,
       "odds": 1.38,
       "ev": 6.3
     },
@@ -203,7 +203,7 @@
       "home": "荷兰",
       "away": "瑞典",
       "pred": "客胜",
-      "act": "平局",
+      "act": "主胜",
       "hit": false,
       "odds": 4.52,
       "ev": 248.2
@@ -213,8 +213,8 @@
       "home": "土耳其",
       "away": "巴拉圭",
       "pred": "客胜",
-      "act": "平局",
-      "hit": false,
+      "act": "客胜",
+      "hit": true,
       "odds": 3.92,
       "ev": 119.7
     },
@@ -223,8 +223,8 @@
       "home": "德国",
       "away": "科特迪瓦",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 4.15,
       "ev": 175.2
     },
@@ -243,8 +243,8 @@
       "home": "新西兰",
       "away": "埃及",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "客胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -253,8 +253,8 @@
       "home": "约旦",
       "away": "阿尔及利",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "客胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -263,8 +263,8 @@
       "home": "巴拿马",
       "away": "克罗地亚",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "客胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -273,8 +273,8 @@
       "home": "波黑",
       "away": "卡塔尔",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -283,8 +283,8 @@
       "home": "苏格兰",
       "away": "巴西",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "客胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -293,8 +293,8 @@
       "home": "乌拉圭",
       "away": "西班牙",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "客胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -303,8 +303,8 @@
       "home": "克罗地亚",
       "away": "加纳",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -313,8 +313,8 @@
       "home": "巴西",
       "away": "日本",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -323,8 +323,8 @@
       "home": "西班牙",
       "away": "奥地利",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     },
@@ -333,8 +333,8 @@
       "home": "葡萄牙",
       "away": "克罗地亚",
       "pred": "平局",
-      "act": "平局",
-      "hit": true,
+      "act": "主胜",
+      "hit": false,
       "odds": 0,
       "ev": 0
     }
