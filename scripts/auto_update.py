@@ -661,12 +661,25 @@ def main():
 
 
 def _auto_git_push(project_root, has_changes):
-    """自动 commit + push 到 GitHub"""
-    import subprocess
+    """自动 commit + push 到 GitHub（推送时临时清除代理环境变量，避免代理认证干扰）"""
+    import subprocess, os
+
+    # 保存并临时清除代理环境变量（防止 GitHub 走代理导致认证失败）
+    _proxy_keys = ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"]
+    _saved = {}
+    for k in _proxy_keys:
+        v = os.environ.pop(k, None)
+        if v is not None:
+            _saved[k] = v
+
+    def _restore_proxy():
+        for k, v in _saved.items():
+            os.environ[k] = v
+
     try:
         today_str = datetime.now().strftime("%Y-%m-%d")
         r = subprocess.run(
-            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/backup_orange_purple_hits.js", "scripts/backup_all_recs.py", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py", "scripts/gen_recommendations.py"],
+            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/auto_update.py", "scripts/backup_orange_purple_hits.js", "scripts/backup_all_recs.py", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py", "scripts/gen_recommendations.py"],
             cwd=project_root, capture_output=True, text=True, timeout=30
         )
         if r.returncode != 0:
@@ -678,6 +691,7 @@ def _auto_git_push(project_root, has_changes):
         )
         if r.returncode == 0:
             print("  ⏭️  Git: 无变更，跳过推送")
+            _restore_proxy()
             return
         
         r = subprocess.run(
@@ -688,17 +702,31 @@ def _auto_git_push(project_root, has_changes):
             print(f"  ✅ Git commit: {r.stdout.strip()[:80]}")
         else:
             print(f"  ⚠️ Git commit: {r.stderr.strip()[:150]}")
-        
+
+        # 用 os.environ 传干净的 env（已清除代理变量）
+        clean_env = {k: v for k, v in os.environ.items()}
+        for k in _proxy_keys:
+            clean_env.pop(k, None)
+        # GIT_TERMINAL_PROMPT=0 防止 git 在无交互环境下卡死
+        clean_env["GIT_TERMINAL_PROMPT"] = "0"
+
         r = subprocess.run(
             ["git", "push", "origin", "master"],
-            cwd=project_root, capture_output=True, text=True, timeout=60
+            cwd=project_root, capture_output=True, text=True, timeout=60,
+            env=clean_env
         )
         if r.returncode == 0:
             print(f"  ✅ Git push: {r.stdout.strip()[:80]}")
         else:
-            print(f"  ⚠️ Git push: {r.stderr.strip()[:200]}")
+            err_msg = r.stderr.strip()[:200]
+            print(f"  ⚠️ Git push 失败: {err_msg}")
+            # 如果是因为没有凭据，给出提示
+            if "could not read Username" in err_msg or "401 Unauthorized" in err_msg:
+                print(f"  💡 提示: GitHub 凭据过期，请运行 'git push' 重新认证，或配置 Personal Access Token")
     except Exception as e:
         print(f"  ⚠️ Git自动推送异常: {e}")
+    finally:
+        _restore_proxy()
 
 
 if __name__ == "__main__":
