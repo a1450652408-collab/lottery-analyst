@@ -118,7 +118,7 @@ def fetch_sh15x5():
         nums = [int(n) for n in re.findall(r'icon-redball[^>]*>(\d+)</span>', row)]
         if len(nums) != 5: continue
         date_m = re.search(r'<td>\s*<span>\s*(\d{2}-\d{2})\s*</span>\s*</td>', row)
-        year = "2026"
+        year = period[:4] if period and len(period) >= 4 else str(datetime.now().year)
         date_str = f'{year}-{date_m.group(1)}' if date_m else ''
         results.append({"p": period, "d": date_str, "n": sorted(nums)})
 
@@ -549,7 +549,7 @@ def main():
 
     # ===== 快乐8 橙紫卡命中记录（追加当天）=====
     try:
-        node_exe = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions\22.12.0\node.exe")
+        node_exe = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions\22.22.2\node.exe")
         backup_script = os.path.join(PROJECT_ROOT, "scripts", "backup_orange_purple_hits.js")
         # ⚠️ 清空 NODE_OPTIONS，否则 --use-system-ca 会导致 Node 22.x 报错退出
         clean_env = os.environ.copy()
@@ -567,7 +567,7 @@ def main():
     print("\n--- 全彩种推荐历史备份 ---")
     try:
         backup_all_script = os.path.join(PROJECT_ROOT, "scripts", "backup_all_recs.py")
-        r = subprocess.run([sys.executable, backup_all_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=300)
+        r = subprocess.run([sys.executable, backup_all_script], cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=120)
         if r.returncode == 0:
             for line in r.stdout.strip().split("\n"):
                 if line.strip() and not line.startswith("kl8(") and not line.startswith("ssq(") and not line.startswith("dlt(") and not line.startswith("qlc(") and "=" not in line[:3]:
