@@ -1,71 +1,71 @@
 {
-  "date": "2026-07-19 23:59",
-  "total": 139,
+  "date": "2026-07-21 00:04",
+  "total": 140,
   "positions": {
     "pos0": {
       "freq": [
         {
           "digit": 9,
           "count": 17,
-          "pct": 12.2,
+          "pct": 12.1,
           "route": "0路",
           "oe": "奇",
           "bs": "大",
-          "delta": 2.2
+          "delta": 2.1
+        },
+        {
+          "digit": 0,
+          "count": 15,
+          "pct": 10.7,
+          "route": "0路",
+          "oe": "偶",
+          "bs": "小",
+          "delta": 0.7
         },
         {
           "digit": 3,
           "count": 15,
-          "pct": 10.8,
+          "pct": 10.7,
           "route": "0路",
           "oe": "奇",
           "bs": "小",
-          "delta": 0.8
+          "delta": 0.7
         },
         {
           "digit": 4,
           "count": 15,
-          "pct": 10.8,
+          "pct": 10.7,
           "route": "1路",
           "oe": "偶",
           "bs": "小",
-          "delta": 0.8
+          "delta": 0.7
         },
         {
           "digit": 5,
           "count": 15,
-          "pct": 10.8,
+          "pct": 10.7,
           "route": "2路",
           "oe": "奇",
           "bs": "大",
-          "delta": 0.8
-        },
-        {
-          "digit": 0,
-          "count": 14,
-          "pct": 10.1,
-          "route": "0路",
-          "oe": "偶",
-          "bs": "小",
-          "delta": 0.1
+          "delta": 0.7
         },
         {
           "digit": 1,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "1路",
           "oe": "奇",
           "bs": "小",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 2,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "2路",
           "oe": "偶",
           "bs": "小",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 7,
@@ -96,22 +96,22 @@
         }
       ],
       "route_012": {
-        "0": 41.0,
-        "1": 29.5,
-        "2": 29.5
+        "0": 41.4,
+        "1": 29.3,
+        "2": 29.3
       },
       "odd_even": {
-        "奇": 53.2,
-        "偶": 46.8
+        "奇": 52.9,
+        "偶": 47.1
       },
       "big_small": {
-        "大": 48.2,
-        "小": 51.8
+        "大": 47.9,
+        "小": 52.1
       },
       "hot_top3": [
         9,
-        3,
-        4
+        0,
+        3
       ],
       "cold_bottom3": [
         7,
@@ -124,11 +124,11 @@
         {
           "digit": 4,
           "count": 19,
-          "pct": 13.7,
+          "pct": 13.6,
           "route": "1路",
           "oe": "偶",
           "bs": "小",
-          "delta": 3.7
+          "delta": 3.6
         },
         {
           "digit": 1,
@@ -151,29 +151,38 @@
         {
           "digit": 2,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "2路",
           "oe": "偶",
           "bs": "小",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 9,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "0路",
           "oe": "奇",
           "bs": "大",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 3,
           "count": 13,
-          "pct": 9.4,
+          "pct": 9.3,
           "route": "0路",
           "oe": "奇",
           "bs": "小",
-          "delta": -0.6
+          "delta": -0.7
+        },
+        {
+          "digit": 6,
+          "count": 12,
+          "pct": 8.6,
+          "route": "0路",
+          "oe": "偶",
+          "bs": "大",
+          "delta": -1.4
         },
         {
           "digit": 8,
@@ -194,36 +203,27 @@
           "delta": -2.1
         },
         {
-          "digit": 6,
-          "count": 11,
-          "pct": 7.9,
-          "route": "0路",
-          "oe": "偶",
-          "bs": "大",
-          "delta": -2.1
-        },
-        {
           "digit": 7,
           "count": 9,
-          "pct": 6.5,
+          "pct": 6.4,
           "route": "1路",
           "oe": "奇",
           "bs": "大",
-          "delta": -3.5
+          "delta": -3.6
         }
       ],
       "route_012": {
-        "0": 35.3,
-        "1": 33.1,
-        "2": 31.7
+        "0": 35.7,
+        "1": 32.9,
+        "2": 31.4
       },
       "odd_even": {
-        "奇": 51.8,
-        "偶": 48.2
+        "奇": 51.4,
+        "偶": 48.6
       },
       "big_small": {
-        "大": 46.0,
-        "小": 54.0
+        "大": 46.4,
+        "小": 53.6
       },
       "hot_top3": [
         4,
@@ -231,8 +231,8 @@
         5
       ],
       "cold_bottom3": [
+        8,
         0,
-        6,
         7
       ]
     },
@@ -259,47 +259,47 @@
         {
           "digit": 7,
           "count": 16,
-          "pct": 11.5,
+          "pct": 11.4,
           "route": "1路",
           "oe": "奇",
           "bs": "大",
-          "delta": 1.5
+          "delta": 1.4
         },
         {
           "digit": 0,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "0路",
           "oe": "偶",
           "bs": "小",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 3,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "0路",
           "oe": "奇",
           "bs": "小",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 1,
           "count": 13,
-          "pct": 9.4,
+          "pct": 9.3,
           "route": "1路",
           "oe": "奇",
           "bs": "小",
-          "delta": -0.6
+          "delta": -0.7
         },
         {
           "digit": 6,
           "count": 13,
-          "pct": 9.4,
+          "pct": 9.3,
           "route": "0路",
           "oe": "偶",
           "bs": "大",
-          "delta": -0.6
+          "delta": -0.7
         },
         {
           "digit": 8,
@@ -321,26 +321,26 @@
         },
         {
           "digit": 9,
-          "count": 10,
-          "pct": 7.2,
+          "count": 11,
+          "pct": 7.9,
           "route": "0路",
           "oe": "奇",
           "bs": "大",
-          "delta": -2.8
+          "delta": -2.1
         }
       ],
       "route_012": {
-        "0": 36.7,
-        "1": 33.8,
-        "2": 29.5
+        "0": 37.1,
+        "1": 33.6,
+        "2": 29.3
       },
       "odd_even": {
-        "奇": 51.1,
-        "偶": 48.9
+        "奇": 51.4,
+        "偶": 48.6
       },
       "big_small": {
-        "大": 49.6,
-        "小": 50.4
+        "大": 50.0,
+        "小": 50.0
       },
       "hot_top3": [
         4,
@@ -358,65 +358,65 @@
         {
           "digit": 7,
           "count": 20,
-          "pct": 14.4,
+          "pct": 14.3,
           "route": "1路",
           "oe": "奇",
           "bs": "大",
-          "delta": 4.4
+          "delta": 4.3
         },
         {
           "digit": 3,
           "count": 17,
-          "pct": 12.2,
+          "pct": 12.1,
           "route": "0路",
           "oe": "奇",
           "bs": "小",
-          "delta": 2.2
+          "delta": 2.1
         },
         {
           "digit": 1,
           "count": 16,
-          "pct": 11.5,
+          "pct": 11.4,
           "route": "1路",
           "oe": "奇",
           "bs": "小",
-          "delta": 1.5
+          "delta": 1.4
         },
         {
           "digit": 4,
           "count": 16,
-          "pct": 11.5,
+          "pct": 11.4,
           "route": "1路",
           "oe": "偶",
           "bs": "小",
-          "delta": 1.5
+          "delta": 1.4
         },
         {
           "digit": 6,
           "count": 14,
-          "pct": 10.1,
+          "pct": 10.0,
           "route": "0路",
           "oe": "偶",
           "bs": "大",
-          "delta": 0.1
+          "delta": 0.0
         },
         {
           "digit": 0,
           "count": 13,
-          "pct": 9.4,
+          "pct": 9.3,
           "route": "0路",
           "oe": "偶",
           "bs": "小",
-          "delta": -0.6
+          "delta": -0.7
         },
         {
           "digit": 8,
-          "count": 12,
-          "pct": 8.6,
+          "count": 13,
+          "pct": 9.3,
           "route": "2路",
           "oe": "偶",
           "bs": "大",
-          "delta": -1.4
+          "delta": -0.7
         },
         {
           "digit": 9,
@@ -439,25 +439,25 @@
         {
           "digit": 5,
           "count": 8,
-          "pct": 5.8,
+          "pct": 5.7,
           "route": "2路",
           "oe": "奇",
           "bs": "大",
-          "delta": -4.2
+          "delta": -4.3
         }
       ],
       "route_012": {
-        "0": 40.3,
-        "1": 37.4,
-        "2": 22.3
+        "0": 40.0,
+        "1": 37.1,
+        "2": 22.9
       },
       "odd_even": {
-        "奇": 52.5,
-        "偶": 47.5
+        "奇": 52.1,
+        "偶": 47.9
       },
       "big_small": {
-        "大": 47.5,
-        "小": 52.5
+        "大": 47.9,
+        "小": 52.1
       },
       "hot_top3": [
         7,
@@ -475,65 +475,65 @@
         {
           "digit": 3,
           "count": 22,
-          "pct": 15.8,
+          "pct": 15.7,
           "route": "0路",
           "oe": "奇",
           "bs": "小",
-          "delta": 5.8
+          "delta": 5.7
         },
         {
           "digit": 0,
           "count": 17,
-          "pct": 12.2,
+          "pct": 12.1,
           "route": "0路",
           "oe": "偶",
           "bs": "小",
-          "delta": 2.2
+          "delta": 2.1
         },
         {
           "digit": 1,
           "count": 16,
-          "pct": 11.5,
+          "pct": 11.4,
           "route": "1路",
           "oe": "奇",
           "bs": "小",
-          "delta": 1.5
+          "delta": 1.4
         },
         {
           "digit": 2,
           "count": 16,
-          "pct": 11.5,
+          "pct": 11.4,
           "route": "2路",
           "oe": "偶",
           "bs": "小",
-          "delta": 1.5
+          "delta": 1.4
         },
         {
           "digit": 4,
           "count": 15,
-          "pct": 10.8,
+          "pct": 10.7,
           "route": "1路",
           "oe": "偶",
           "bs": "小",
-          "delta": 0.8
+          "delta": 0.7
         },
         {
           "digit": 9,
-          "count": 14,
-          "pct": 10.1,
+          "count": 15,
+          "pct": 10.7,
           "route": "0路",
           "oe": "奇",
           "bs": "大",
-          "delta": 0.1
+          "delta": 0.7
         },
         {
           "digit": 6,
           "count": 13,
-          "pct": 9.4,
+          "pct": 9.3,
           "route": "0路",
           "oe": "偶",
           "bs": "大",
-          "delta": -0.6
+          "delta": -0.7
         },
         {
           "digit": 8,
@@ -547,11 +547,11 @@
         {
           "digit": 5,
           "count": 10,
-          "pct": 7.2,
+          "pct": 7.1,
           "route": "2路",
           "oe": "奇",
           "bs": "大",
-          "delta": -2.8
+          "delta": -2.9
         },
         {
           "digit": 7,
@@ -564,17 +564,17 @@
         }
       ],
       "route_012": {
-        "0": 47.5,
-        "1": 25.9,
-        "2": 26.6
+        "0": 47.9,
+        "1": 25.7,
+        "2": 26.4
       },
       "odd_even": {
-        "奇": 48.2,
-        "偶": 51.8
+        "奇": 48.6,
+        "偶": 51.4
       },
       "big_small": {
-        "大": 38.1,
-        "小": 61.9
+        "大": 38.6,
+        "小": 61.4
       },
       "hot_top3": [
         3,
@@ -589,11 +589,12 @@
     }
   },
   "sums": {
-    "avg": 22.1,
+    "avg": 22.2,
     "min": 7,
     "max": 79,
-    "current": 22,
+    "current": 32,
     "recent_10": [
+      32,
       22,
       25,
       20,
@@ -602,14 +603,13 @@
       36,
       17,
       18,
-      11,
-      15
+      11
     ],
     "hot": [
       {
         "sum": 22,
         "count": 13,
-        "pct": 9.4
+        "pct": 9.3
       },
       {
         "sum": 21,
@@ -624,17 +624,17 @@
       {
         "sum": 18,
         "count": 9,
-        "pct": 6.5
+        "pct": 6.4
       },
       {
         "sum": 16,
         "count": 9,
-        "pct": 6.5
+        "pct": 6.4
       },
       {
         "sum": 23,
         "count": 8,
-        "pct": 5.8
+        "pct": 5.7
       },
       {
         "sum": 25,
@@ -655,37 +655,37 @@
           "when": 3,
           "then": 4,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 5,
           "then": 5,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 9,
           "then": 5,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 7,
           "then": 8,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 1,
           "then": 5,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 1,
           "then": 1,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         }
       ],
       "0-2": [
@@ -693,37 +693,37 @@
           "when": 0,
           "then": 0,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 1,
           "then": 4,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 3,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 8,
           "then": 7,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
+        },
+        {
+          "when": 0,
+          "then": 8,
+          "count": 3,
+          "pct": 21.4
         },
         {
           "when": 5,
           "then": 4,
           "count": 3,
-          "pct": 23.1
-        },
-        {
-          "when": 9,
-          "then": 1,
-          "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         }
       ],
       "0-3": [
@@ -731,75 +731,75 @@
           "when": 0,
           "then": 7,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 3,
           "then": 4,
           "count": 5,
-          "pct": 38.5
-        },
-        {
-          "when": 9,
-          "then": 4,
-          "count": 4,
-          "pct": 30.8
+          "pct": 35.7
         },
         {
           "when": 0,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
+        },
+        {
+          "when": 9,
+          "then": 4,
+          "count": 4,
+          "pct": 28.6
         },
         {
           "when": 7,
           "then": 7,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 5,
           "then": 6,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         }
       ],
       "0-4": [
         {
-          "when": 9,
-          "then": 5,
-          "count": 4,
-          "pct": 30.8
-        },
-        {
-          "when": 9,
-          "then": 3,
-          "count": 4,
-          "pct": 30.8
-        },
-        {
           "when": 0,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
+        },
+        {
+          "when": 9,
+          "then": 5,
+          "count": 4,
+          "pct": 28.6
+        },
+        {
+          "when": 9,
+          "then": 3,
+          "count": 4,
+          "pct": 28.6
         },
         {
           "when": 3,
           "then": 9,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
+        },
+        {
+          "when": 0,
+          "then": 8,
+          "count": 3,
+          "pct": 21.4
         },
         {
           "when": 5,
           "then": 4,
           "count": 3,
-          "pct": 23.1
-        },
-        {
-          "when": 5,
-          "then": 3,
-          "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         }
       ],
       "1-2": [
@@ -807,37 +807,37 @@
           "when": 5,
           "then": 1,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 4,
           "then": 3,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 1,
           "then": 5,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 9,
           "then": 0,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 5,
           "then": 4,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 0,
           "then": 7,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         }
       ],
       "1-3": [
@@ -845,37 +845,37 @@
           "when": 5,
           "then": 6,
           "count": 6,
-          "pct": 46.2
+          "pct": 42.9
         },
         {
           "when": 8,
           "then": 7,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 1,
           "then": 3,
           "count": 4,
-          "pct": 30.8
-        },
-        {
-          "when": 5,
-          "then": 4,
-          "count": 3,
-          "pct": 23.1
+          "pct": 28.6
         },
         {
           "when": 6,
           "then": 6,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         },
         {
           "when": 6,
           "then": 2,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
+        },
+        {
+          "when": 5,
+          "then": 4,
+          "count": 3,
+          "pct": 21.4
         }
       ],
       "1-4": [
@@ -883,37 +883,37 @@
           "when": 5,
           "then": 3,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 4,
           "then": 9,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 4,
           "then": 0,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 1,
           "then": 2,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 1,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 2,
           "then": 4,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         }
       ],
       "2-3": [
@@ -921,37 +921,37 @@
           "when": 8,
           "then": 1,
           "count": 7,
-          "pct": 53.8
+          "pct": 50.0
         },
         {
           "when": 0,
           "then": 7,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 7,
           "then": 6,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 4,
           "then": 4,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         },
         {
           "when": 4,
           "then": 8,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         },
         {
           "when": 0,
           "then": 3,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         }
       ],
       "2-4": [
@@ -959,37 +959,37 @@
           "when": 5,
           "then": 2,
           "count": 7,
-          "pct": 53.8
+          "pct": 50.0
         },
         {
           "when": 3,
           "then": 0,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 4,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 0,
           "then": 6,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 6,
           "then": 3,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
-          "when": 4,
-          "then": 9,
+          "when": 9,
+          "then": 5,
           "count": 3,
-          "pct": 23.1
+          "pct": 21.4
         }
       ],
       "3-4": [
@@ -997,41 +997,41 @@
           "when": 3,
           "then": 3,
           "count": 6,
-          "pct": 46.2
+          "pct": 42.9
         },
         {
           "when": 7,
           "then": 0,
           "count": 5,
-          "pct": 38.5
+          "pct": 35.7
         },
         {
           "when": 0,
           "then": 0,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 6,
           "then": 4,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 4,
           "then": 9,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         },
         {
           "when": 3,
           "then": 1,
           "count": 4,
-          "pct": 30.8
+          "pct": 28.6
         }
       ]
     },
-    "pos0_eq_pos1_rate": 15.8
+    "pos0_eq_pos1_rate": 15.7
   },
   "recommendations": [
     {
@@ -1072,39 +1072,39 @@
     },
     {
       "nums": [
-        3,
+        0,
         4,
         4
       ],
       "method": "追热",
-      "reason": "百位3热+十位4热+个位4热"
+      "reason": "百位0热+十位4热+个位4热"
     },
     {
       "nums": [
-        3,
+        0,
         4,
         5
       ],
       "method": "追热",
-      "reason": "百位3热+十位4热+个位5热"
+      "reason": "百位0热+十位4热+个位5热"
     },
     {
       "nums": [
-        3,
+        0,
         1,
         4
       ],
       "method": "追热",
-      "reason": "百位3热+十位1热+个位4热"
+      "reason": "百位0热+十位1热+个位4热"
     },
     {
       "nums": [
-        3,
+        0,
         1,
         5
       ],
       "method": "追热",
-      "reason": "百位3热+十位1热+个位5热"
+      "reason": "百位0热+十位1热+个位5热"
     }
   ]
 }
