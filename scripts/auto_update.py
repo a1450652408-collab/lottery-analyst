@@ -664,7 +664,7 @@ def _auto_git_push(project_root, has_changes):
     """自动 commit + push 到 GitHub（推送时临时清除代理环境变量，避免代理认证干扰）"""
     import subprocess, os
 
-    # 保存并临时清除代理环境变量（防止 GitHub 走代理导致认证失败）
+    # 先保存并临时清除代理（add/commit 不需要代理），push 时再恢复
     _proxy_keys = ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"]
     _saved = {}
     for k in _proxy_keys:
@@ -703,10 +703,8 @@ def _auto_git_push(project_root, has_changes):
         else:
             print(f"  ⚠️ Git commit: {r.stderr.strip()[:150]}")
 
-        # 用 os.environ 传干净的 env（已清除代理变量）
+        # 用 os.environ 传干净的 env（保留代理，国内访问 GitHub 必需）
         clean_env = {k: v for k, v in os.environ.items()}
-        for k in _proxy_keys:
-            clean_env.pop(k, None)
         # GIT_TERMINAL_PROMPT=0 防止 git 在无交互环境下卡死
         clean_env["GIT_TERMINAL_PROMPT"] = "0"
 
