@@ -1,136 +1,141 @@
 {
   "name": "pl3",
   "positions": 3,
-  "total_periods": 46,
-  "analysis_periods": 46,
-  "last_period": "26195",
-  "last_date": "2026-07-24",
+  "total_periods": 47,
+  "analysis_periods": 47,
+  "last_period": "26196",
+  "last_date": "2026-07-25",
   "last_draw": [
-    5,
-    9,
-    5
+    7,
+    2,
+    6
   ],
-  "updated": "2026-07-25 02:11",
+  "updated": "2026-07-26 00:11",
   "features": {
     "odd_even": {
       "patterns": {
         "patterns": {
+          "100": {
+            "count": 9,
+            "pct": 19.1
+          },
           "111": {
             "count": 9,
-            "pct": 19.6
-          },
-          "100": {
-            "count": 8,
-            "pct": 17.4
+            "pct": 19.1
           },
           "001": {
             "count": 7,
-            "pct": 15.2
+            "pct": 14.9
           },
           "101": {
             "count": 5,
-            "pct": 10.9
+            "pct": 10.6
           },
           "110": {
             "count": 5,
-            "pct": 10.9
+            "pct": 10.6
           },
           "000": {
             "count": 4,
-            "pct": 8.7
+            "pct": 8.5
           },
           "011": {
             "count": 4,
-            "pct": 8.7
+            "pct": 8.5
           },
           "010": {
             "count": 4,
-            "pct": 8.7
+            "pct": 8.5
           }
         },
-        "total": 46
+        "total": 47
       },
       "streaks": [
         {
           "pattern": "1",
           "length": 2,
-          "end_pos": 1,
+          "end_pos": 2,
           "pct": 4.3
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 4,
-          "pct": 6.5
+          "end_pos": 5,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 2,
-          "end_pos": 6,
+          "end_pos": 7,
           "pct": 4.3
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 9,
-          "pct": 6.5
+          "end_pos": 10,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 2,
-          "end_pos": 13,
+          "end_pos": 14,
           "pct": 4.3
         },
         {
           "pattern": "0",
           "length": 2,
-          "end_pos": 15,
+          "end_pos": 16,
           "pct": 4.3
         },
         {
           "pattern": "1",
           "length": 2,
-          "end_pos": 17,
+          "end_pos": 18,
           "pct": 4.3
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 20,
-          "pct": 6.5
+          "end_pos": 21,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 3,
-          "end_pos": 23,
-          "pct": 6.5
+          "end_pos": 24,
+          "pct": 6.4
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 30,
-          "pct": 6.5
+          "end_pos": 31,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 3,
-          "end_pos": 37,
-          "pct": 6.5
+          "end_pos": 38,
+          "pct": 6.4
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 40,
-          "pct": 6.5
+          "end_pos": 41,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 4,
-          "end_pos": 44,
-          "pct": 8.7
+          "end_pos": 45,
+          "pct": 8.5
         }
       ],
       "transition": {
+        "011": {
+          "next_0": 57.1,
+          "next_1": 42.9,
+          "cnt": 7
+        },
         "110": {
           "next_0": 83.3,
           "next_1": 16.7,
@@ -149,11 +154,6 @@
         "001": {
           "next_0": 33.3,
           "next_1": 66.7,
-          "cnt": 6
-        },
-        "011": {
-          "next_0": 50.0,
-          "next_1": 50.0,
           "cnt": 6
         },
         "010": {
@@ -178,87 +178,93 @@
         "patterns": {
           "011": {
             "count": 8,
-            "pct": 17.4
+            "pct": 17.0
           },
           "110": {
             "count": 8,
-            "pct": 17.4
+            "pct": 17.0
+          },
+          "101": {
+            "count": 6,
+            "pct": 12.8
           },
           "010": {
             "count": 6,
-            "pct": 13.0
+            "pct": 12.8
           },
           "001": {
             "count": 6,
-            "pct": 13.0
-          },
-          "101": {
-            "count": 5,
-            "pct": 10.9
+            "pct": 12.8
           },
           "000": {
             "count": 5,
-            "pct": 10.9
+            "pct": 10.6
           },
           "111": {
             "count": 4,
-            "pct": 8.7
+            "pct": 8.5
           },
           "100": {
             "count": 4,
-            "pct": 8.7
+            "pct": 8.5
           }
         },
-        "total": 46
+        "total": 47
       },
       "streaks": [
         {
+          "pattern": "1",
+          "length": 2,
+          "end_pos": 1,
+          "pct": 4.3
+        },
+        {
           "pattern": "0",
           "length": 3,
-          "end_pos": 3,
-          "pct": 6.5
+          "end_pos": 4,
+          "pct": 6.4
         },
         {
           "pattern": "1",
           "length": 7,
-          "end_pos": 10,
-          "pct": 15.2
+          "end_pos": 11,
+          "pct": 14.9
         },
         {
           "pattern": "0",
           "length": 5,
-          "end_pos": 15,
-          "pct": 10.9
+          "end_pos": 16,
+          "pct": 10.6
         },
         {
           "pattern": "1",
           "length": 8,
-          "end_pos": 23,
-          "pct": 17.4
+          "end_pos": 24,
+          "pct": 17.0
         },
         {
           "pattern": "0",
           "length": 2,
-          "end_pos": 25,
+          "end_pos": 26,
           "pct": 4.3
         },
         {
           "pattern": "0",
           "length": 4,
-          "end_pos": 30,
-          "pct": 8.7
+          "end_pos": 31,
+          "pct": 8.5
         },
         {
           "pattern": "1",
           "length": 4,
-          "end_pos": 36,
-          "pct": 8.7
+          "end_pos": 37,
+          "pct": 8.5
         },
         {
           "pattern": "0",
           "length": 3,
-          "end_pos": 39,
-          "pct": 6.5
+          "end_pos": 40,
+          "pct": 6.4
         }
       ]
     },
@@ -267,6 +273,7 @@
       "min": 3,
       "max": 20,
       "recent10": [
+        15,
         19,
         8,
         9,
@@ -275,8 +282,7 @@
         14,
         14,
         13,
-        14,
-        17
+        14
       ],
       "recent_avg": 12.8
     },
@@ -284,6 +290,7 @@
       "avg": 5.2,
       "max": 9,
       "recent10": [
+        5,
         4,
         7,
         8,
@@ -292,14 +299,13 @@
         1,
         9,
         7,
-        8,
-        1
+        8
       ]
     },
     "balance": {
-      "oe_ratio": 50.0,
-      "bs_ratio": 54.3,
-      "oe_current": 1,
+      "oe_ratio": 48.9,
+      "bs_ratio": 55.3,
+      "oe_current": 0,
       "bs_current": 1
     }
   },
@@ -310,8 +316,8 @@
         "1": 6,
         "5": 6,
         "0": 5,
+        "7": 5,
         "8": 5,
-        "7": 4,
         "2": 3,
         "4": 3,
         "6": 3,
@@ -324,9 +330,9 @@
       ],
       "cold": [],
       "normal": [
+        7,
         0,
         8,
-        7,
         9,
         6,
         2,
@@ -446,11 +452,11 @@
             "count": 2
           },
           {
-            "digit": 0,
+            "digit": 5,
             "count": 1
           },
           {
-            "digit": 3,
+            "digit": 0,
             "count": 1
           }
         ],
@@ -485,10 +491,11 @@
       },
       "route012": {
         "0": 19,
-        "1": 13,
+        "1": 14,
         "2": 14
       },
       "last10": [
+        7,
         5,
         7,
         1,
@@ -497,8 +504,7 @@
         5,
         9,
         6,
-        0,
-        6
+        0
       ]
     },
     {
@@ -508,9 +514,9 @@
         "1": 5,
         "4": 5,
         "0": 4,
+        "2": 4,
         "6": 4,
         "9": 4,
-        "2": 3,
         "3": 3,
         "7": 2
       },
@@ -522,10 +528,10 @@
       "normal": [
         4,
         1,
+        2,
         9,
         0,
         6,
-        2,
         3
       ],
       "gap": {
@@ -571,15 +577,15 @@
         ],
         "2": [
           {
+            "digit": 9,
+            "count": 2
+          },
+          {
             "digit": 0,
             "count": 1
           },
           {
             "digit": 8,
-            "count": 1
-          },
-          {
-            "digit": 9,
             "count": 1
           }
         ],
@@ -681,9 +687,10 @@
       "route012": {
         "0": 15,
         "1": 12,
-        "2": 19
+        "2": 20
       },
       "last10": [
+        2,
         9,
         0,
         8,
@@ -692,17 +699,16 @@
         5,
         5,
         0,
-        8,
-        6
+        8
       ]
     },
     {
       "freq": {
         "1": 6,
         "5": 6,
+        "6": 6,
         "2": 5,
         "4": 5,
-        "6": 5,
         "7": 5,
         "9": 5,
         "0": 4,
@@ -710,12 +716,12 @@
         "8": 2
       },
       "hot": [
+        6,
         5,
         1
       ],
       "cold": [],
       "normal": [
-        6,
         9,
         4,
         7,
@@ -823,12 +829,12 @@
         ],
         "6": [
           {
-            "digit": 9,
+            "digit": 5,
             "count": 2
           },
           {
-            "digit": 5,
-            "count": 1
+            "digit": 9,
+            "count": 2
           },
           {
             "digit": 7,
@@ -871,11 +877,12 @@
         ]
       },
       "route012": {
-        "0": 17,
+        "0": 18,
         "1": 16,
         "2": 13
       },
       "last10": [
+        6,
         5,
         1,
         0,
@@ -884,8 +891,7 @@
         4,
         0,
         7,
-        6,
-        5
+        6
       ]
     }
   ],
@@ -895,66 +901,66 @@
         "pos": 0,
         "ranked": [
           {
-            "digit": 5,
-            "score": 0.3136,
-            "pct": 17.0
-          },
-          {
-            "digit": 7,
-            "score": 0.2617,
-            "pct": 14.2
-          },
-          {
-            "digit": 3,
-            "score": 0.2384,
-            "pct": 13.0
-          },
-          {
             "digit": 1,
-            "score": 0.2338,
-            "pct": 12.7
-          },
-          {
-            "digit": 8,
-            "score": 0.2279,
-            "pct": 12.4
+            "score": 0.3702,
+            "pct": 21.9
           },
           {
             "digit": 0,
-            "score": 0.2206,
-            "pct": 12.0
+            "score": 0.3488,
+            "pct": 20.6
           },
           {
-            "digit": 2,
-            "score": 0.1811,
-            "pct": 9.8
+            "digit": 7,
+            "score": 0.281,
+            "pct": 16.6
+          },
+          {
+            "digit": 5,
+            "score": 0.227,
+            "pct": 13.4
+          },
+          {
+            "digit": 8,
+            "score": 0.1879,
+            "pct": 11.1
+          },
+          {
+            "digit": 3,
+            "score": 0.1609,
+            "pct": 9.5
           },
           {
             "digit": 6,
-            "score": 0.1134,
-            "pct": 6.2
+            "score": 0.1144,
+            "pct": 6.8
           },
           {
             "digit": 9,
-            "score": 0.0496,
-            "pct": 2.7
+            "score": 0.0027,
+            "pct": 0.2
+          },
+          {
+            "digit": 2,
+            "score": -0.0,
+            "pct": -0.0
           },
           {
             "digit": 4,
-            "score": -0.0004,
+            "score": -0.0001,
             "pct": -0.0
           }
         ],
         "top3": [
-          5,
-          7,
-          3
+          1,
+          0,
+          7
         ],
         "top5": [
-          5,
-          7,
-          3,
           1,
+          0,
+          7,
+          5,
           8
         ]
       },
@@ -962,194 +968,186 @@
         "pos": 1,
         "ranked": [
           {
-            "digit": 0,
-            "score": 0.3388,
-            "pct": 17.3
-          },
-          {
-            "digit": 5,
-            "score": 0.2721,
-            "pct": 13.9
+            "digit": 8,
+            "score": 0.3376,
+            "pct": 17.5
           },
           {
             "digit": 9,
-            "score": 0.2583,
-            "pct": 13.2
+            "score": 0.2835,
+            "pct": 14.7
           },
           {
-            "digit": 8,
-            "score": 0.2269,
-            "pct": 11.6
+            "digit": 0,
+            "score": 0.2424,
+            "pct": 12.5
           },
           {
-            "digit": 1,
-            "score": 0.2157,
-            "pct": 11.0
+            "digit": 6,
+            "score": 0.2145,
+            "pct": 11.1
           },
           {
             "digit": 2,
-            "score": 0.1919,
-            "pct": 9.8
+            "score": 0.2068,
+            "pct": 10.7
           },
           {
-            "digit": 3,
-            "score": 0.1775,
+            "digit": 1,
+            "score": 0.1841,
+            "pct": 9.5
+          },
+          {
+            "digit": 5,
+            "score": 0.1766,
             "pct": 9.1
           },
           {
             "digit": 4,
-            "score": 0.1485,
-            "pct": 7.6
+            "score": 0.1522,
+            "pct": 7.9
           },
           {
-            "digit": 6,
-            "score": 0.1295,
-            "pct": 6.6
+            "digit": 3,
+            "score": 0.1362,
+            "pct": 7.0
           },
           {
             "digit": 7,
-            "score": -0.0,
+            "score": -0.0003,
             "pct": -0.0
           }
         ],
         "top3": [
-          0,
-          5,
-          9
+          8,
+          9,
+          0
         ],
         "top5": [
-          0,
-          5,
-          9,
           8,
-          1
+          9,
+          0,
+          6,
+          2
         ]
       },
       {
         "pos": 2,
         "ranked": [
           {
-            "digit": 4,
-            "score": 0.2859,
-            "pct": 14.8
+            "digit": 9,
+            "score": 0.2708,
+            "pct": 13.9
           },
           {
             "digit": 6,
-            "score": 0.2837,
-            "pct": 14.7
+            "score": 0.2625,
+            "pct": 13.5
           },
           {
             "digit": 5,
-            "score": 0.2516,
-            "pct": 13.0
+            "score": 0.2502,
+            "pct": 12.9
           },
           {
-            "digit": 1,
-            "score": 0.2319,
-            "pct": 12.0
-          },
-          {
-            "digit": 2,
-            "score": 0.204,
-            "pct": 10.6
-          },
-          {
-            "digit": 9,
-            "score": 0.1944,
-            "pct": 10.1
-          },
-          {
-            "digit": 7,
-            "score": 0.1766,
-            "pct": 9.1
+            "digit": 4,
+            "score": 0.2213,
+            "pct": 11.4
           },
           {
             "digit": 0,
-            "score": 0.153,
-            "pct": 7.9
+            "score": 0.2128,
+            "pct": 10.9
+          },
+          {
+            "digit": 7,
+            "score": 0.2061,
+            "pct": 10.6
+          },
+          {
+            "digit": 2,
+            "score": 0.1868,
+            "pct": 9.6
+          },
+          {
+            "digit": 1,
+            "score": 0.1841,
+            "pct": 9.5
           },
           {
             "digit": 8,
-            "score": 0.147,
-            "pct": 7.6
+            "score": 0.1506,
+            "pct": 7.7
           },
           {
             "digit": 3,
-            "score": 0.0019,
+            "score": 0.0018,
             "pct": 0.1
           }
         ],
         "top3": [
-          4,
+          9,
           6,
           5
         ],
         "top5": [
-          4,
+          9,
           6,
           5,
-          1,
-          2
+          4,
+          0
         ]
       }
     ],
     "best_combo": [
-      5,
-      0,
-      4
+      1,
+      8,
+      9
     ],
     "top3_combos": [
       [
-        5,
-        0,
-        4
-      ],
-      [
-        5,
         1,
-        7
+        8,
+        9
       ],
       [
-        3,
-        0,
+        1,
+        2,
+        2
+      ],
+      [
+        7,
+        8,
         5
       ]
     ],
     "ensemble_combo": [
-      5,
-      0,
-      5
+      1,
+      8,
+      6
     ],
     "ensemble_predictions": [
       {
         "pos": 0,
         "ranked": [
           {
-            "digit": 5,
-            "score": 1.5
-          },
-          {
-            "digit": 7,
-            "score": 1.5
+            "digit": 1,
+            "score": 2.25
           },
           {
             "digit": 0,
-            "score": 0.75
+            "score": 1.75
           },
           {
-            "digit": 1,
+            "digit": 7,
+            "score": 1.0
+          },
+          {
+            "digit": 5,
             "score": 0.75
           },
           {
             "digit": 3,
-            "score": 0.75
-          },
-          {
-            "digit": 8,
-            "score": 0.5
-          },
-          {
-            "digit": 9,
             "score": 0.25
           },
           {
@@ -1163,51 +1161,59 @@
           {
             "digit": 6,
             "score": 0.0
+          },
+          {
+            "digit": 8,
+            "score": 0.0
+          },
+          {
+            "digit": 9,
+            "score": 0.0
           }
         ],
         "top3": [
-          5,
-          7,
-          0
+          1,
+          0,
+          7
         ],
         "top5": [
-          5,
-          7,
-          0,
           1,
+          0,
+          7,
+          5,
           3
         ],
-        "consensus": false
+        "consensus": true
       },
       {
         "pos": 1,
         "ranked": [
           {
-            "digit": 0,
-            "score": 2.25
+            "digit": 8,
+            "score": 1.75
           },
           {
-            "digit": 5,
-            "score": 1.25
+            "digit": 0,
+            "score": 1.5
           },
           {
             "digit": 9,
-            "score": 1.0
+            "score": 1.25
           },
           {
-            "digit": 8,
+            "digit": 2,
+            "score": 0.75
+          },
+          {
+            "digit": 5,
             "score": 0.75
           },
           {
             "digit": 1,
-            "score": 0.5
+            "score": 0.0
           },
           {
             "digit": 3,
-            "score": 0.25
-          },
-          {
-            "digit": 2,
             "score": 0.0
           },
           {
@@ -1224,16 +1230,16 @@
           }
         ],
         "top3": [
+          8,
           0,
-          5,
           9
         ],
         "top5": [
-          0,
-          5,
-          9,
           8,
-          1
+          0,
+          9,
+          2,
+          5
         ],
         "consensus": true
       },
@@ -1241,59 +1247,59 @@
         "pos": 2,
         "ranked": [
           {
+            "digit": 6,
+            "score": 2.0
+          },
+          {
             "digit": 5,
             "score": 1.5
           },
           {
-            "digit": 1,
-            "score": 1.25
+            "digit": 4,
+            "score": 0.75
+          },
+          {
+            "digit": 9,
+            "score": 0.75
           },
           {
             "digit": 2,
-            "score": 1.25
-          },
-          {
-            "digit": 4,
-            "score": 1.25
-          },
-          {
-            "digit": 6,
             "score": 0.5
           },
           {
-            "digit": 0,
+            "digit": 1,
             "score": 0.25
+          },
+          {
+            "digit": 7,
+            "score": 0.25
+          },
+          {
+            "digit": 0,
+            "score": 0.0
           },
           {
             "digit": 3,
             "score": 0.0
           },
           {
-            "digit": 7,
-            "score": 0.0
-          },
-          {
             "digit": 8,
-            "score": 0.0
-          },
-          {
-            "digit": 9,
             "score": 0.0
           }
         ],
         "top3": [
+          6,
           5,
-          1,
-          2
+          4
         ],
         "top5": [
+          6,
           5,
-          1,
-          2,
           4,
-          6
+          9,
+          2
         ],
-        "consensus": false
+        "consensus": true
       }
     ],
     "method": "9因子v2(频率+EMA+动量+遗漏+Markov+模式跟随+间隔均匀度+MACD趋势+相似度匹配)+集成投票+权重自调优"
@@ -1302,69 +1308,69 @@
     "windows": {
       "win_20": {
         "pos1": {
-          "total": 25,
+          "total": 26,
           "top3_hits": 6,
-          "top3_rate": 24.0,
-          "top5_hits": 11,
-          "top5_rate": 44.0,
+          "top3_rate": 23.08,
+          "top5_hits": 12,
+          "top5_rate": 46.15,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "pos2": {
-          "total": 25,
+          "total": 26,
           "top3_hits": 8,
-          "top3_rate": 32.0,
-          "top5_hits": 11,
-          "top5_rate": 44.0,
+          "top3_rate": 30.77,
+          "top5_hits": 12,
+          "top5_rate": 46.15,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "pos3": {
-          "total": 25,
+          "total": 26,
           "top3_hits": 4,
-          "top3_rate": 16.0,
+          "top3_rate": 15.38,
           "top5_hits": 9,
-          "top5_rate": 36.0,
+          "top5_rate": 34.62,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "full_match_top3": {
           "hits": 2,
-          "total": 25,
-          "rate": 8.0
+          "total": 26,
+          "rate": 7.6923
         }
       },
       "win_30": {
         "pos1": {
-          "total": 15,
+          "total": 16,
           "top3_hits": 6,
-          "top3_rate": 40.0,
+          "top3_rate": 37.5,
           "top5_hits": 9,
-          "top5_rate": 60.0,
+          "top5_rate": 56.25,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "pos2": {
-          "total": 15,
+          "total": 16,
           "top3_hits": 6,
-          "top3_rate": 40.0,
-          "top5_hits": 8,
-          "top5_rate": 53.33,
+          "top3_rate": 37.5,
+          "top5_hits": 9,
+          "top5_rate": 56.25,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "pos3": {
-          "total": 15,
-          "top3_hits": 5,
-          "top3_rate": 33.33,
-          "top5_hits": 5,
-          "top5_rate": 33.33,
+          "total": 16,
+          "top3_hits": 6,
+          "top3_rate": 37.5,
+          "top5_hits": 6,
+          "top5_rate": 37.5,
           "random_top3": 30.0,
           "random_top5": 50.0
         },
         "full_match_top3": {
           "hits": 0,
-          "total": 15,
+          "total": 16,
           "rate": 0.0
         }
       },
@@ -1438,7 +1444,7 @@
       }
     },
     "best_window": "win_30",
-    "best_rate": 40.0,
+    "best_rate": 37.5,
     "v2_optimized": {
       "weights": {
         "freq": 0.0545,
@@ -1452,35 +1458,35 @@
         "similarity": 0.0935
       },
       "best_window": 30,
-      "avg_top3_rate": 37.78
+      "avg_top3_rate": 37.5
     }
   },
   "wu_ma_hit_rate": {
     "win_20": {
       "per_pos": {
-        "0": 44.0,
-        "1": 44.0,
-        "2": 36.0
+        "0": 46.15,
+        "1": 46.15,
+        "2": 38.46
       },
-      "full_match_top5": 16.0,
-      "total_tests": 25,
-      "full_hits": 4
+      "full_match_top5": 19.2308,
+      "total_tests": 26,
+      "full_hits": 5
     },
     "win_30": {
       "per_pos": {
-        "0": 53.33,
-        "1": 46.67,
-        "2": 33.33
+        "0": 50.0,
+        "1": 50.0,
+        "2": 37.5
       },
-      "full_match_top5": 6.6667,
-      "total_tests": 15,
+      "full_match_top5": 6.25,
+      "total_tests": 16,
       "full_hits": 1
     }
   },
   "tuning": {
     "current_window": 20,
     "suggested_window": 30,
-    "reason": "权重优化后窗口30期平均命中率37.78%",
+    "reason": "权重优化后窗口30期平均命中率37.50%",
     "optimized_weights": {
       "freq": 0.0545,
       "ema": 0.2244,
