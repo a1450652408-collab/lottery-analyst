@@ -51,7 +51,7 @@ def evaluate_options(h, d, a):
     V4无偏见评估：对主胜/平局/客胜分别计算价值分
     返回[{label, odds, value_pct, ev, score}, ...]
     """
-    _, fair, juice = calc_implied_prob([h, d, a])
+    fair, juice = calc_implied_prob([h, d, a])
     if any(o <= 0 for o in [h, d, a]) or juice > 15:
         return None
     
