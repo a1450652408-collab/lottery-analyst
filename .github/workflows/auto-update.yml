@@ -48,12 +48,12 @@ jobs:
 
           PUSH_URL="https://${PAT}@github.com/a1450652408-collab/lottery-analyst.git"
 
-          # === 先拉取远程避免冲突 ===
-          git pull --rebase "$PUSH_URL" master
+          # === 先拉取远程避免冲突（autostash 自动暂存脚本生成的文件变更）===
+          git pull --rebase --autostash "$PUSH_URL" master
 
-          # === 提交数据变化（数字彩 + 竞彩）===
+          # === 提交数据变化（数字彩 + 竞彩；全量 add，确保 index_modified.html / deploy 也入库）===
           DATA_CHANGED=false
-          git add index.html data/saved_recs.json data/jc_results.json data/jc_matches.json data/poisson_trained.json
+          git add -A
           if ! git diff --staged --quiet; then
             DATA_CHANGED=true
             git commit -m "data: auto-update $(date +%Y-%m-%d)"
