@@ -1,21 +1,21 @@
 {
-  "date": "2026-08-20 00:18",
+  "date": "2026-08-20 23:25",
   "total_periods": 301,
-  "latest_period": "2026221",
-  "latest_date": "2026-08-19",
+  "latest_period": "2026222",
+  "latest_date": "2026-08-20",
   "windows": {
     "short_10": {
       "size": 10,
       "classify": {
         "1": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "2": {
-          "freq": 0.4,
+          "freq": 0.5,
           "tier": "H",
-          "hits": 4
+          "hits": 5
         },
         "3": {
           "freq": 0.4,
@@ -28,9 +28,9 @@
           "hits": 0
         },
         "5": {
-          "freq": 0.4,
+          "freq": 0.5,
           "tier": "H",
-          "hits": 4
+          "hits": 5
         },
         "6": {
           "freq": 0.3,
@@ -38,24 +38,24 @@
           "hits": 3
         },
         "7": {
-          "freq": 0.4,
+          "freq": 0.5,
           "tier": "H",
-          "hits": 4
+          "hits": 5
         },
         "8": {
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
+        },
+        "9": {
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
+        },
+        "10": {
           "freq": 0.3,
           "tier": "H",
           "hits": 3
-        },
-        "9": {
-          "freq": 0.1,
-          "tier": "C",
-          "hits": 1
-        },
-        "10": {
-          "freq": 0.4,
-          "tier": "H",
-          "hits": 4
         },
         "11": {
           "freq": 0.3,
@@ -63,9 +63,9 @@
           "hits": 3
         },
         "12": {
-          "freq": 0.4,
+          "freq": 0.3,
           "tier": "H",
-          "hits": 4
+          "hits": 3
         },
         "13": {
           "freq": 0.3,
@@ -73,14 +73,14 @@
           "hits": 3
         },
         "14": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "15": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "16": {
           "freq": 0.0,
@@ -88,14 +88,14 @@
           "hits": 0
         },
         "17": {
-          "freq": 0.2,
-          "tier": "W",
-          "hits": 2
+          "freq": 0.3,
+          "tier": "H",
+          "hits": 3
         },
         "18": {
-          "freq": 0.5,
+          "freq": 0.6,
           "tier": "H",
-          "hits": 5
+          "hits": 6
         },
         "19": {
           "freq": 0.3,
@@ -108,9 +108,9 @@
           "hits": 4
         },
         "21": {
-          "freq": 0.6,
+          "freq": 0.7,
           "tier": "H",
-          "hits": 6
+          "hits": 7
         },
         "22": {
           "freq": 0.3,
@@ -128,14 +128,14 @@
           "hits": 5
         },
         "25": {
-          "freq": 0.4,
+          "freq": 0.5,
           "tier": "H",
-          "hits": 4
+          "hits": 5
         },
         "26": {
-          "freq": 0.1,
+          "freq": 0.0,
           "tier": "C",
-          "hits": 1
+          "hits": 0
         },
         "27": {
           "freq": 0.1,
@@ -143,9 +143,9 @@
           "hits": 1
         },
         "28": {
-          "freq": 0.3,
+          "freq": 0.4,
           "tier": "H",
-          "hits": 3
+          "hits": 4
         },
         "29": {
           "freq": 0.3,
@@ -163,24 +163,24 @@
           "hits": 1
         },
         "32": {
-          "freq": 0.1,
-          "tier": "C",
-          "hits": 1
-        },
-        "33": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
-        },
-        "34": {
           "freq": 0.2,
           "tier": "W",
           "hits": 2
         },
-        "35": {
+        "33": {
           "freq": 0.4,
           "tier": "H",
           "hits": 4
+        },
+        "34": {
+          "freq": 0.3,
+          "tier": "H",
+          "hits": 3
+        },
+        "35": {
+          "freq": 0.5,
+          "tier": "H",
+          "hits": 5
         },
         "36": {
           "freq": 0.3,
@@ -188,14 +188,14 @@
           "hits": 3
         },
         "37": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "38": {
-          "freq": 0.1,
-          "tier": "C",
-          "hits": 1
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "39": {
           "freq": 0.2,
@@ -213,9 +213,9 @@
           "hits": 5
         },
         "42": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "43": {
           "freq": 0.3,
@@ -228,9 +228,9 @@
           "hits": 2
         },
         "45": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "46": {
           "freq": 0.1,
@@ -243,9 +243,9 @@
           "hits": 3
         },
         "48": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "49": {
           "freq": 0.3,
@@ -258,9 +258,9 @@
           "hits": 1
         },
         "51": {
-          "freq": 0.4,
+          "freq": 0.5,
           "tier": "H",
-          "hits": 4
+          "hits": 5
         },
         "52": {
           "freq": 0.0,
@@ -288,9 +288,9 @@
           "hits": 1
         },
         "57": {
-          "freq": 0.1,
-          "tier": "C",
-          "hits": 1
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "58": {
           "freq": 0.4,
@@ -328,14 +328,14 @@
           "hits": 0
         },
         "65": {
-          "freq": 0.1,
-          "tier": "C",
-          "hits": 1
-        },
-        "66": {
           "freq": 0.2,
           "tier": "W",
           "hits": 2
+        },
+        "66": {
+          "freq": 0.1,
+          "tier": "C",
+          "hits": 1
         },
         "67": {
           "freq": 0.3,
@@ -358,14 +358,14 @@
           "hits": 1
         },
         "71": {
-          "freq": 0.5,
+          "freq": 0.4,
           "tier": "H",
-          "hits": 5
+          "hits": 4
         },
         "72": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "73": {
           "freq": 0.1,
@@ -373,9 +373,9 @@
           "hits": 1
         },
         "74": {
-          "freq": 0.2,
-          "tier": "W",
-          "hits": 2
+          "freq": 0.1,
+          "tier": "C",
+          "hits": 1
         },
         "75": {
           "freq": 0.0,
@@ -388,9 +388,9 @@
           "hits": 3
         },
         "77": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "78": {
           "freq": 0.3,
@@ -398,9 +398,9 @@
           "hits": 3
         },
         "79": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 3
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 2
         },
         "80": {
           "freq": 0.5,
@@ -411,7 +411,61 @@
       "pairs": [
         {
           "pair": [
+            7,
+            18
+          ],
+          "count": 5,
+          "vs_random": 8.32,
+          "label": "偏高"
+        },
+        {
+          "pair": [
             18,
+            21
+          ],
+          "count": 5,
+          "vs_random": 8.32,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            2,
+            25
+          ],
+          "count": 4,
+          "vs_random": 6.65,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            2,
+            35
+          ],
+          "count": 4,
+          "vs_random": 6.65,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            2,
+            51
+          ],
+          "count": 4,
+          "vs_random": 6.65,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            5,
+            35
+          ],
+          "count": 4,
+          "vs_random": 6.65,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            7,
             21
           ],
           "count": 4,
@@ -421,16 +475,7 @@
         {
           "pair": [
             21,
-            41
-          ],
-          "count": 4,
-          "vs_random": 6.65,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            12,
-            71
+            25
           ],
           "count": 4,
           "vs_random": 6.65,
@@ -439,7 +484,7 @@
         {
           "pair": [
             21,
-            71
+            33
           ],
           "count": 4,
           "vs_random": 6.65,
@@ -447,56 +492,11 @@
         },
         {
           "pair": [
-            24,
-            41
-          ],
-          "count": 4,
-          "vs_random": 6.65,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            7,
-            18
-          ],
-          "count": 4,
-          "vs_random": 6.65,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            2,
-            3
-          ],
-          "count": 3,
-          "vs_random": 4.99,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            2,
-            25
-          ],
-          "count": 3,
-          "vs_random": 4.99,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            2,
+            21,
             35
           ],
-          "count": 3,
-          "vs_random": 4.99,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            2,
-            51
-          ],
-          "count": 3,
-          "vs_random": 4.99,
+          "count": 4,
+          "vs_random": 6.65,
           "label": "偏高"
         }
       ],
@@ -507,33 +507,33 @@
           "expected": 5.0
         },
         "21-40": {
-          "avg": 5.0,
-          "std": 1.9,
+          "avg": 5.6,
+          "std": 2.2,
           "expected": 5.0
         },
         "41-60": {
-          "avg": 4.6,
-          "std": 1.4,
+          "avg": 4.5,
+          "std": 1.5,
           "expected": 5.0
         },
         "61-80": {
-          "avg": 4.4,
-          "std": 2.1,
+          "avg": 3.9,
+          "std": 2.0,
           "expected": 5.0
         }
       },
       "momentum": {
         "1": {
           "recent_rate": 0.2,
-          "older_rate": 0.4,
-          "delta": -0.2,
-          "direction": "降温↓"
-        },
-        "2": {
-          "recent_rate": 0.4,
-          "older_rate": 0.4,
+          "older_rate": 0.2,
           "delta": 0.0,
           "direction": "平稳→"
+        },
+        "2": {
+          "recent_rate": 0.6,
+          "older_rate": 0.4,
+          "delta": 0.2,
+          "direction": "升温↑"
         },
         "3": {
           "recent_rate": 0.6,
@@ -548,9 +548,9 @@
           "direction": "平稳→"
         },
         "5": {
-          "recent_rate": 0.8,
+          "recent_rate": 1.0,
           "older_rate": 0.0,
-          "delta": 0.8,
+          "delta": 1.0,
           "direction": "升温↑"
         },
         "6": {
@@ -561,38 +561,38 @@
         },
         "7": {
           "recent_rate": 0.4,
-          "older_rate": 0.4,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "older_rate": 0.6,
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "8": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.0,
           "older_rate": 0.4,
-          "delta": -0.2,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "9": {
-          "recent_rate": 0.0,
+          "recent_rate": 0.2,
           "older_rate": 0.2,
-          "delta": -0.2,
-          "direction": "降温↓"
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "10": {
-          "recent_rate": 0.6,
-          "older_rate": 0.2,
-          "delta": 0.4,
-          "direction": "升温↑"
-        },
-        "11": {
           "recent_rate": 0.4,
           "older_rate": 0.2,
           "delta": 0.2,
           "direction": "升温↑"
         },
+        "11": {
+          "recent_rate": 0.2,
+          "older_rate": 0.4,
+          "delta": -0.2,
+          "direction": "降温↓"
+        },
         "12": {
           "recent_rate": 0.2,
-          "older_rate": 0.6,
-          "delta": -0.4,
+          "older_rate": 0.4,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "13": {
@@ -602,15 +602,15 @@
           "direction": "降温↓"
         },
         "14": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.0,
           "older_rate": 0.4,
-          "delta": -0.2,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "15": {
           "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
+          "older_rate": 0.0,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "16": {
@@ -620,16 +620,16 @@
           "direction": "平稳→"
         },
         "17": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.6,
           "older_rate": 0.0,
-          "delta": 0.4,
+          "delta": 0.6,
           "direction": "升温↑"
         },
         "18": {
           "recent_rate": 0.6,
-          "older_rate": 0.4,
-          "delta": 0.2,
-          "direction": "升温↑"
+          "older_rate": 0.6,
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "19": {
           "recent_rate": 0.2,
@@ -638,16 +638,16 @@
           "direction": "降温↓"
         },
         "20": {
-          "recent_rate": 0.6,
-          "older_rate": 0.2,
-          "delta": 0.4,
-          "direction": "升温↑"
+          "recent_rate": 0.4,
+          "older_rate": 0.4,
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "21": {
           "recent_rate": 0.6,
-          "older_rate": 0.6,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "older_rate": 0.8,
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "22": {
           "recent_rate": 0.2,
@@ -662,22 +662,22 @@
           "direction": "平稳→"
         },
         "24": {
+          "recent_rate": 0.4,
+          "older_rate": 0.6,
+          "delta": -0.2,
+          "direction": "降温↓"
+        },
+        "25": {
           "recent_rate": 0.6,
           "older_rate": 0.4,
           "delta": 0.2,
           "direction": "升温↑"
         },
-        "25": {
-          "recent_rate": 0.4,
-          "older_rate": 0.4,
-          "delta": 0.0,
-          "direction": "平稳→"
-        },
         "26": {
           "recent_rate": 0.0,
-          "older_rate": 0.2,
-          "delta": -0.2,
-          "direction": "降温↓"
+          "older_rate": 0.0,
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "27": {
           "recent_rate": 0.0,
@@ -687,15 +687,15 @@
         },
         "28": {
           "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
-          "direction": "升温↑"
+          "older_rate": 0.4,
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "29": {
-          "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
-          "direction": "升温↑"
+          "recent_rate": 0.2,
+          "older_rate": 0.4,
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "30": {
           "recent_rate": 0.0,
@@ -704,33 +704,33 @@
           "direction": "平稳→"
         },
         "31": {
-          "recent_rate": 0.0,
-          "older_rate": 0.2,
-          "delta": -0.2,
-          "direction": "降温↓"
-        },
-        "32": {
-          "recent_rate": 0.0,
-          "older_rate": 0.2,
-          "delta": -0.2,
-          "direction": "降温↓"
-        },
-        "33": {
-          "recent_rate": 0.4,
-          "older_rate": 0.2,
+          "recent_rate": 0.2,
+          "older_rate": 0.0,
           "delta": 0.2,
           "direction": "升温↑"
         },
-        "34": {
+        "32": {
           "recent_rate": 0.2,
           "older_rate": 0.2,
           "delta": 0.0,
           "direction": "平稳→"
         },
-        "35": {
-          "recent_rate": 0.6,
+        "33": {
+          "recent_rate": 0.4,
+          "older_rate": 0.4,
+          "delta": 0.0,
+          "direction": "平稳→"
+        },
+        "34": {
+          "recent_rate": 0.4,
           "older_rate": 0.2,
-          "delta": 0.4,
+          "delta": 0.2,
+          "direction": "升温↑"
+        },
+        "35": {
+          "recent_rate": 0.8,
+          "older_rate": 0.2,
+          "delta": 0.6,
           "direction": "升温↑"
         },
         "36": {
@@ -741,14 +741,14 @@
         },
         "37": {
           "recent_rate": 0.0,
-          "older_rate": 0.6,
-          "delta": -0.6,
+          "older_rate": 0.4,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "38": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.4,
           "older_rate": 0.0,
-          "delta": 0.2,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "39": {
@@ -764,15 +764,15 @@
           "direction": "平稳→"
         },
         "41": {
-          "recent_rate": 0.8,
-          "older_rate": 0.2,
-          "delta": 0.6,
+          "recent_rate": 0.6,
+          "older_rate": 0.4,
+          "delta": 0.2,
           "direction": "升温↑"
         },
         "42": {
           "recent_rate": 0.0,
-          "older_rate": 0.6,
-          "delta": -0.6,
+          "older_rate": 0.4,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "43": {
@@ -789,15 +789,15 @@
         },
         "45": {
           "recent_rate": 0.0,
-          "older_rate": 0.6,
-          "delta": -0.6,
+          "older_rate": 0.4,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "46": {
-          "recent_rate": 0.2,
-          "older_rate": 0.0,
-          "delta": 0.2,
-          "direction": "升温↑"
+          "recent_rate": 0.0,
+          "older_rate": 0.2,
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "47": {
           "recent_rate": 0.4,
@@ -807,8 +807,8 @@
         },
         "48": {
           "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
+          "older_rate": 0.0,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "49": {
@@ -824,10 +824,10 @@
           "direction": "升温↑"
         },
         "51": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.6,
           "older_rate": 0.4,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": 0.2,
+          "direction": "升温↑"
         },
         "52": {
           "recent_rate": 0.0,
@@ -860,16 +860,16 @@
           "direction": "降温↓"
         },
         "57": {
-          "recent_rate": 0.0,
+          "recent_rate": 0.2,
           "older_rate": 0.2,
-          "delta": -0.2,
-          "direction": "降温↓"
-        },
-        "58": {
-          "recent_rate": 0.4,
-          "older_rate": 0.4,
           "delta": 0.0,
           "direction": "平稳→"
+        },
+        "58": {
+          "recent_rate": 0.6,
+          "older_rate": 0.2,
+          "delta": 0.4,
+          "direction": "升温↑"
         },
         "59": {
           "recent_rate": 0.4,
@@ -884,9 +884,9 @@
           "direction": "降温↓"
         },
         "61": {
-          "recent_rate": 0.0,
-          "older_rate": 0.6,
-          "delta": -0.6,
+          "recent_rate": 0.2,
+          "older_rate": 0.4,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "62": {
@@ -908,28 +908,28 @@
           "direction": "平稳→"
         },
         "65": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.4,
           "older_rate": 0.0,
-          "delta": 0.2,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "66": {
           "recent_rate": 0.0,
-          "older_rate": 0.4,
-          "delta": -0.4,
+          "older_rate": 0.2,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "67": {
-          "recent_rate": 0.6,
-          "older_rate": 0.0,
-          "delta": 0.6,
+          "recent_rate": 0.4,
+          "older_rate": 0.2,
+          "delta": 0.2,
           "direction": "升温↑"
         },
         "68": {
-          "recent_rate": 0.2,
-          "older_rate": 0.0,
-          "delta": 0.2,
-          "direction": "升温↑"
+          "recent_rate": 0.0,
+          "older_rate": 0.2,
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "69": {
           "recent_rate": 0.0,
@@ -945,15 +945,15 @@
         },
         "71": {
           "recent_rate": 0.2,
-          "older_rate": 0.8,
-          "delta": -0.6,
+          "older_rate": 0.6,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "72": {
           "recent_rate": 0.2,
-          "older_rate": 0.4,
-          "delta": -0.2,
-          "direction": "降温↓"
+          "older_rate": 0.2,
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "73": {
           "recent_rate": 0.2,
@@ -962,10 +962,10 @@
           "direction": "升温↑"
         },
         "74": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.0,
           "older_rate": 0.2,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": -0.2,
+          "direction": "降温↓"
         },
         "75": {
           "recent_rate": 0.0,
@@ -974,27 +974,27 @@
           "direction": "平稳→"
         },
         "76": {
+          "recent_rate": 0.0,
+          "older_rate": 0.6,
+          "delta": -0.6,
+          "direction": "降温↓"
+        },
+        "77": {
+          "recent_rate": 0.2,
+          "older_rate": 0.2,
+          "delta": 0.0,
+          "direction": "平稳→"
+        },
+        "78": {
           "recent_rate": 0.2,
           "older_rate": 0.4,
           "delta": -0.2,
           "direction": "降温↓"
         },
-        "77": {
-          "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
-          "direction": "升温↑"
-        },
-        "78": {
-          "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
-          "direction": "升温↑"
-        },
         "79": {
           "recent_rate": 0.4,
-          "older_rate": 0.2,
-          "delta": 0.2,
+          "older_rate": 0.0,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "80": {
@@ -1008,69 +1008,76 @@
         "hot": [
           21,
           18,
-          24,
-          41,
-          71,
-          80,
           2,
-          3
+          5,
+          7,
+          24,
+          25,
+          35
         ],
         "warm": [
-          17,
+          1,
+          8,
+          9,
+          14,
+          15,
           23,
-          34,
-          39,
-          40,
-          44,
-          55,
-          62
+          32,
+          37
         ],
         "cold_tail": [
-          9,
-          26,
           27,
           31,
-          32
+          46,
+          50,
+          54
         ],
         "warming": [
           5,
-          41,
-          67,
+          17,
+          35,
           3,
-          10
+          15
         ],
         "recommend_heat": [
           21,
           18,
-          24
+          2
         ],
         "recommend_rebound": [
+          1,
+          8,
+          9,
           17,
-          23,
-          34,
-          5,
-          67
+          3
         ]
       },
       "sum_analysis": {
-        "avg": 754.4,
+        "avg": 732.4,
         "min": 619,
         "max": 859,
-        "current": 709,
-        "trend": "走低↓(-50)"
+        "current": 627,
+        "trend": "走低↓(-136)"
       },
       "route_012": {
         "current": {
-          "0路": 7,
+          "0路": 6,
           "1路": 7,
-          "2路": 6
+          "2路": 7
         },
         "avg_dist": {
-          "0路": 6.9,
+          "0路": 6.8,
           "1路": 6.2,
-          "2路": 6.9
+          "2路": 7.0
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "0路": 6,
+            "1路": 7,
+            "2路": 7,
+            "_sum": 627
+          },
           {
             "date": "2026-08-19",
             "0路": 7,
@@ -1133,13 +1140,6 @@
             "1路": 4,
             "2路": 6,
             "_sum": 736
-          },
-          {
-            "date": "2026-08-10",
-            "0路": 7,
-            "1路": 7,
-            "2路": 6,
-            "_sum": 847
           }
         ],
         "expected": {
@@ -1150,16 +1150,21 @@
       },
       "odd_even": {
         "current": {
-          "odd": 11,
-          "even": 9,
-          "ratio": "11:9"
+          "odd": 13,
+          "even": 7,
+          "ratio": "13:7"
         },
         "avg": {
-          "odd": 10.8,
-          "even": 9.2,
-          "ratio": "10.8:9.2"
+          "odd": 11.2,
+          "even": 8.8,
+          "ratio": "11.2:8.8"
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "odd": 13,
+            "even": 7
+          },
           {
             "date": "2026-08-19",
             "odd": 11,
@@ -1204,11 +1209,6 @@
             "date": "2026-08-11",
             "odd": 8,
             "even": 12
-          },
-          {
-            "date": "2026-08-10",
-            "odd": 9,
-            "even": 11
           }
         ],
         "expected": {
@@ -1227,9 +1227,9 @@
           "hits": 5
         },
         "2": {
-          "freq": 0.367,
+          "freq": 0.4,
           "tier": "H",
-          "hits": 11
+          "hits": 12
         },
         "3": {
           "freq": 0.267,
@@ -1237,14 +1237,14 @@
           "hits": 8
         },
         "4": {
-          "freq": 0.3,
-          "tier": "H",
-          "hits": 9
-        },
-        "5": {
           "freq": 0.267,
           "tier": "H",
           "hits": 8
+        },
+        "5": {
+          "freq": 0.3,
+          "tier": "H",
+          "hits": 9
         },
         "6": {
           "freq": 0.233,
@@ -1252,9 +1252,9 @@
           "hits": 7
         },
         "7": {
-          "freq": 0.3,
+          "freq": 0.333,
           "tier": "H",
-          "hits": 9
+          "hits": 10
         },
         "8": {
           "freq": 0.167,
@@ -1262,14 +1262,14 @@
           "hits": 5
         },
         "9": {
-          "freq": 0.133,
-          "tier": "C",
-          "hits": 4
+          "freq": 0.167,
+          "tier": "W",
+          "hits": 5
         },
         "10": {
-          "freq": 0.4,
+          "freq": 0.367,
           "tier": "H",
-          "hits": 12
+          "hits": 11
         },
         "11": {
           "freq": 0.233,
@@ -1277,9 +1277,9 @@
           "hits": 7
         },
         "12": {
-          "freq": 0.4,
+          "freq": 0.367,
           "tier": "H",
-          "hits": 12
+          "hits": 11
         },
         "13": {
           "freq": 0.233,
@@ -1292,19 +1292,19 @@
           "hits": 10
         },
         "15": {
-          "freq": 0.267,
-          "tier": "H",
-          "hits": 8
+          "freq": 0.233,
+          "tier": "W",
+          "hits": 7
         },
         "16": {
-          "freq": 0.2,
+          "freq": 0.167,
           "tier": "W",
-          "hits": 6
+          "hits": 5
         },
         "17": {
-          "freq": 0.333,
+          "freq": 0.367,
           "tier": "H",
-          "hits": 10
+          "hits": 11
         },
         "18": {
           "freq": 0.367,
@@ -1312,9 +1312,9 @@
           "hits": 11
         },
         "19": {
-          "freq": 0.333,
+          "freq": 0.3,
           "tier": "H",
-          "hits": 10
+          "hits": 9
         },
         "20": {
           "freq": 0.3,
@@ -1322,9 +1322,9 @@
           "hits": 9
         },
         "21": {
-          "freq": 0.367,
+          "freq": 0.4,
           "tier": "H",
-          "hits": 11
+          "hits": 12
         },
         "22": {
           "freq": 0.233,
@@ -1342,9 +1342,9 @@
           "hits": 12
         },
         "25": {
-          "freq": 0.233,
-          "tier": "W",
-          "hits": 7
+          "freq": 0.267,
+          "tier": "H",
+          "hits": 8
         },
         "26": {
           "freq": 0.133,
@@ -1352,9 +1352,9 @@
           "hits": 4
         },
         "27": {
-          "freq": 0.267,
-          "tier": "H",
-          "hits": 8
+          "freq": 0.233,
+          "tier": "W",
+          "hits": 7
         },
         "28": {
           "freq": 0.267,
@@ -1372,9 +1372,9 @@
           "hits": 4
         },
         "31": {
-          "freq": 0.167,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 5
+          "hits": 6
         },
         "32": {
           "freq": 0.333,
@@ -1382,24 +1382,24 @@
           "hits": 10
         },
         "33": {
+          "freq": 0.233,
+          "tier": "W",
+          "hits": 7
+        },
+        "34": {
           "freq": 0.2,
           "tier": "W",
           "hits": 6
         },
-        "34": {
-          "freq": 0.167,
-          "tier": "W",
-          "hits": 5
-        },
         "35": {
-          "freq": 0.333,
+          "freq": 0.367,
           "tier": "H",
-          "hits": 10
+          "hits": 11
         },
         "36": {
-          "freq": 0.233,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 7
+          "hits": 6
         },
         "37": {
           "freq": 0.367,
@@ -1407,9 +1407,9 @@
           "hits": 11
         },
         "38": {
-          "freq": 0.133,
-          "tier": "C",
-          "hits": 4
+          "freq": 0.167,
+          "tier": "W",
+          "hits": 5
         },
         "39": {
           "freq": 0.233,
@@ -1447,9 +1447,9 @@
           "hits": 9
         },
         "46": {
-          "freq": 0.267,
-          "tier": "H",
-          "hits": 8
+          "freq": 0.233,
+          "tier": "W",
+          "hits": 7
         },
         "47": {
           "freq": 0.333,
@@ -1462,9 +1462,9 @@
           "hits": 7
         },
         "49": {
-          "freq": 0.267,
-          "tier": "H",
-          "hits": 8
+          "freq": 0.233,
+          "tier": "W",
+          "hits": 7
         },
         "50": {
           "freq": 0.167,
@@ -1487,9 +1487,9 @@
           "hits": 7
         },
         "54": {
-          "freq": 0.167,
-          "tier": "W",
-          "hits": 5
+          "freq": 0.133,
+          "tier": "C",
+          "hits": 4
         },
         "55": {
           "freq": 0.167,
@@ -1502,14 +1502,14 @@
           "hits": 7
         },
         "57": {
-          "freq": 0.1,
+          "freq": 0.133,
           "tier": "C",
-          "hits": 3
+          "hits": 4
         },
         "58": {
-          "freq": 0.233,
-          "tier": "W",
-          "hits": 7
+          "freq": 0.267,
+          "tier": "H",
+          "hits": 8
         },
         "59": {
           "freq": 0.3,
@@ -1522,14 +1522,14 @@
           "hits": 9
         },
         "61": {
-          "freq": 0.2,
-          "tier": "W",
-          "hits": 6
-        },
-        "62": {
           "freq": 0.233,
           "tier": "W",
           "hits": 7
+        },
+        "62": {
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 6
         },
         "63": {
           "freq": 0.133,
@@ -1542,9 +1542,9 @@
           "hits": 6
         },
         "65": {
-          "freq": 0.133,
-          "tier": "C",
-          "hits": 4
+          "freq": 0.167,
+          "tier": "W",
+          "hits": 5
         },
         "66": {
           "freq": 0.2,
@@ -1562,14 +1562,14 @@
           "hits": 3
         },
         "69": {
-          "freq": 0.133,
+          "freq": 0.1,
           "tier": "C",
-          "hits": 4
+          "hits": 3
         },
         "70": {
-          "freq": 0.233,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 7
+          "hits": 6
         },
         "71": {
           "freq": 0.3,
@@ -1582,9 +1582,9 @@
           "hits": 6
         },
         "73": {
-          "freq": 0.233,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 7
+          "hits": 6
         },
         "74": {
           "freq": 0.3,
@@ -1592,9 +1592,9 @@
           "hits": 9
         },
         "75": {
-          "freq": 0.233,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 7
+          "hits": 6
         },
         "76": {
           "freq": 0.233,
@@ -1628,13 +1628,31 @@
             2,
             51
           ],
+          "count": 9,
+          "vs_random": 4.99,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            2,
+            35
+          ],
           "count": 8,
           "vs_random": 4.44,
           "label": "偏高"
         },
         {
           "pair": [
-            2,
+            35,
+            51
+          ],
+          "count": 8,
+          "vs_random": 4.44,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            5,
             35
           ],
           "count": 7,
@@ -1643,7 +1661,7 @@
         },
         {
           "pair": [
-            35,
+            21,
             51
           ],
           "count": 7,
@@ -1670,34 +1688,16 @@
         },
         {
           "pair": [
+            2,
+            32
+          ],
+          "count": 6,
+          "vs_random": 3.33,
+          "label": "偏高"
+        },
+        {
+          "pair": [
             5,
-            35
-          ],
-          "count": 6,
-          "vs_random": 3.33,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            10,
-            18
-          ],
-          "count": 6,
-          "vs_random": 3.33,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            10,
-            28
-          ],
-          "count": 6,
-          "vs_random": 3.33,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            10,
             51
           ],
           "count": 6,
@@ -1706,8 +1706,8 @@
         },
         {
           "pair": [
-            18,
-            51
+            7,
+            17
           ],
           "count": 6,
           "vs_random": 3.33,
@@ -1721,33 +1721,33 @@
           "expected": 5.0
         },
         "21-40": {
-          "avg": 5.0,
-          "std": 1.5,
+          "avg": 5.2,
+          "std": 1.6,
           "expected": 5.0
         },
         "41-60": {
-          "avg": 5.0,
-          "std": 1.4,
+          "avg": 4.9,
+          "std": 1.5,
           "expected": 5.0
         },
         "61-80": {
-          "avg": 4.4,
-          "std": 1.6,
+          "avg": 4.3,
+          "std": 1.7,
           "expected": 5.0
         }
       },
       "momentum": {
         "1": {
-          "recent_rate": 0.3,
-          "older_rate": 0.0,
-          "delta": 0.3,
+          "recent_rate": 0.2,
+          "older_rate": 0.1,
+          "delta": 0.1,
           "direction": "升温↑"
         },
         "2": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.5,
           "older_rate": 0.4,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": 0.1,
+          "direction": "升温↑"
         },
         "3": {
           "recent_rate": 0.4,
@@ -1762,9 +1762,9 @@
           "direction": "降温↓"
         },
         "5": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.5,
           "older_rate": 0.2,
-          "delta": 0.2,
+          "delta": 0.3,
           "direction": "升温↑"
         },
         "6": {
@@ -1774,27 +1774,27 @@
           "direction": "平稳→"
         },
         "7": {
-          "recent_rate": 0.4,
-          "older_rate": 0.2,
+          "recent_rate": 0.5,
+          "older_rate": 0.3,
           "delta": 0.2,
           "direction": "升温↑"
         },
         "8": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.0,
-          "delta": 0.3,
+          "delta": 0.2,
           "direction": "升温↑"
         },
         "9": {
-          "recent_rate": 0.1,
+          "recent_rate": 0.2,
           "older_rate": 0.1,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": 0.1,
+          "direction": "升温↑"
         },
         "10": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.3,
           "older_rate": 0.2,
-          "delta": 0.2,
+          "delta": 0.1,
           "direction": "升温↑"
         },
         "11": {
@@ -1804,10 +1804,10 @@
           "direction": "升温↑"
         },
         "12": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.3,
           "older_rate": 0.4,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": -0.1,
+          "direction": "降温↓"
         },
         "13": {
           "recent_rate": 0.3,
@@ -1816,16 +1816,16 @@
           "direction": "升温↑"
         },
         "14": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.3,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": -0.1,
+          "direction": "降温↓"
         },
         "15": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.2,
-          "delta": 0.1,
-          "direction": "升温↑"
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "16": {
           "recent_rate": 0.0,
@@ -1834,21 +1834,21 @@
           "direction": "降温↓"
         },
         "17": {
-          "recent_rate": 0.2,
-          "older_rate": 0.5,
+          "recent_rate": 0.3,
+          "older_rate": 0.6,
           "delta": -0.3,
           "direction": "降温↓"
         },
         "18": {
-          "recent_rate": 0.5,
-          "older_rate": 0.4,
-          "delta": 0.1,
+          "recent_rate": 0.6,
+          "older_rate": 0.3,
+          "delta": 0.3,
           "direction": "升温↑"
         },
         "19": {
           "recent_rate": 0.3,
-          "older_rate": 0.5,
-          "delta": -0.2,
+          "older_rate": 0.4,
+          "delta": -0.1,
           "direction": "降温↓"
         },
         "20": {
@@ -1858,9 +1858,9 @@
           "direction": "升温↑"
         },
         "21": {
-          "recent_rate": 0.6,
+          "recent_rate": 0.7,
           "older_rate": 0.1,
-          "delta": 0.5,
+          "delta": 0.6,
           "direction": "升温↑"
         },
         "22": {
@@ -1882,33 +1882,33 @@
           "direction": "升温↑"
         },
         "25": {
-          "recent_rate": 0.4,
+          "recent_rate": 0.5,
           "older_rate": 0.1,
-          "delta": 0.3,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "26": {
-          "recent_rate": 0.1,
-          "older_rate": 0.2,
-          "delta": -0.1,
+          "recent_rate": 0.0,
+          "older_rate": 0.3,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "27": {
           "recent_rate": 0.1,
-          "older_rate": 0.5,
-          "delta": -0.4,
+          "older_rate": 0.4,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "28": {
-          "recent_rate": 0.3,
-          "older_rate": 0.1,
-          "delta": 0.2,
+          "recent_rate": 0.4,
+          "older_rate": 0.0,
+          "delta": 0.4,
           "direction": "升温↑"
         },
         "29": {
           "recent_rate": 0.3,
-          "older_rate": 0.5,
-          "delta": -0.2,
+          "older_rate": 0.6,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "30": {
@@ -1924,45 +1924,45 @@
           "direction": "降温↓"
         },
         "32": {
-          "recent_rate": 0.1,
+          "recent_rate": 0.2,
           "older_rate": 0.4,
-          "delta": -0.3,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "33": {
+          "recent_rate": 0.4,
+          "older_rate": 0.1,
+          "delta": 0.3,
+          "direction": "升温↑"
+        },
+        "34": {
+          "recent_rate": 0.3,
+          "older_rate": 0.2,
+          "delta": 0.1,
+          "direction": "升温↑"
+        },
+        "35": {
+          "recent_rate": 0.5,
+          "older_rate": 0.3,
+          "delta": 0.2,
+          "direction": "升温↑"
+        },
+        "36": {
           "recent_rate": 0.3,
           "older_rate": 0.1,
           "delta": 0.2,
           "direction": "升温↑"
         },
-        "34": {
-          "recent_rate": 0.2,
-          "older_rate": 0.2,
-          "delta": 0.0,
-          "direction": "平稳→"
-        },
-        "35": {
-          "recent_rate": 0.4,
-          "older_rate": 0.3,
-          "delta": 0.1,
-          "direction": "升温↑"
-        },
-        "36": {
-          "recent_rate": 0.3,
-          "older_rate": 0.2,
-          "delta": 0.1,
-          "direction": "升温↑"
-        },
         "37": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.4,
-          "delta": -0.1,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "38": {
-          "recent_rate": 0.1,
+          "recent_rate": 0.2,
           "older_rate": 0.0,
-          "delta": 0.1,
+          "delta": 0.2,
           "direction": "升温↑"
         },
         "39": {
@@ -1973,8 +1973,8 @@
         },
         "40": {
           "recent_rate": 0.2,
-          "older_rate": 0.4,
-          "delta": -0.2,
+          "older_rate": 0.5,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "41": {
@@ -1984,9 +1984,9 @@
           "direction": "升温↑"
         },
         "42": {
-          "recent_rate": 0.3,
-          "older_rate": 0.5,
-          "delta": -0.2,
+          "recent_rate": 0.2,
+          "older_rate": 0.6,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "43": {
@@ -1997,20 +1997,20 @@
         },
         "44": {
           "recent_rate": 0.2,
-          "older_rate": 0.4,
-          "delta": -0.2,
+          "older_rate": 0.5,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "45": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.3,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": -0.1,
+          "direction": "降温↓"
         },
         "46": {
           "recent_rate": 0.1,
-          "older_rate": 0.4,
-          "delta": -0.3,
+          "older_rate": 0.3,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "47": {
@@ -2020,10 +2020,10 @@
           "direction": "平稳→"
         },
         "48": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.3,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": -0.1,
+          "direction": "降温↓"
         },
         "49": {
           "recent_rate": 0.3,
@@ -2038,10 +2038,10 @@
           "direction": "降温↓"
         },
         "51": {
-          "recent_rate": 0.4,
-          "older_rate": 0.5,
-          "delta": -0.1,
-          "direction": "降温↓"
+          "recent_rate": 0.5,
+          "older_rate": 0.4,
+          "delta": 0.1,
+          "direction": "升温↑"
         },
         "52": {
           "recent_rate": 0.0,
@@ -2057,8 +2057,8 @@
         },
         "54": {
           "recent_rate": 0.1,
-          "older_rate": 0.3,
-          "delta": -0.2,
+          "older_rate": 0.2,
+          "delta": -0.1,
           "direction": "降温↓"
         },
         "55": {
@@ -2074,10 +2074,10 @@
           "direction": "降温↓"
         },
         "57": {
-          "recent_rate": 0.1,
+          "recent_rate": 0.2,
           "older_rate": 0.1,
-          "delta": 0.0,
-          "direction": "平稳→"
+          "delta": 0.1,
+          "direction": "升温↑"
         },
         "58": {
           "recent_rate": 0.4,
@@ -2105,8 +2105,8 @@
         },
         "62": {
           "recent_rate": 0.2,
-          "older_rate": 0.4,
-          "delta": -0.2,
+          "older_rate": 0.3,
+          "delta": -0.1,
           "direction": "降温↓"
         },
         "63": {
@@ -2122,15 +2122,15 @@
           "direction": "降温↓"
         },
         "65": {
-          "recent_rate": 0.1,
-          "older_rate": 0.0,
+          "recent_rate": 0.2,
+          "older_rate": 0.1,
           "delta": 0.1,
           "direction": "升温↑"
         },
         "66": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.1,
           "older_rate": 0.3,
-          "delta": -0.1,
+          "delta": -0.2,
           "direction": "降温↓"
         },
         "67": {
@@ -2141,33 +2141,33 @@
         },
         "68": {
           "recent_rate": 0.1,
-          "older_rate": 0.1,
-          "delta": 0.0,
-          "direction": "平稳→"
-        },
-        "69": {
-          "recent_rate": 0.2,
-          "older_rate": 0.2,
-          "delta": 0.0,
-          "direction": "平稳→"
-        },
-        "70": {
-          "recent_rate": 0.1,
           "older_rate": 0.2,
           "delta": -0.1,
           "direction": "降温↓"
         },
+        "69": {
+          "recent_rate": 0.2,
+          "older_rate": 0.1,
+          "delta": 0.1,
+          "direction": "升温↑"
+        },
+        "70": {
+          "recent_rate": 0.1,
+          "older_rate": 0.1,
+          "delta": 0.0,
+          "direction": "平稳→"
+        },
         "71": {
-          "recent_rate": 0.5,
+          "recent_rate": 0.4,
           "older_rate": 0.3,
-          "delta": 0.2,
+          "delta": 0.1,
           "direction": "升温↑"
         },
         "72": {
-          "recent_rate": 0.3,
+          "recent_rate": 0.2,
           "older_rate": 0.2,
-          "delta": 0.1,
-          "direction": "升温↑"
+          "delta": 0.0,
+          "direction": "平稳→"
         },
         "73": {
           "recent_rate": 0.1,
@@ -2176,15 +2176,15 @@
           "direction": "降温↓"
         },
         "74": {
-          "recent_rate": 0.2,
+          "recent_rate": 0.1,
           "older_rate": 0.4,
-          "delta": -0.2,
+          "delta": -0.3,
           "direction": "降温↓"
         },
         "75": {
           "recent_rate": 0.0,
-          "older_rate": 0.5,
-          "delta": -0.5,
+          "older_rate": 0.4,
+          "delta": -0.4,
           "direction": "降温↓"
         },
         "76": {
@@ -2194,22 +2194,22 @@
           "direction": "升温↑"
         },
         "77": {
-          "recent_rate": 0.3,
-          "older_rate": 0.0,
-          "delta": 0.3,
+          "recent_rate": 0.2,
+          "older_rate": 0.1,
+          "delta": 0.1,
           "direction": "升温↑"
         },
         "78": {
           "recent_rate": 0.3,
-          "older_rate": 0.2,
-          "delta": 0.1,
-          "direction": "升温↑"
-        },
-        "79": {
-          "recent_rate": 0.3,
           "older_rate": 0.3,
           "delta": 0.0,
           "direction": "平稳→"
+        },
+        "79": {
+          "recent_rate": 0.2,
+          "older_rate": 0.3,
+          "delta": -0.1,
+          "direction": "降温↓"
         },
         "80": {
           "recent_rate": 0.5,
@@ -2221,70 +2221,77 @@
       "combo": {
         "hot": [
           51,
+          2,
+          21,
+          24,
           10,
           12,
-          24,
-          2,
-          18,
-          21,
-          29
+          17,
+          18
         ],
         "warm": [
           6,
           11,
           13,
+          15,
           22,
-          25,
-          36,
-          39,
-          41
+          27,
+          33,
+          39
         ],
         "cold_tail": [
-          9,
           26,
           30,
-          38,
-          52
+          52,
+          54,
+          57
         ],
         "warming": [
           21,
+          25,
+          28,
           41,
-          80,
-          1,
-          8
+          80
         ],
         "recommend_heat": [
           51,
-          10,
-          12
+          2,
+          21
         ],
         "recommend_rebound": [
           6,
           11,
           13,
-          41,
-          80
+          25,
+          28
         ]
       },
       "sum_analysis": {
-        "avg": 776.1,
+        "avg": 771.5,
         "min": 619,
         "max": 927,
-        "current": 709,
-        "trend": "走低↓(-50)"
+        "current": 627,
+        "trend": "走低↓(-136)"
       },
       "route_012": {
         "current": {
-          "0路": 7,
+          "0路": 6,
           "1路": 7,
-          "2路": 6
+          "2路": 7
         },
         "avg_dist": {
-          "0路": 6.6,
+          "0路": 6.5,
           "1路": 6.5,
-          "2路": 6.8
+          "2路": 7.0
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "0路": 6,
+            "1路": 7,
+            "2路": 7,
+            "_sum": 627
+          },
           {
             "date": "2026-08-19",
             "0路": 7,
@@ -2347,13 +2354,6 @@
             "1路": 4,
             "2路": 6,
             "_sum": 736
-          },
-          {
-            "date": "2026-08-10",
-            "0路": 7,
-            "1路": 7,
-            "2路": 6,
-            "_sum": 847
           }
         ],
         "expected": {
@@ -2364,16 +2364,21 @@
       },
       "odd_even": {
         "current": {
-          "odd": 11,
-          "even": 9,
-          "ratio": "11:9"
+          "odd": 13,
+          "even": 7,
+          "ratio": "13:7"
         },
         "avg": {
-          "odd": 10.0,
-          "even": 10.0,
-          "ratio": "10.0:10.0"
+          "odd": 10.2,
+          "even": 9.8,
+          "ratio": "10.2:9.8"
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "odd": 13,
+            "even": 7
+          },
           {
             "date": "2026-08-19",
             "odd": 11,
@@ -2418,11 +2423,6 @@
             "date": "2026-08-11",
             "odd": 8,
             "even": 12
-          },
-          {
-            "date": "2026-08-10",
-            "odd": 9,
-            "even": 11
           }
         ],
         "expected": {
@@ -2441,9 +2441,9 @@
           "hits": 13
         },
         "2": {
-          "freq": 0.34,
+          "freq": 0.36,
           "tier": "H",
-          "hits": 17
+          "hits": 18
         },
         "3": {
           "freq": 0.26,
@@ -2451,9 +2451,9 @@
           "hits": 13
         },
         "4": {
-          "freq": 0.26,
-          "tier": "H",
-          "hits": 13
+          "freq": 0.24,
+          "tier": "W",
+          "hits": 12
         },
         "5": {
           "freq": 0.28,
@@ -2466,9 +2466,9 @@
           "hits": 13
         },
         "7": {
-          "freq": 0.28,
+          "freq": 0.3,
           "tier": "H",
-          "hits": 14
+          "hits": 15
         },
         "8": {
           "freq": 0.16,
@@ -2476,9 +2476,9 @@
           "hits": 8
         },
         "9": {
-          "freq": 0.18,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 9
+          "hits": 10
         },
         "10": {
           "freq": 0.36,
@@ -2486,9 +2486,9 @@
           "hits": 18
         },
         "11": {
-          "freq": 0.3,
+          "freq": 0.28,
           "tier": "H",
-          "hits": 15
+          "hits": 14
         },
         "12": {
           "freq": 0.42,
@@ -2511,9 +2511,9 @@
           "hits": 15
         },
         "16": {
-          "freq": 0.18,
+          "freq": 0.16,
           "tier": "W",
-          "hits": 9
+          "hits": 8
         },
         "17": {
           "freq": 0.26,
@@ -2521,24 +2521,24 @@
           "hits": 13
         },
         "18": {
-          "freq": 0.32,
+          "freq": 0.34,
           "tier": "H",
-          "hits": 16
+          "hits": 17
         },
         "19": {
-          "freq": 0.3,
+          "freq": 0.28,
           "tier": "H",
-          "hits": 15
+          "hits": 14
         },
         "20": {
-          "freq": 0.26,
-          "tier": "H",
-          "hits": 13
+          "freq": 0.24,
+          "tier": "W",
+          "hits": 12
         },
         "21": {
-          "freq": 0.32,
+          "freq": 0.34,
           "tier": "H",
-          "hits": 16
+          "hits": 17
         },
         "22": {
           "freq": 0.22,
@@ -2556,14 +2556,14 @@
           "hits": 14
         },
         "25": {
-          "freq": 0.24,
-          "tier": "W",
-          "hits": 12
+          "freq": 0.26,
+          "tier": "H",
+          "hits": 13
         },
         "26": {
-          "freq": 0.16,
-          "tier": "W",
-          "hits": 8
+          "freq": 0.14,
+          "tier": "C",
+          "hits": 7
         },
         "27": {
           "freq": 0.3,
@@ -2571,9 +2571,9 @@
           "hits": 15
         },
         "28": {
-          "freq": 0.24,
-          "tier": "W",
-          "hits": 12
+          "freq": 0.26,
+          "tier": "H",
+          "hits": 13
         },
         "29": {
           "freq": 0.3,
@@ -2586,29 +2586,29 @@
           "hits": 11
         },
         "31": {
-          "freq": 0.14,
-          "tier": "C",
-          "hits": 7
+          "freq": 0.16,
+          "tier": "W",
+          "hits": 8
         },
         "32": {
-          "freq": 0.34,
+          "freq": 0.36,
           "tier": "H",
-          "hits": 17
+          "hits": 18
         },
         "33": {
-          "freq": 0.26,
+          "freq": 0.28,
           "tier": "H",
-          "hits": 13
+          "hits": 14
         },
         "34": {
-          "freq": 0.18,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 9
+          "hits": 10
         },
         "35": {
-          "freq": 0.3,
+          "freq": 0.32,
           "tier": "H",
-          "hits": 15
+          "hits": 16
         },
         "36": {
           "freq": 0.2,
@@ -2616,14 +2616,14 @@
           "hits": 10
         },
         "37": {
-          "freq": 0.32,
+          "freq": 0.3,
           "tier": "H",
-          "hits": 16
+          "hits": 15
         },
         "38": {
-          "freq": 0.18,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 9
+          "hits": 10
         },
         "39": {
           "freq": 0.26,
@@ -2651,9 +2651,9 @@
           "hits": 8
         },
         "44": {
-          "freq": 0.28,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 14
+          "hits": 13
         },
         "45": {
           "freq": 0.32,
@@ -2661,14 +2661,14 @@
           "hits": 16
         },
         "46": {
-          "freq": 0.28,
-          "tier": "H",
-          "hits": 14
-        },
-        "47": {
           "freq": 0.26,
           "tier": "H",
           "hits": 13
+        },
+        "47": {
+          "freq": 0.24,
+          "tier": "W",
+          "hits": 12
         },
         "48": {
           "freq": 0.22,
@@ -2706,9 +2706,9 @@
           "hits": 9
         },
         "55": {
-          "freq": 0.24,
+          "freq": 0.22,
           "tier": "W",
-          "hits": 12
+          "hits": 11
         },
         "56": {
           "freq": 0.22,
@@ -2716,14 +2716,14 @@
           "hits": 11
         },
         "57": {
-          "freq": 0.16,
+          "freq": 0.18,
           "tier": "W",
-          "hits": 8
+          "hits": 9
         },
         "58": {
-          "freq": 0.2,
+          "freq": 0.22,
           "tier": "W",
-          "hits": 10
+          "hits": 11
         },
         "59": {
           "freq": 0.34,
@@ -2746,9 +2746,9 @@
           "hits": 13
         },
         "63": {
-          "freq": 0.16,
-          "tier": "W",
-          "hits": 8
+          "freq": 0.14,
+          "tier": "C",
+          "hits": 7
         },
         "64": {
           "freq": 0.2,
@@ -2756,14 +2756,14 @@
           "hits": 10
         },
         "65": {
-          "freq": 0.16,
+          "freq": 0.18,
           "tier": "W",
-          "hits": 8
+          "hits": 9
         },
         "66": {
-          "freq": 0.2,
+          "freq": 0.18,
           "tier": "W",
-          "hits": 10
+          "hits": 9
         },
         "67": {
           "freq": 0.3,
@@ -2771,9 +2771,9 @@
           "hits": 15
         },
         "68": {
-          "freq": 0.14,
+          "freq": 0.12,
           "tier": "C",
-          "hits": 7
+          "hits": 6
         },
         "69": {
           "freq": 0.24,
@@ -2781,9 +2781,9 @@
           "hits": 12
         },
         "70": {
-          "freq": 0.18,
+          "freq": 0.16,
           "tier": "W",
-          "hits": 9
+          "hits": 8
         },
         "71": {
           "freq": 0.28,
@@ -2806,9 +2806,9 @@
           "hits": 12
         },
         "75": {
-          "freq": 0.24,
+          "freq": 0.22,
           "tier": "W",
-          "hits": 12
+          "hits": 11
         },
         "76": {
           "freq": 0.24,
@@ -2840,6 +2840,42 @@
         {
           "pair": [
             2,
+            51
+          ],
+          "count": 10,
+          "vs_random": 3.33,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            5,
+            35
+          ],
+          "count": 9,
+          "vs_random": 2.99,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            7,
+            21
+          ],
+          "count": 9,
+          "vs_random": 2.99,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            18,
+            21
+          ],
+          "count": 9,
+          "vs_random": 2.99,
+          "label": "偏高"
+        },
+        {
+          "pair": [
+            32,
             51
           ],
           "count": 9,
@@ -2884,44 +2920,8 @@
         },
         {
           "pair": [
-            5,
-            35
-          ],
-          "count": 8,
-          "vs_random": 2.66,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            10,
-            59
-          ],
-          "count": 8,
-          "vs_random": 2.66,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            10,
-            77
-          ],
-          "count": 8,
-          "vs_random": 2.66,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            18,
-            21
-          ],
-          "count": 8,
-          "vs_random": 2.66,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            35,
-            59
+            2,
+            25
           ],
           "count": 8,
           "vs_random": 2.66,
@@ -2935,32 +2935,32 @@
           "expected": 5.0
         },
         "21-40": {
-          "avg": 5.0,
-          "std": 1.6,
+          "avg": 5.1,
+          "std": 1.7,
           "expected": 5.0
         },
         "41-60": {
-          "avg": 4.8,
+          "avg": 4.7,
           "std": 1.5,
           "expected": 5.0
         },
         "61-80": {
-          "avg": 4.8,
+          "avg": 4.7,
           "std": 1.6,
           "expected": 5.0
         }
       },
       "momentum": {
         "1": {
-          "recent_rate": 0.25,
+          "recent_rate": 0.188,
           "older_rate": 0.375,
-          "delta": -0.125,
+          "delta": -0.188,
           "direction": "降温↓"
         },
         "2": {
-          "recent_rate": 0.375,
+          "recent_rate": 0.438,
           "older_rate": 0.25,
-          "delta": 0.125,
+          "delta": 0.188,
           "direction": "升温↑"
         },
         "3": {
@@ -2976,15 +2976,15 @@
           "direction": "平稳→"
         },
         "5": {
-          "recent_rate": 0.312,
-          "older_rate": 0.25,
-          "delta": 0.062,
-          "direction": "平稳→"
+          "recent_rate": 0.375,
+          "older_rate": 0.188,
+          "delta": 0.188,
+          "direction": "升温↑"
         },
         "6": {
-          "recent_rate": 0.25,
+          "recent_rate": 0.188,
           "older_rate": 0.25,
-          "delta": 0.0,
+          "delta": -0.062,
           "direction": "平稳→"
         },
         "7": {
@@ -3000,9 +3000,9 @@
           "direction": "升温↑"
         },
         "9": {
-          "recent_rate": 0.062,
+          "recent_rate": 0.125,
           "older_rate": 0.312,
-          "delta": -0.25,
+          "delta": -0.188,
           "direction": "降温↓"
         },
         "10": {
@@ -3025,8 +3025,8 @@
         },
         "13": {
           "recent_rate": 0.25,
-          "older_rate": 0.188,
-          "delta": 0.062,
+          "older_rate": 0.25,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "14": {
@@ -3042,8 +3042,8 @@
           "direction": "平稳→"
         },
         "16": {
-          "recent_rate": 0.25,
-          "older_rate": 0.188,
+          "recent_rate": 0.188,
+          "older_rate": 0.125,
           "delta": 0.062,
           "direction": "平稳→"
         },
@@ -3054,15 +3054,15 @@
           "direction": "升温↑"
         },
         "18": {
-          "recent_rate": 0.438,
-          "older_rate": 0.188,
+          "recent_rate": 0.5,
+          "older_rate": 0.25,
           "delta": 0.25,
           "direction": "升温↑"
         },
         "19": {
           "recent_rate": 0.25,
-          "older_rate": 0.312,
-          "delta": -0.062,
+          "older_rate": 0.25,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "20": {
@@ -3073,8 +3073,8 @@
         },
         "21": {
           "recent_rate": 0.5,
-          "older_rate": 0.25,
-          "delta": 0.25,
+          "older_rate": 0.312,
+          "delta": 0.188,
           "direction": "升温↑"
         },
         "22": {
@@ -3085,8 +3085,8 @@
         },
         "23": {
           "recent_rate": 0.312,
-          "older_rate": 0.25,
-          "delta": 0.062,
+          "older_rate": 0.312,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "24": {
@@ -3096,34 +3096,34 @@
           "direction": "升温↑"
         },
         "25": {
-          "recent_rate": 0.375,
-          "older_rate": 0.25,
+          "recent_rate": 0.438,
+          "older_rate": 0.312,
           "delta": 0.125,
           "direction": "升温↑"
         },
         "26": {
           "recent_rate": 0.062,
-          "older_rate": 0.25,
-          "delta": -0.188,
-          "direction": "降温↓"
-        },
-        "27": {
-          "recent_rate": 0.188,
-          "older_rate": 0.312,
+          "older_rate": 0.188,
           "delta": -0.125,
           "direction": "降温↓"
         },
+        "27": {
+          "recent_rate": 0.125,
+          "older_rate": 0.375,
+          "delta": -0.25,
+          "direction": "降温↓"
+        },
         "28": {
-          "recent_rate": 0.312,
+          "recent_rate": 0.375,
           "older_rate": 0.188,
-          "delta": 0.125,
+          "delta": 0.188,
           "direction": "升温↑"
         },
         "29": {
           "recent_rate": 0.25,
-          "older_rate": 0.125,
-          "delta": 0.125,
-          "direction": "升温↑"
+          "older_rate": 0.188,
+          "delta": 0.062,
+          "direction": "平稳→"
         },
         "30": {
           "recent_rate": 0.062,
@@ -3132,9 +3132,9 @@
           "direction": "降温↓"
         },
         "31": {
-          "recent_rate": 0.062,
+          "recent_rate": 0.125,
           "older_rate": 0.125,
-          "delta": -0.062,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "32": {
@@ -3150,32 +3150,32 @@
           "direction": "降温↓"
         },
         "34": {
-          "recent_rate": 0.188,
-          "older_rate": 0.188,
-          "delta": 0.0,
-          "direction": "平稳→"
-        },
-        "35": {
-          "recent_rate": 0.375,
-          "older_rate": 0.25,
-          "delta": 0.125,
-          "direction": "升温↑"
-        },
-        "36": {
           "recent_rate": 0.25,
           "older_rate": 0.188,
           "delta": 0.062,
           "direction": "平稳→"
         },
+        "35": {
+          "recent_rate": 0.438,
+          "older_rate": 0.25,
+          "delta": 0.188,
+          "direction": "升温↑"
+        },
+        "36": {
+          "recent_rate": 0.188,
+          "older_rate": 0.188,
+          "delta": 0.0,
+          "direction": "平稳→"
+        },
         "37": {
           "recent_rate": 0.375,
-          "older_rate": 0.25,
-          "delta": 0.125,
+          "older_rate": 0.188,
+          "delta": 0.188,
           "direction": "升温↑"
         },
         "38": {
-          "recent_rate": 0.125,
-          "older_rate": 0.25,
+          "recent_rate": 0.188,
+          "older_rate": 0.312,
           "delta": -0.125,
           "direction": "降温↓"
         },
@@ -3210,10 +3210,10 @@
           "direction": "升温↑"
         },
         "44": {
-          "recent_rate": 0.188,
+          "recent_rate": 0.125,
           "older_rate": 0.25,
-          "delta": -0.062,
-          "direction": "平稳→"
+          "delta": -0.125,
+          "direction": "降温↓"
         },
         "45": {
           "recent_rate": 0.375,
@@ -3223,13 +3223,13 @@
         },
         "46": {
           "recent_rate": 0.188,
-          "older_rate": 0.25,
-          "delta": -0.062,
+          "older_rate": 0.188,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "47": {
-          "recent_rate": 0.375,
-          "older_rate": 0.188,
+          "recent_rate": 0.312,
+          "older_rate": 0.125,
           "delta": 0.188,
           "direction": "升温↑"
         },
@@ -3246,15 +3246,15 @@
           "direction": "平稳→"
         },
         "50": {
-          "recent_rate": 0.125,
+          "recent_rate": 0.062,
           "older_rate": 0.125,
-          "delta": 0.0,
+          "delta": -0.062,
           "direction": "平稳→"
         },
         "51": {
           "recent_rate": 0.5,
-          "older_rate": 0.125,
-          "delta": 0.375,
+          "older_rate": 0.062,
+          "delta": 0.438,
           "direction": "升温↑"
         },
         "52": {
@@ -3276,27 +3276,27 @@
           "direction": "降温↓"
         },
         "55": {
-          "recent_rate": 0.188,
-          "older_rate": 0.312,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "56": {
-          "recent_rate": 0.125,
-          "older_rate": 0.188,
-          "delta": -0.062,
-          "direction": "平稳→"
-        },
-        "57": {
           "recent_rate": 0.125,
           "older_rate": 0.25,
           "delta": -0.125,
           "direction": "降温↓"
         },
+        "56": {
+          "recent_rate": 0.125,
+          "older_rate": 0.25,
+          "delta": -0.125,
+          "direction": "降温↓"
+        },
+        "57": {
+          "recent_rate": 0.188,
+          "older_rate": 0.25,
+          "delta": -0.062,
+          "direction": "平稳→"
+        },
         "58": {
-          "recent_rate": 0.312,
+          "recent_rate": 0.375,
           "older_rate": 0.188,
-          "delta": 0.125,
+          "delta": 0.188,
           "direction": "升温↑"
         },
         "59": {
@@ -3312,51 +3312,51 @@
           "direction": "升温↑"
         },
         "61": {
-          "recent_rate": 0.188,
-          "older_rate": 0.312,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "62": {
-          "recent_rate": 0.188,
-          "older_rate": 0.312,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "63": {
-          "recent_rate": 0.125,
-          "older_rate": 0.25,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "64": {
-          "recent_rate": 0.125,
-          "older_rate": 0.25,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "65": {
-          "recent_rate": 0.125,
-          "older_rate": 0.188,
-          "delta": -0.062,
-          "direction": "平稳→"
-        },
-        "66": {
-          "recent_rate": 0.125,
-          "older_rate": 0.25,
-          "delta": -0.125,
-          "direction": "降温↓"
-        },
-        "67": {
           "recent_rate": 0.25,
           "older_rate": 0.312,
           "delta": -0.062,
           "direction": "平稳→"
         },
-        "68": {
+        "62": {
+          "recent_rate": 0.125,
+          "older_rate": 0.375,
+          "delta": -0.25,
+          "direction": "降温↓"
+        },
+        "63": {
+          "recent_rate": 0.125,
+          "older_rate": 0.188,
+          "delta": -0.062,
+          "direction": "平稳→"
+        },
+        "64": {
           "recent_rate": 0.062,
           "older_rate": 0.25,
           "delta": -0.188,
+          "direction": "降温↓"
+        },
+        "65": {
+          "recent_rate": 0.188,
+          "older_rate": 0.25,
+          "delta": -0.062,
+          "direction": "平稳→"
+        },
+        "66": {
+          "recent_rate": 0.125,
+          "older_rate": 0.188,
+          "delta": -0.062,
+          "direction": "平稳→"
+        },
+        "67": {
+          "recent_rate": 0.25,
+          "older_rate": 0.375,
+          "delta": -0.125,
+          "direction": "降温↓"
+        },
+        "68": {
+          "recent_rate": 0.062,
+          "older_rate": 0.188,
+          "delta": -0.125,
           "direction": "降温↓"
         },
         "69": {
@@ -3367,8 +3367,8 @@
         },
         "70": {
           "recent_rate": 0.125,
-          "older_rate": 0.125,
-          "delta": 0.0,
+          "older_rate": 0.062,
+          "delta": 0.062,
           "direction": "平稳→"
         },
         "71": {
@@ -3402,9 +3402,9 @@
           "direction": "平稳→"
         },
         "76": {
-          "recent_rate": 0.312,
+          "recent_rate": 0.25,
           "older_rate": 0.312,
-          "delta": 0.0,
+          "delta": -0.062,
           "direction": "平稳→"
         },
         "77": {
@@ -3414,15 +3414,15 @@
           "direction": "平稳→"
         },
         "78": {
-          "recent_rate": 0.375,
+          "recent_rate": 0.312,
           "older_rate": 0.25,
-          "delta": 0.125,
-          "direction": "升温↑"
+          "delta": 0.062,
+          "direction": "平稳→"
         },
         "79": {
-          "recent_rate": 0.25,
-          "older_rate": 0.188,
-          "delta": 0.062,
+          "recent_rate": 0.188,
+          "older_rate": 0.25,
+          "delta": -0.062,
           "direction": "平稳→"
         },
         "80": {
@@ -3435,62 +3435,63 @@
       "combo": {
         "hot": [
           12,
+          2,
           10,
+          32,
           42,
           51,
-          2,
-          32,
-          59,
-          18
+          18,
+          21
         ],
         "warm": [
+          4,
           13,
-          25,
-          28,
+          20,
           40,
-          55,
+          47,
           69,
           72,
           74
         ],
         "cold_tail": [
-          31,
+          26,
           50,
-          68,
-          52
+          63,
+          52,
+          68
         ],
         "warming": [
           51,
           24,
           14,
           18,
-          21
+          41
         ],
         "recommend_heat": [
           12,
-          10,
-          42
+          2,
+          10
         ],
         "recommend_rebound": [
+          4,
           13,
-          25,
-          28,
+          20,
           24,
           14
         ]
       },
       "sum_analysis": {
-        "avg": 786.8,
+        "avg": 783.3,
         "min": 619,
         "max": 927,
-        "current": 709,
-        "trend": "走低↓(-50)"
+        "current": 627,
+        "trend": "走低↓(-136)"
       },
       "route_012": {
         "current": {
-          "0路": 7,
+          "0路": 6,
           "1路": 7,
-          "2路": 6
+          "2路": 7
         },
         "avg_dist": {
           "0路": 6.8,
@@ -3498,6 +3499,13 @@
           "2路": 6.8
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "0路": 6,
+            "1路": 7,
+            "2路": 7,
+            "_sum": 627
+          },
           {
             "date": "2026-08-19",
             "0路": 7,
@@ -3560,13 +3568,6 @@
             "1路": 4,
             "2路": 6,
             "_sum": 736
-          },
-          {
-            "date": "2026-08-10",
-            "0路": 7,
-            "1路": 7,
-            "2路": 6,
-            "_sum": 847
           }
         ],
         "expected": {
@@ -3577,9 +3578,9 @@
       },
       "odd_even": {
         "current": {
-          "odd": 11,
-          "even": 9,
-          "ratio": "11:9"
+          "odd": 13,
+          "even": 7,
+          "ratio": "13:7"
         },
         "avg": {
           "odd": 10.4,
@@ -3587,6 +3588,11 @@
           "ratio": "10.4:9.6"
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "odd": 13,
+            "even": 7
+          },
           {
             "date": "2026-08-19",
             "odd": 11,
@@ -3631,11 +3637,6 @@
             "date": "2026-08-11",
             "odd": 8,
             "even": 12
-          },
-          {
-            "date": "2026-08-10",
-            "odd": 9,
-            "even": 11
           }
         ],
         "expected": {
@@ -3649,14 +3650,14 @@
       "size": 100,
       "classify": {
         "1": {
-          "freq": 0.26,
+          "freq": 0.25,
           "tier": "H",
-          "hits": 26
+          "hits": 25
         },
         "2": {
-          "freq": 0.33,
+          "freq": 0.34,
           "tier": "H",
-          "hits": 33
+          "hits": 34
         },
         "3": {
           "freq": 0.25,
@@ -3669,9 +3670,9 @@
           "hits": 26
         },
         "5": {
-          "freq": 0.22,
+          "freq": 0.23,
           "tier": "W",
-          "hits": 22
+          "hits": 23
         },
         "6": {
           "freq": 0.26,
@@ -3719,9 +3720,9 @@
           "hits": 29
         },
         "15": {
-          "freq": 0.22,
+          "freq": 0.21,
           "tier": "W",
-          "hits": 22
+          "hits": 21
         },
         "16": {
           "freq": 0.21,
@@ -3729,19 +3730,19 @@
           "hits": 21
         },
         "17": {
-          "freq": 0.28,
-          "tier": "H",
-          "hits": 28
-        },
-        "18": {
-          "freq": 0.31,
-          "tier": "H",
-          "hits": 31
-        },
-        "19": {
           "freq": 0.29,
           "tier": "H",
           "hits": 29
+        },
+        "18": {
+          "freq": 0.32,
+          "tier": "H",
+          "hits": 32
+        },
+        "19": {
+          "freq": 0.28,
+          "tier": "H",
+          "hits": 28
         },
         "20": {
           "freq": 0.22,
@@ -3749,9 +3750,9 @@
           "hits": 22
         },
         "21": {
-          "freq": 0.27,
+          "freq": 0.28,
           "tier": "H",
-          "hits": 27
+          "hits": 28
         },
         "22": {
           "freq": 0.22,
@@ -3769,19 +3770,19 @@
           "hits": 28
         },
         "25": {
-          "freq": 0.2,
-          "tier": "W",
-          "hits": 20
-        },
-        "26": {
           "freq": 0.21,
           "tier": "W",
           "hits": 21
         },
+        "26": {
+          "freq": 0.2,
+          "tier": "W",
+          "hits": 20
+        },
         "27": {
-          "freq": 0.3,
+          "freq": 0.29,
           "tier": "H",
-          "hits": 30
+          "hits": 29
         },
         "28": {
           "freq": 0.25,
@@ -3794,39 +3795,39 @@
           "hits": 23
         },
         "30": {
-          "freq": 0.28,
+          "freq": 0.27,
           "tier": "H",
-          "hits": 28
+          "hits": 27
         },
         "31": {
-          "freq": 0.21,
+          "freq": 0.22,
           "tier": "W",
-          "hits": 21
+          "hits": 22
         },
         "32": {
-          "freq": 0.25,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 25
+          "hits": 26
         },
         "33": {
-          "freq": 0.3,
+          "freq": 0.31,
           "tier": "H",
-          "hits": 30
+          "hits": 31
         },
         "34": {
-          "freq": 0.18,
-          "tier": "W",
-          "hits": 18
-        },
-        "35": {
-          "freq": 0.28,
-          "tier": "H",
-          "hits": 28
-        },
-        "36": {
           "freq": 0.19,
           "tier": "W",
           "hits": 19
+        },
+        "35": {
+          "freq": 0.29,
+          "tier": "H",
+          "hits": 29
+        },
+        "36": {
+          "freq": 0.18,
+          "tier": "W",
+          "hits": 18
         },
         "37": {
           "freq": 0.29,
@@ -3834,9 +3835,9 @@
           "hits": 29
         },
         "38": {
-          "freq": 0.28,
+          "freq": 0.29,
           "tier": "H",
-          "hits": 28
+          "hits": 29
         },
         "39": {
           "freq": 0.3,
@@ -3869,9 +3870,9 @@
           "hits": 26
         },
         "45": {
-          "freq": 0.27,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 27
+          "hits": 26
         },
         "46": {
           "freq": 0.21,
@@ -3894,14 +3895,14 @@
           "hits": 27
         },
         "50": {
-          "freq": 0.22,
+          "freq": 0.21,
           "tier": "W",
-          "hits": 22
+          "hits": 21
         },
         "51": {
-          "freq": 0.32,
+          "freq": 0.33,
           "tier": "H",
-          "hits": 32
+          "hits": 33
         },
         "52": {
           "freq": 0.16,
@@ -3924,9 +3925,9 @@
           "hits": 20
         },
         "56": {
-          "freq": 0.24,
+          "freq": 0.23,
           "tier": "W",
-          "hits": 24
+          "hits": 23
         },
         "57": {
           "freq": 0.24,
@@ -3959,9 +3960,9 @@
           "hits": 27
         },
         "63": {
-          "freq": 0.23,
+          "freq": 0.22,
           "tier": "W",
-          "hits": 23
+          "hits": 22
         },
         "64": {
           "freq": 0.21,
@@ -3969,14 +3970,14 @@
           "hits": 21
         },
         "65": {
-          "freq": 0.19,
+          "freq": 0.2,
           "tier": "W",
-          "hits": 19
+          "hits": 20
         },
         "66": {
-          "freq": 0.27,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 27
+          "hits": 26
         },
         "67": {
           "freq": 0.2,
@@ -4024,9 +4025,9 @@
           "hits": 23
         },
         "76": {
-          "freq": 0.27,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 27
+          "hits": 26
         },
         "77": {
           "freq": 0.32,
@@ -4034,9 +4035,9 @@
           "hits": 32
         },
         "78": {
-          "freq": 0.27,
+          "freq": 0.26,
           "tier": "H",
-          "hits": 27
+          "hits": 26
         },
         "79": {
           "freq": 0.21,
@@ -4052,6 +4053,15 @@
       "pairs": [
         {
           "pair": [
+            2,
+            51
+          ],
+          "count": 15,
+          "vs_random": 2.49,
+          "label": "偏高"
+        },
+        {
+          "pair": [
             10,
             77
           ],
@@ -4061,8 +4071,8 @@
         },
         {
           "pair": [
-            2,
-            51
+            33,
+            57
           ],
           "count": 14,
           "vs_random": 2.33,
@@ -4124,17 +4134,8 @@
         },
         {
           "pair": [
-            18,
-            59
-          ],
-          "count": 13,
-          "vs_random": 2.16,
-          "label": "偏高"
-        },
-        {
-          "pair": [
-            12,
-            24
+            7,
+            18
           ],
           "count": 13,
           "vs_random": 2.16,
@@ -4148,8 +4149,8 @@
           "expected": 5.0
         },
         "21-40": {
-          "avg": 5.0,
-          "std": 1.5,
+          "avg": 5.1,
+          "std": 1.6,
           "expected": 5.0
         },
         "41-60": {
@@ -4165,15 +4166,15 @@
       },
       "momentum": {
         "1": {
-          "recent_rate": 0.212,
-          "older_rate": 0.242,
+          "recent_rate": 0.182,
+          "older_rate": 0.212,
           "delta": -0.03,
           "direction": "平稳→"
         },
         "2": {
-          "recent_rate": 0.394,
+          "recent_rate": 0.424,
           "older_rate": 0.273,
-          "delta": 0.121,
+          "delta": 0.152,
           "direction": "升温↑"
         },
         "3": {
@@ -4195,15 +4196,15 @@
           "direction": "升温↑"
         },
         "6": {
-          "recent_rate": 0.273,
+          "recent_rate": 0.242,
           "older_rate": 0.242,
-          "delta": 0.03,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "7": {
-          "recent_rate": 0.303,
+          "recent_rate": 0.333,
           "older_rate": 0.364,
-          "delta": -0.061,
+          "delta": -0.03,
           "direction": "平稳→"
         },
         "8": {
@@ -4213,27 +4214,27 @@
           "direction": "降温↓"
         },
         "9": {
-          "recent_rate": 0.121,
-          "older_rate": 0.303,
-          "delta": -0.182,
+          "recent_rate": 0.152,
+          "older_rate": 0.273,
+          "delta": -0.121,
           "direction": "降温↓"
         },
         "10": {
           "recent_rate": 0.394,
-          "older_rate": 0.364,
-          "delta": 0.03,
+          "older_rate": 0.394,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "11": {
           "recent_rate": 0.212,
-          "older_rate": 0.333,
-          "delta": -0.121,
+          "older_rate": 0.364,
+          "delta": -0.152,
           "direction": "降温↓"
         },
         "12": {
-          "recent_rate": 0.394,
-          "older_rate": 0.333,
-          "delta": 0.061,
+          "recent_rate": 0.364,
+          "older_rate": 0.364,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "13": {
@@ -4243,15 +4244,15 @@
           "direction": "平稳→"
         },
         "14": {
-          "recent_rate": 0.333,
+          "recent_rate": 0.303,
           "older_rate": 0.333,
-          "delta": 0.0,
+          "delta": -0.03,
           "direction": "平稳→"
         },
         "15": {
           "recent_rate": 0.273,
-          "older_rate": 0.121,
-          "delta": 0.152,
+          "older_rate": 0.091,
+          "delta": 0.182,
           "direction": "升温↑"
         },
         "16": {
@@ -4261,21 +4262,21 @@
           "direction": "平稳→"
         },
         "17": {
-          "recent_rate": 0.303,
-          "older_rate": 0.303,
+          "recent_rate": 0.333,
+          "older_rate": 0.333,
           "delta": 0.0,
           "direction": "平稳→"
         },
         "18": {
           "recent_rate": 0.364,
-          "older_rate": 0.303,
-          "delta": 0.061,
+          "older_rate": 0.333,
+          "delta": 0.03,
           "direction": "平稳→"
         },
         "19": {
           "recent_rate": 0.303,
-          "older_rate": 0.333,
-          "delta": -0.03,
+          "older_rate": 0.303,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "20": {
@@ -4285,15 +4286,15 @@
           "direction": "升温↑"
         },
         "21": {
-          "recent_rate": 0.333,
+          "recent_rate": 0.364,
           "older_rate": 0.242,
-          "delta": 0.091,
+          "delta": 0.121,
           "direction": "升温↑"
         },
         "22": {
-          "recent_rate": 0.242,
+          "recent_rate": 0.212,
           "older_rate": 0.212,
-          "delta": 0.03,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "23": {
@@ -4304,38 +4305,38 @@
         },
         "24": {
           "recent_rate": 0.364,
-          "older_rate": 0.273,
-          "delta": 0.091,
-          "direction": "升温↑"
+          "older_rate": 0.303,
+          "delta": 0.061,
+          "direction": "平稳→"
         },
         "25": {
-          "recent_rate": 0.212,
+          "recent_rate": 0.242,
           "older_rate": 0.091,
-          "delta": 0.121,
+          "delta": 0.152,
           "direction": "升温↑"
         },
         "26": {
           "recent_rate": 0.121,
-          "older_rate": 0.273,
-          "delta": -0.152,
+          "older_rate": 0.242,
+          "delta": -0.121,
           "direction": "降温↓"
         },
         "27": {
-          "recent_rate": 0.273,
+          "recent_rate": 0.242,
           "older_rate": 0.273,
-          "delta": 0.0,
+          "delta": -0.03,
           "direction": "平稳→"
         },
         "28": {
-          "recent_rate": 0.273,
-          "older_rate": 0.273,
-          "delta": 0.0,
+          "recent_rate": 0.303,
+          "older_rate": 0.242,
+          "delta": 0.061,
           "direction": "平稳→"
         },
         "29": {
-          "recent_rate": 0.364,
+          "recent_rate": 0.333,
           "older_rate": 0.182,
-          "delta": 0.182,
+          "delta": 0.152,
           "direction": "升温↑"
         },
         "30": {
@@ -4345,26 +4346,26 @@
           "direction": "降温↓"
         },
         "31": {
-          "recent_rate": 0.152,
-          "older_rate": 0.242,
+          "recent_rate": 0.182,
+          "older_rate": 0.273,
           "delta": -0.091,
           "direction": "降温↓"
         },
         "32": {
           "recent_rate": 0.394,
-          "older_rate": 0.182,
-          "delta": 0.212,
+          "older_rate": 0.212,
+          "delta": 0.182,
           "direction": "升温↑"
         },
         "33": {
-          "recent_rate": 0.182,
+          "recent_rate": 0.212,
           "older_rate": 0.303,
-          "delta": -0.121,
+          "delta": -0.091,
           "direction": "降温↓"
         },
         "34": {
-          "recent_rate": 0.182,
-          "older_rate": 0.182,
+          "recent_rate": 0.212,
+          "older_rate": 0.212,
           "delta": 0.0,
           "direction": "平稳→"
         },
@@ -4376,8 +4377,8 @@
         },
         "36": {
           "recent_rate": 0.212,
-          "older_rate": 0.212,
-          "delta": 0.0,
+          "older_rate": 0.182,
+          "delta": 0.03,
           "direction": "平稳→"
         },
         "37": {
@@ -4387,9 +4388,9 @@
           "direction": "升温↑"
         },
         "38": {
-          "recent_rate": 0.121,
+          "recent_rate": 0.152,
           "older_rate": 0.424,
-          "delta": -0.303,
+          "delta": -0.273,
           "direction": "降温↓"
         },
         "39": {
@@ -4411,9 +4412,9 @@
           "direction": "平稳→"
         },
         "42": {
-          "recent_rate": 0.394,
-          "older_rate": 0.182,
-          "delta": 0.212,
+          "recent_rate": 0.364,
+          "older_rate": 0.212,
+          "delta": 0.152,
           "direction": "升温↑"
         },
         "43": {
@@ -4430,8 +4431,8 @@
         },
         "45": {
           "recent_rate": 0.333,
-          "older_rate": 0.242,
-          "delta": 0.091,
+          "older_rate": 0.212,
+          "delta": 0.121,
           "direction": "升温↑"
         },
         "46": {
@@ -4453,21 +4454,21 @@
           "direction": "平稳→"
         },
         "49": {
-          "recent_rate": 0.273,
-          "older_rate": 0.212,
-          "delta": 0.061,
+          "recent_rate": 0.242,
+          "older_rate": 0.242,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "50": {
           "recent_rate": 0.152,
-          "older_rate": 0.333,
-          "delta": -0.182,
+          "older_rate": 0.303,
+          "delta": -0.152,
           "direction": "降温↓"
         },
         "51": {
-          "recent_rate": 0.485,
+          "recent_rate": 0.515,
           "older_rate": 0.303,
-          "delta": 0.182,
+          "delta": 0.212,
           "direction": "升温↑"
         },
         "52": {
@@ -4484,38 +4485,38 @@
         },
         "54": {
           "recent_rate": 0.152,
-          "older_rate": 0.273,
-          "delta": -0.121,
+          "older_rate": 0.303,
+          "delta": -0.152,
           "direction": "降温↓"
         },
         "55": {
-          "recent_rate": 0.212,
+          "recent_rate": 0.182,
           "older_rate": 0.121,
-          "delta": 0.091,
-          "direction": "升温↑"
-        },
-        "56": {
-          "recent_rate": 0.212,
-          "older_rate": 0.242,
-          "delta": -0.03,
+          "delta": 0.061,
           "direction": "平稳→"
         },
-        "57": {
-          "recent_rate": 0.121,
-          "older_rate": 0.333,
-          "delta": -0.212,
-          "direction": "降温↓"
-        },
-        "58": {
+        "56": {
           "recent_rate": 0.212,
           "older_rate": 0.212,
           "delta": 0.0,
           "direction": "平稳→"
         },
-        "59": {
-          "recent_rate": 0.333,
-          "older_rate": 0.273,
+        "57": {
+          "recent_rate": 0.121,
+          "older_rate": 0.303,
+          "delta": -0.182,
+          "direction": "降温↓"
+        },
+        "58": {
+          "recent_rate": 0.242,
+          "older_rate": 0.182,
           "delta": 0.061,
+          "direction": "平稳→"
+        },
+        "59": {
+          "recent_rate": 0.303,
+          "older_rate": 0.303,
+          "delta": 0.0,
           "direction": "平稳→"
         },
         "60": {
@@ -4525,10 +4526,10 @@
           "direction": "降温↓"
         },
         "61": {
-          "recent_rate": 0.212,
-          "older_rate": 0.182,
-          "delta": 0.03,
-          "direction": "平稳→"
+          "recent_rate": 0.242,
+          "older_rate": 0.152,
+          "delta": 0.091,
+          "direction": "升温↑"
         },
         "62": {
           "recent_rate": 0.212,
@@ -4538,26 +4539,26 @@
         },
         "63": {
           "recent_rate": 0.121,
-          "older_rate": 0.303,
-          "delta": -0.182,
+          "older_rate": 0.273,
+          "delta": -0.152,
           "direction": "降温↓"
         },
         "64": {
           "recent_rate": 0.182,
-          "older_rate": 0.212,
-          "delta": -0.03,
+          "older_rate": 0.242,
+          "delta": -0.061,
           "direction": "平稳→"
         },
         "65": {
-          "recent_rate": 0.121,
-          "older_rate": 0.212,
+          "recent_rate": 0.152,
+          "older_rate": 0.242,
           "delta": -0.091,
           "direction": "降温↓"
         },
         "66": {
           "recent_rate": 0.182,
-          "older_rate": 0.364,
-          "delta": -0.182,
+          "older_rate": 0.333,
+          "delta": -0.152,
           "direction": "降温↓"
         },
         "67": {
@@ -4573,9 +4574,9 @@
           "direction": "平稳→"
         },
         "69": {
-          "recent_rate": 0.152,
+          "recent_rate": 0.121,
           "older_rate": 0.152,
-          "delta": 0.0,
+          "delta": -0.03,
           "direction": "平稳→"
         },
         "70": {
@@ -4585,15 +4586,15 @@
           "direction": "平稳→"
         },
         "71": {
-          "recent_rate": 0.333,
-          "older_rate": 0.212,
-          "delta": 0.121,
-          "direction": "升温↑"
+          "recent_rate": 0.303,
+          "older_rate": 0.242,
+          "delta": 0.061,
+          "direction": "平稳→"
         },
         "72": {
           "recent_rate": 0.182,
-          "older_rate": 0.212,
-          "delta": -0.03,
+          "older_rate": 0.242,
+          "delta": -0.061,
           "direction": "平稳→"
         },
         "73": {
@@ -4603,9 +4604,9 @@
           "direction": "平稳→"
         },
         "74": {
-          "recent_rate": 0.303,
+          "recent_rate": 0.273,
           "older_rate": 0.242,
-          "delta": 0.061,
+          "delta": 0.03,
           "direction": "平稳→"
         },
         "75": {
@@ -4616,8 +4617,8 @@
         },
         "76": {
           "recent_rate": 0.212,
-          "older_rate": 0.273,
-          "delta": -0.061,
+          "older_rate": 0.242,
+          "delta": -0.03,
           "direction": "平稳→"
         },
         "77": {
@@ -4627,8 +4628,8 @@
           "direction": "降温↓"
         },
         "78": {
-          "recent_rate": 0.303,
-          "older_rate": 0.333,
+          "recent_rate": 0.273,
+          "older_rate": 0.303,
           "delta": -0.03,
           "direction": "平稳→"
         },
@@ -4649,18 +4650,18 @@
         "hot": [
           12,
           2,
-          10,
           51,
+          10,
+          18,
           77,
           11,
-          18,
-          27
+          33
         ],
         "warm": [
           40,
-          56,
           57,
           74,
+          5,
           8,
           13,
           29,
@@ -4671,36 +4672,36 @@
         ],
         "warming": [
           5,
-          32,
-          42,
           46,
-          80
+          51,
+          80,
+          15
         ],
         "recommend_heat": [
           12,
           2,
-          10
+          51
         ],
         "recommend_rebound": [
           40,
-          56,
           57,
+          74,
           5,
-          32
+          46
         ]
       },
       "sum_analysis": {
-        "avg": 787.8,
+        "avg": 786.0,
         "min": 551,
         "max": 994,
-        "current": 709,
-        "trend": "走低↓(-50)"
+        "current": 627,
+        "trend": "走低↓(-136)"
       },
       "route_012": {
         "current": {
-          "0路": 7,
+          "0路": 6,
           "1路": 7,
-          "2路": 6
+          "2路": 7
         },
         "avg_dist": {
           "0路": 6.8,
@@ -4708,6 +4709,13 @@
           "2路": 6.8
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "0路": 6,
+            "1路": 7,
+            "2路": 7,
+            "_sum": 627
+          },
           {
             "date": "2026-08-19",
             "0路": 7,
@@ -4770,13 +4778,6 @@
             "1路": 4,
             "2路": 6,
             "_sum": 736
-          },
-          {
-            "date": "2026-08-10",
-            "0路": 7,
-            "1路": 7,
-            "2路": 6,
-            "_sum": 847
           }
         ],
         "expected": {
@@ -4787,9 +4788,9 @@
       },
       "odd_even": {
         "current": {
-          "odd": 11,
-          "even": 9,
-          "ratio": "11:9"
+          "odd": 13,
+          "even": 7,
+          "ratio": "13:7"
         },
         "avg": {
           "odd": 10.4,
@@ -4797,6 +4798,11 @@
           "ratio": "10.4:9.6"
         },
         "trend": [
+          {
+            "date": "2026-08-20",
+            "odd": 13,
+            "even": 7
+          },
           {
             "date": "2026-08-19",
             "odd": 11,
@@ -4841,11 +4847,6 @@
             "date": "2026-08-11",
             "odd": 8,
             "even": 12
-          },
-          {
-            "date": "2026-08-10",
-            "odd": 9,
-            "even": 11
           }
         ],
         "expected": {
