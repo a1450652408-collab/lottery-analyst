@@ -1,6 +1,6 @@
 {
- "date": "2026-08-16",
- "period": "2026218",
+ "date": "2026-08-27",
+ "period": "2026229",
  "groups": {
   "选八9码": {
    "nums": [
@@ -15,18 +15,18 @@
     78
    ],
    "cost": 18,
-   "waited": 86,
-   "avg_gap": 407.8,
+   "waited": 97,
+   "avg_gap": 410.0,
    "median_gap": 515,
    "max_gap": 939,
-   "percentile": 9.2,
-   "prob30": 7.56,
-   "base30": 7.47,
+   "percentile": 10.3,
+   "prob30": 7.51,
+   "base30": 7.43,
    "level": "正常",
    "last_event": "2026-05-22",
-   "trend": "强",
+   "trend": "弱",
    "light": "绿灯",
-   "advice": "走势偏强(近10期高于均值),按计划持有"
+   "advice": "刚中过不久,正常等待期,按计划买即可"
   },
   "选九10码": {
    "nums": [
@@ -42,18 +42,18 @@
     80
    ],
    "cost": 20,
-   "waited": 327,
-   "avg_gap": 407.8,
+   "waited": 338,
+   "avg_gap": 410.0,
    "median_gap": 523,
    "max_gap": 744,
-   "percentile": 44.0,
-   "prob30": 6.9,
-   "base30": 7.47,
+   "percentile": 45.4,
+   "prob30": 6.84,
+   "base30": 7.43,
    "level": "正常",
    "last_event": "2025-09-09",
    "trend": "平",
    "light": "黄灯",
-   "advice": "等待位置44%,已接近中位,保持耐心"
+   "advice": "等待位置45%,已接近中位,保持耐心"
   },
   "选十11码": {
    "nums": [
@@ -70,13 +70,13 @@
     53
    ],
    "cost": 22,
-   "waited": 38,
-   "avg_gap": 145.6,
+   "waited": 49,
+   "avg_gap": 146.4,
    "median_gap": 93,
    "max_gap": 743,
-   "percentile": 5.1,
-   "prob30": 20.2,
-   "base30": 20.71,
+   "percentile": 6.6,
+   "prob30": 19.47,
+   "base30": 20.59,
    "level": "正常",
    "last_event": "2026-07-09",
    "trend": "平",
@@ -86,7 +86,7 @@
  },
  "funding": {
   "daily_cost": 60,
-  "invested_since_last": 19620,
+  "invested_since_last": 20280,
   "reserve_for_worst": 56340,
   "worst_gap": 939
  }
