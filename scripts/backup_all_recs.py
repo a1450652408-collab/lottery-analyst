@@ -151,12 +151,90 @@ def calc_zone15_dantuo(training, period_data):
     return {"dan": dans, "tuo": tuos, "dan_hit": dan_hit, "tuo_hit": tuo_hit, "dan_hit_count": len(dan_hit), "tuo_hit_count": len(tuo_hit)}
 
 
+def compute_kl8_monthly_pick(all_data_oldest_first, date, top_zones):
+    """
+    快乐8 选N·每月追号号码生成（复刻前端 index_modified.html 4129行起算法）
+    all_data_oldest_first: 全部开奖数据（oldest-first）
+    date: 目标期日期（YYYY-MM-DD），用于确定"当月"
+    top_zones: 2=选二(最优2区), 3=选三(最优3区)
+    返回: [号码...] 升序
+    """
+    ym = date[:7]
+    # 当月1号之前的数据（含上月及更早）
+    prev = [d for d in all_data_oldest_first if d['d'] < ym + '-01']
+    if len(prev) < 10:
+        prev = all_data_oldest_first[:50]
+    # 取最近50期（前端是 newest-first，这里统一用 newest-first 顺序计算）
+    seq_data = list(reversed(prev[-50:]))
+    period = len(seq_data)
+    win = min(30, period)
+
+    # EMA
+    ema = {}
+    for n in range(1, 81):
+        seq = [1 if n in d['n'] else 0 for d in seq_data]
+        if not seq:
+            ema[n] = 0
+            continue
+        e = seq[-1]
+        for v in reversed(seq[:-1]):
+            e = 0.5 * v + 0.5 * e
+        ema[n] = e
+
+    # 动量 R5-P5
+    r5, p5 = {}, {}
+    for n in range(1, 81):
+        r5[n] = 0
+        p5[n] = 0
+    for j in range(min(10, period)):
+        for x in seq_data[j]['n']:
+            if j < 5:
+                r5[x] += 1
+            else:
+                p5[x] += 1
+    mom = {}
+    for n in range(1, 81):
+        m = (r5[n] - p5[n]) / max(p5[n], 1)
+        mom[n] = max(-2, min(2, m))
+
+    # Freq30
+    f30 = {}
+    for n in range(1, 81):
+        f30[n] = 0
+    for j in range(win):
+        for x in seq_data[j]['n']:
+            f30[x] += 1
+
+    # 评分 = EMA*5 + Freq30/Win*3 + Mom*2
+    score = {}
+    for n in range(1, 81):
+        score[n] = ema[n] * 5 + (min(f30[n], win) / win) * 3 + mom[n] * 2
+
+    # 4区平均分排序
+    zones = [(1, 20), (21, 40), (41, 60), (61, 80)]
+    zone_avg = []
+    for lo, hi in zones:
+        s = sum(score[n] for n in range(lo, hi + 1))
+        zone_avg.append((lo, hi, s / 20))
+    zone_avg.sort(key=lambda x: -x[2])
+
+    # 取评分最高的 top_zones 个区，每区取评分最高号
+    picks = []
+    for lo, hi, _ in zone_avg[:top_zones]:
+        best = max(range(lo, hi + 1), key=lambda n: score[n])
+        picks.append(best)
+    picks.sort()
+    return picks
+
+
 def backup_kl8(all_data):
     """快乐8全推荐备份（含选一~选十 + 20码 + 胆拖 + 9胆 + 橙紫卡）"""
     records = []
     train_win = 50
     # 数据从 HTML 读取是 newest-first，需要反转成 oldest-first
     all_data = list(reversed(all_data))
+    # 选二/选三 每月追号号码缓存（同月内号码不变）
+    monthly_cache = {}
     
     for idx in range(train_win, len(all_data)):
         period_data = all_data[idx]
@@ -223,6 +301,18 @@ def backup_kl8(all_data):
             # 三区均衡法（1-15 选五3胆7拖）
             zone15 = calc_zone15_dantuo(training, period_data)
             
+            # 选二/选三 每月追号（同月号码不变，按当月1号之前数据生成）
+            _ym = date[:7]
+            if _ym not in monthly_cache:
+                monthly_cache[_ym] = {
+                    "x2": compute_kl8_monthly_pick(all_data, date, 2),
+                    "x3": compute_kl8_monthly_pick(all_data, date, 3),
+                }
+            x2_nums = monthly_cache[_ym]["x2"]
+            x3_nums = monthly_cache[_ym]["x3"]
+            x2_hit = sorted([n for n in x2_nums if n in drawn_set])
+            x3_hit = sorted([n for n in x3_nums if n in drawn_set])
+            
             records.append({
                 "period": period, "date": date,
                 "basic": {"rec": sorted(voted_20), "hit": hit_20, "hit_count": len(hit_20)},
@@ -233,6 +323,8 @@ def backup_kl8(all_data):
                 "per_play": per_play_hits,
                 "enhanced_per_play": e_per_play_hits,
                 "zone15_xuan5": zone15,
+                "x2_monthly": {"rec": x2_nums, "hit": x2_hit, "hit_count": len(x2_hit)},
+                "x3_monthly": {"rec": x3_nums, "hit": x3_hit, "hit_count": len(x3_hit)},
             })
         except Exception as ex:
             records.append({"period": period, "date": date, "error": str(ex)[:100]})

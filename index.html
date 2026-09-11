@@ -18360,6 +18360,166 @@ function renderRecommend(type, data) {
       _reHtml += '</div></div>';
     })();
 
+    /* ===== 选二·每月追号推荐（EMA评分+最优2区）===== */
+    (function() {
+      if (cfg.type !== "keno") return;
+      if (!_knEma || !_knFreq30 || !_knMom) return;
+
+      // 当月号码应基于上月及之前的数据生成，确保"每月初换号"后本月内不变
+      var _now = new Date();
+      var _ym = _now.getFullYear() + '-' + String(_now.getMonth()+1).padStart(2,'0');
+      var _x2Data = [];
+      for (var _xi = 0; _xi < data.length; _xi++) {
+        var _it = data[_xi];
+        if (!_it || !_it.d) continue;
+        if (_it.d.slice(0,7) < _ym) _x2Data.push(_it);
+        if (_x2Data.length >= 50) break;
+      }
+      if (_x2Data.length < 10) _x2Data = data.slice(0, Math.min(50, data.length));
+      var _x2Period = _x2Data.length;
+
+      // 基于上月及之前的数据重新计算 EMA / 频率 / 动量
+      var _x2Ema = {};
+      for (var _x2n = 1; _x2n <= 80; _x2n++) {
+        var _seq = [];
+        for (var _j2 = 0; _j2 < _x2Period; _j2++) _seq.push(getNums(_x2Data[_j2]).indexOf(_x2n) >= 0 ? 1 : 0);
+        if (_seq.length === 0) { _x2Ema[_x2n] = 0; continue; }
+        var _e = _seq[_seq.length - 1];
+        for (var _j3 = _seq.length - 2; _j3 >= 0; _j3--) _e = 0.5 * _seq[_j3] + 0.5 * _e;
+        _x2Ema[_x2n] = _e;
+      }
+
+      var _x2R5 = {}, _x2P5 = {};
+      for (var _x2n = 1; _x2n <= 80; _x2n++) { _x2R5[_x2n] = 0; _x2P5[_x2n] = 0; }
+      for (var _j = 0; _j < Math.min(10, _x2Period); _j++) {
+        var _nd = getNums(_x2Data[_j]);
+        _nd.forEach(function(n) {
+          if (_j < 5) _x2R5[n]++; else _x2P5[n]++;
+        });
+      }
+      var _x2Mom = {};
+      for (var _x2n = 1; _x2n <= 80; _x2n++) {
+        var _m = (_x2R5[_x2n] - _x2P5[_x2n]) / Math.max(_x2P5[_x2n], 1);
+        _x2Mom[_x2n] = Math.max(-2, Math.min(2, _m));
+      }
+
+      var _x2Freq30 = {};
+      for (var _x2n = 1; _x2n <= 80; _x2n++) _x2Freq30[_x2n] = 0;
+      for (var _j = 0; _j < Math.min(30, _x2Period); _j++) {
+        getNums(_x2Data[_j]).forEach(function(n) { _x2Freq30[n]++; });
+      }
+
+      var _x2Zones = [[1,20],[21,40],[41,60],[61,80]];
+      var _x2Score = {};
+      var _x2Win = Math.min(30, _x2Data.length);
+      for (var _x2n = 1; _x2n <= 80; _x2n++) {
+        _x2Score[_x2n] = (_x2Ema[_x2n]||0)*5 + (Math.min(_x2Freq30[_x2n]||0,_x2Win)/_x2Win)*3 + (_x2Mom[_x2n]||0)*2;
+      }
+
+      /* 各区平均分排序 */
+      var _x2ZoneAvg = [];
+      for (var _x2zi = 0; _x2zi < 4; _x2zi++) {
+        var _x2s = 0;
+        for (var _x2n2 = _x2Zones[_x2zi][0]; _x2n2 <= _x2Zones[_x2zi][1]; _x2n2++) _x2s += _x2Score[_x2n2]||0;
+        _x2ZoneAvg.push({i:_x2zi, a:_x2s/20});
+      }
+      _x2ZoneAvg.sort(function(a,b){return b.a-a.a;});
+
+      /* 取评分最高的2个区, 每区取评分最高号 */
+      var _x2Picks = [];
+      for (var _x2zi2 = 0; _x2zi2 < 2; _x2zi2++) {
+        var _x2zone = _x2Zones[_x2ZoneAvg[_x2zi2].i];
+        var _x2best = _x2zone[0], _x2bs = -999;
+        for (var _x2n3 = _x2zone[0]; _x2n3 <= _x2zone[1]; _x2n3++) {
+          if ((_x2Score[_x2n3]||0) > _x2bs) { _x2bs = _x2Score[_x2n3]; _x2best = _x2n3; }
+        }
+        _x2Picks.push(_x2best);
+      }
+      _x2Picks.sort(function(a,b){return a-b;});
+
+      _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb)">';
+      _reHtml += '<div class="rec-header">🎯 选二·每月追号计划（EMA评分+最优2区）</div>';
+      _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
+      _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
+      _x2Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
+      _reHtml += '</div>';
+      _reHtml += '<div style="margin:2px 0"><b>每月1注×30天=60元</b> · 每月初换号 · 中2=19元</div>';
+      _reHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0">';
+      _reHtml += '<span style="background:#e3f2fd;padding:1px 6px;border-radius:4px;font-size:9px;color:#1565c0">✅ 单注中2概率6.0%</span>';
+      _reHtml += '<span style="background:#e3f2fd;padding:1px 6px;border-radius:4px;font-size:9px;color:#1565c0">✅ 理论月均中2=1.8次(34元)</span>';
+      _reHtml += '</div>';
+      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率 | 每30天重算换号 | 追号请量力而行</div>';
+      _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x2Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
+
+      /* ===== 每日追号详情（localStorage 持久化，次月自动清零）===== */
+      (function() {
+        var _now2 = new Date();
+        var _ym2 = _now2.getFullYear() + '-' + String(_now2.getMonth()+1).padStart(2,'0');
+        var _chKey = 'kl8_x2_chase_v1';
+
+        var _chData = null;
+        try { _chData = JSON.parse(localStorage.getItem(_chKey)); } catch(e) {}
+
+        var _numsStr = _x2Picks.join(',');
+        if (!_chData || _chData.month !== _ym2 || _chData.numbers !== _numsStr) {
+          _chData = { month: _ym2, numbers: _numsStr, recs: {} };
+        }
+
+        var _found = 0;
+        try {
+          for (var _di = 0; _di < data.length; _di++) {
+            var _it = data[_di];
+            if (!_it || !_it.d) continue;
+            var _dStr = _it.d.slice(0,10);
+            if (_dStr.slice(0,7) !== _ym2) continue;
+            if (_chData.recs[_dStr]) continue;
+
+            var _draw = getNums(_it);
+            if (!_draw || _draw.length === 0) continue;
+
+            var _hit = 0, _hitNs = [];
+            for (var _hi = 0; _hi < 2; _hi++) {
+              if (_draw.indexOf(_x2Picks[_hi]) >= 0) { _hit++; _hitNs.push(_x2Picks[_hi]); }
+            }
+            _chData.recs[_dStr] = { h: _hit, p: _hit >= 2 ? 19 : 0, hn: _hitNs };
+            _found++;
+          }
+        } catch(e) {}
+
+        if (_found > 0) {
+          try { localStorage.setItem(_chKey, JSON.stringify(_chData)); } catch(e) {}
+        }
+
+        var _dates = Object.keys(_chData.recs).sort();
+
+        if (_dates.length > 0) {
+          var _totalP = 0;
+          _reHtml += '<div style="margin-top:5px;border-top:1px dashed #bbdefb;padding-top:4px">';
+          _reHtml += '<div style="font-size:10px;font-weight:700;color:#1565c0;margin-bottom:2px">📋 本月追号详情（' + _ym2 + '）</div>';
+          _reHtml += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
+          _reHtml += '<tr style="background:#e3f2fd"><th style="padding:1px 3px;text-align:left;width:38px">日期</th><th style="padding:1px 3px;text-align:center;width:28px">中</th><th style="padding:1px 3px;text-align:left">命中号码</th><th style="padding:1px 3px;text-align:right;width:32px">奖金</th></tr>';
+          for (var _di2 = 0; _di2 < _dates.length; _di2++) {
+            var _d = _dates[_di2];
+            var _r = _chData.recs[_d];
+            _totalP += _r.p;
+            var _c = _r.h === 2 ? '#2e7d32' : _r.h === 1 ? '#e65100' : '#bbb';
+            _reHtml += '<tr><td style="padding:1px 3px;color:#666">' + _d.slice(5) + '</td>';
+            _reHtml += '<td style="padding:1px 3px;text-align:center;color:' + _c + ';font-weight:' + (_r.h > 0 ? '700' : '400') + '">' + (_r.h > 0 ? '中' + _r.h : '-') + '</td>';
+            _reHtml += '<td style="padding:1px 3px;color:' + _c + '">' + (_r.hn.length > 0 ? _r.hn.join(',') : '-') + '</td>';
+            _reHtml += '<td style="padding:1px 3px;text-align:right;color:' + (_r.p > 0 ? '#2e7d32' : '#ccc') + '">' + (_r.p > 0 ? '+' + _r.p : '-') + '</td></tr>';
+          }
+          _reHtml += '<tr style="background:#e3f2fd;font-weight:700"><td style="padding:2px 3px;color:#333">合计</td>';
+          _reHtml += '<td style="padding:2px 3px;text-align:center;color:#1565c0">' + _dates.length + '天</td>';
+          _reHtml += '<td style="padding:2px 3px;color:#1565c0">¥' + _totalP + '</td>';
+          var _net = _totalP - _dates.length * 2;
+          _reHtml += '<td style="padding:2px 3px;text-align:right;color:' + (_net >= 0 ? '#2e7d32' : '#c62828') + '">' + (_net >= 0 ? '+' : '') + _net + '</td></tr>';
+          _reHtml += '</table></div>';
+        }
+      })();
+
+      _reHtml += '</div></div>';
+    })();
+
   }
 
   /* ===== 精英轮换·双色球/大乐透30注推荐 ===== */
