@@ -549,7 +549,17 @@ def main():
 
     # ===== 快乐8 橙紫卡命中记录（追加当天）=====
     try:
-        node_exe = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions\22.22.2\node.exe")
+        # node 版本目录可能带后缀(如 22.22.2-3)，动态探测 node.exe，避免写死版本号再次失效
+        _node_root = os.path.expanduser(r"C:\Users\14506\.workbuddy\binaries\node\versions")
+        node_exe = None
+        if os.path.isdir(_node_root):
+            for _vdir in sorted(os.listdir(_node_root), reverse=True):
+                _cand = os.path.join(_node_root, _vdir, "node.exe")
+                if os.path.isfile(_cand):
+                    node_exe = _cand
+                    break
+        if not node_exe:
+            raise FileNotFoundError("node.exe 未找到")
         backup_script = os.path.join(PROJECT_ROOT, "scripts", "backup_orange_purple_hits.js")
         # ⚠️ 清空 NODE_OPTIONS，否则 --use-system-ca 会导致 Node 22.x 报错退出
         clean_env = os.environ.copy()
