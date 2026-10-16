@@ -120,10 +120,18 @@ function walk(dir, ext, acc) { const p = R(dir); if (!fs.existsSync(p)) return a
   fs.readdirSync(p, { withFileTypes: true }).forEach(d => { const rel = dir ? dir + "/" + d.name : d.name;
     if (d.isDirectory()) { if (!/node_modules|\.git|__pycache__|_backup/.test(d.name)) walk(rel, ext, acc); }
     else if (d.name.endsWith(ext)) acc.push(rel); }); return acc; }
+/* 跨平台: Linux/CI 常用 python3, Windows 用 python */
+const PY = (() => {
+  for (const c of ["python3", "python"]) {
+    try { cp.execSync(`${c} -V`, { stdio: "pipe" }); return c; } catch (e) {}
+  }
+  return null;
+})();
 const pys = walk("", ".py", []);
 let pyBad = 0;
-pys.forEach(f => { try { cp.execSync(`python -m py_compile "${R(f)}"`, { stdio: "pipe" }); } catch (e) { pyBad++; add(issues, "python 语法错误: " + f); } });
-console.log("  检查 " + pys.length + " 个 .py, 失败 " + pyBad);
+if (!PY) { add(warns, "未找到 python, 跳过 .py 语法检查"); }
+else pys.forEach(f => { try { cp.execSync(`${PY} -m py_compile "${R(f)}"`, { stdio: "pipe" }); } catch (e) { pyBad++; add(issues, "python 语法错误: " + f); } });
+console.log("  python: " + (PY || "未找到") + " | 检查 " + pys.length + " 个 .py, 失败 " + pyBad);
 
 console.log("\n======== 8. 独立 .js 语法 ========");
 const jss = walk("", ".js", []).filter(f => !f.includes("/"));
@@ -133,3 +141,9 @@ console.log("  检查 " + jss.length + " 个 .js, 失败 " + jsBad);
 
 console.log("\n======== 汇总 ========");
 console.log("BUG: " + issues.length + "  WARN: " + warns.length);
+if (issues.length) {
+  console.log("\n发现问题:");
+  issues.forEach((s, i) => console.log("  " + (i + 1) + ". " + s));
+}
+// 供 CI 作为质量门禁使用 (有 BUG 则以非 0 退出)
+process.exit(issues.length > 0 ? 1 : 0);
