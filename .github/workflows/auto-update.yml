@@ -1,8 +1,9 @@
 name: 每日更新开奖数据
+
 on:
   schedule:
-    - cron: '0 16 * * *'
-    - cron: '0 */2 * * *'
+    - cron: '0 16 * * *'      # 每天 00:00 (北京时间) 全量
+    - cron: '0 */2 * * *'     # 每 2 小时增量
   workflow_dispatch:
   repository_dispatch:
     types: [auto-update]
@@ -18,25 +19,55 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
+      # ========== 1. 数字彩数据（内嵌 __LOTTERY_DATA ×3 + data/*.json 同步）==========
       - name: Fetch data (数字彩)
         run: python3 scripts/fetch_data.py
 
+      # ========== 2. 地方彩种历史补齐（ttcx4 / 15选5，接口不覆盖）==========
+      - name: Fetch local lottery history (ttcx4 / sh15x5)
+        continue-on-error: true
+        run: |
+          python3 scripts/fetch_history_eastmoney.py ttcx4
+          python3 scripts/fetch_history_eastmoney.py sh15x5
+
+      # ========== 3. 推荐与派生数据（页面运行时 fetch 的文件必须一起刷新）==========
       - name: Compute recommendations (数字彩)
         run: python3 scripts/gen_recommendations.py
 
-      # ========== 竞彩管道 ==========
+      - name: Deep analysis (快乐8 走势 + 数字彩)
+        run: |
+          python3 scripts/kl8_trend_deep.py
+          python3 scripts/digit_deep_analysis.py
+
+      - name: Archive recommendations (历史归档 + 橙紫卡命中)
+        run: |
+          python3 scripts/backup_all_recs.py
+          node scripts/backup_orange_purple_hits.js
+
+      # ========== 4. 竞彩管道（外部数据，失败不阻塞数字彩入库）==========
       - name: Fetch WC results (竞彩)
+        continue-on-error: true
         run: python3 scripts/jc_results.py
 
       - name: V6 ELO+Poisson analysis (竞彩)
+        continue-on-error: true
         run: python3 scripts/jc_analysis_v6.py
 
+      # ========== 5. 数据完整性校验（发现问题则中止，避免把坏数据推上线）==========
+      - name: Verify data integrity
+        run: node scripts/project_audit.js
+
+      # ========== 6. 提交并推送 ==========
       - name: Commit & push data changes
         env:
           GH_TOKEN: ${{ github.token }}
@@ -51,11 +82,9 @@ jobs:
           # === 先拉取远程避免冲突（autostash 自动暂存脚本生成的文件变更）===
           git pull --rebase --autostash "$PUSH_URL" master
 
-          # === 提交数据变化（数字彩 + 竞彩；全量 add，确保 index_modified.html / deploy 也入库）===
-          DATA_CHANGED=false
+          # === 提交数据变化（全量 add，确保 index.html / deploy / data 一起入库）===
           git add -A
           if ! git diff --staged --quiet; then
-            DATA_CHANGED=true
             git commit -m "data: auto-update $(date +%Y-%m-%d)"
             git push "$PUSH_URL" master
             echo "✅ 数据已更新并推送"
