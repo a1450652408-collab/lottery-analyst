@@ -957,7 +957,8 @@ def analyze_all():
             # 保存到文件
             out_path = os.path.join(DATA_DIR, f"{key}_deep_analysis.json")
             with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+                # 前端运行时 fetch 该文件，使用紧凑格式减小传输体积（约省 60%）
+                json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
             print(f"[SAVED] {out_path}")
     
     return results

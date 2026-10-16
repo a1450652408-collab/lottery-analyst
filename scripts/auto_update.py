@@ -311,8 +311,8 @@ def parse_digit_entry(html, period, date_str, num_count):
 
 
 def read_existing_data():
-    """从 index_modified.html 读取现有数据"""
-    with open(HTML_PATH, "r", encoding="utf-8") as f:
+    """从 index_modified.html 读取现有数据（newline="" 保留原始行尾 CRLF/LF）"""
+    with open(HTML_PATH, "r", encoding="utf-8", newline="") as f:
         html = f.read()
 
     m = re.search(r"window\.__LOTTERY_DATA\s*=\s*(\{.+?\});", html, re.DOTALL)
@@ -325,19 +325,21 @@ def read_existing_data():
 
 
 def write_html(html, data, data_start, data_end):
-    """写回 HTML"""
+    """写回 HTML，并同步到 index.html / deploy/index.html（三份必须一致，保留行尾）"""
     json_str = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     new_html = html[:data_start] + "window.__LOTTERY_DATA = " + json_str + ";" + html[data_end:]
 
-    with open(HTML_PATH, "w", encoding="utf-8") as f:
-        f.write(new_html)
-    print(f"  ✅ HTML written: {HTML_PATH}")
-
-    # 同步到 index.html（GitHub Pages 使用的文件）
-    index_path = os.path.join(PROJECT_ROOT, "index.html")
-    with open(index_path, "w", encoding="utf-8") as f:
-        f.write(new_html)
-    print(f"  ✅ HTML synced: {index_path}")
+    targets = [HTML_PATH,
+               os.path.join(PROJECT_ROOT, "index.html"),
+               os.path.join(PROJECT_ROOT, "deploy", "index.html")]
+    for path in targets:
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                f.write(new_html)
+            print(f"  ✅ HTML written: {path}")
+        except OSError as e:
+            print(f"  ⚠️ HTML 写入失败 {path}: {e}")
 
 
 def sync_individual_file(data, type_key):
@@ -689,7 +691,7 @@ def _auto_git_push(project_root, has_changes):
     try:
         today_str = datetime.now().strftime("%Y-%m-%d")
         r = subprocess.run(
-            ["git", "add", "index_modified.html", "index.html", "data/", "scripts/auto_update.py", "scripts/backup_orange_purple_hits.js", "scripts/backup_all_recs.py", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py", "scripts/gen_recommendations.py"],
+            ["git", "add", "index_modified.html", "index.html", "deploy/index.html", "data/", "scripts/auto_update.py", "scripts/backup_orange_purple_hits.js", "scripts/backup_all_recs.py", "scripts/kl8_trend_deep.py", "scripts/digit_deep_analysis.py", "scripts/gen_recommendations.py"],
             cwd=project_root, capture_output=True, text=True, timeout=30
         )
         if r.returncode != 0:

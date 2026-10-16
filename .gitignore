@@ -1,0 +1,19 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ---- 本地备份（数据优化/回滚用）----
+_backup_*/
+.last_backup_dir
+*.bak
+
+# ---- 操作系统 / 编辑器 ----
+nul
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+
+# ---- 本地工作区状态（自动更新记忆/自动化）----
+.workbuddy/

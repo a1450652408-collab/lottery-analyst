@@ -140,7 +140,8 @@ def calc_zone15_dantuo(training, period_data):
         for n in item.get("n", item.get("r", [])):
             if 1 <= n <= 15 and n not in dans: freq10[n] += 1
     
-    tuos = [n for n, _ in freq10.most_common(7)]
+    # 与前端 index.html 口径统一：频次降序，频次相同则号码升序（确定性排序）
+    tuos = sorted(freq10.keys(), key=lambda n: (-freq10[n], n))[:7]
     tuos.sort()
     
     # 命中

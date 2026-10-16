@@ -272,7 +272,8 @@ def main():
     # 输出
     out_path = os.path.join(PROJECT_ROOT, "data", "kl8_trend_deep.json")
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(analysis, f, ensure_ascii=False, indent=2)
+        # 前端运行时 fetch 该文件，使用紧凑格式减小传输体积（约省 55%）
+        json.dump(analysis, f, ensure_ascii=False, separators=(",", ":"))
     
     # 控制台摘要
     w = analysis["windows"].get("medium_30", analysis["windows"].get("long_50", {}))
