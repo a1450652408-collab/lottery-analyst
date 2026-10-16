@@ -108,7 +108,10 @@ rows_html = ""
 for r in detail_rows:
     label = "★全中(57×3)" if r["full"] else ("中" + str(r["notes_mid"]) if r["notes_mid"]>0 else "未中")
     cls = "win" if r["won"] else ("hit" if r["notes_mid"] >= 1 else "")
-    rows_html += f'<tr><td>{r["d"][5:]}</td><td>{r["p"]}</td><td>{"重置" if r["stage"]==1 else f"第{r["stage"]}档"}</td><td>{r["inv"]:.0f}</td><td class="{cls}">{label}</td><td>{r["prize"]:.0f}</td><td>{r["net"]:+,.0f}</td></tr>'
+    # 注: 原写法在 f-string 内嵌套同引号 f-string, 仅 Python 3.12+ (PEP 701) 支持,
+    #     CI 用 3.11 会 SyntaxError; 拆成独立变量以保证 3.8+ 兼容
+    _stage_txt = "重置" if r["stage"] == 1 else f"第{r['stage']}档"
+    rows_html += f'<tr><td>{r["d"][5:]}</td><td>{r["p"]}</td><td>{_stage_txt}</td><td>{r["inv"]:.0f}</td><td class="{cls}">{label}</td><td>{r["prize"]:.0f}</td><td>{r["net"]:+,.0f}</td></tr>'
 
 # ============ 连不中分布 ============
 seq = []

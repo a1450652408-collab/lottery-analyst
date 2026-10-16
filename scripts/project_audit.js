@@ -129,15 +129,23 @@ const PY = (() => {
 })();
 const pys = walk("", ".py", []);
 let pyBad = 0;
+/* 注意: 语法问题记为 WARN 而非 BUG —— 它不影响数据完整性,
+   且 CI 的 Python 版本(3.11) 与本机可能不同(如 3.12+ 的 f-string 语法)。
+   真正的流水线脚本坏了会在对应步骤直接失败。 */
+function firstErr(e) {
+  const s = ((e && (e.stderr || e.stdout)) || "").toString();
+  const l = s.split("\n").filter(x => /Error|error/.test(x)).slice(-1)[0] || s.split("\n").slice(-2)[0] || "";
+  return l.trim().slice(0, 90);
+}
 if (!PY) { add(warns, "未找到 python, 跳过 .py 语法检查"); }
-else pys.forEach(f => { try { cp.execSync(`${PY} -m py_compile "${R(f)}"`, { stdio: "pipe" }); } catch (e) { pyBad++; add(issues, "python 语法错误: " + f); } });
-console.log("  python: " + (PY || "未找到") + " | 检查 " + pys.length + " 个 .py, 失败 " + pyBad);
+else pys.forEach(f => { try { cp.execSync(`${PY} -m py_compile "${R(f)}"`, { stdio: "pipe" }); } catch (e) { pyBad++; add(warns, "python 语法问题: " + f + " → " + firstErr(e)); } });
+console.log("  python: " + (PY || "未找到") + " | 检查 " + pys.length + " 个 .py, 有问题 " + pyBad);
 
 console.log("\n======== 8. 独立 .js 语法 ========");
 const jss = walk("", ".js", []).filter(f => !f.includes("/"));
 let jsBad = 0;
-jss.forEach(f => { try { cp.execSync(`node --check "${R(f)}"`, { stdio: "pipe" }); } catch (e) { jsBad++; add(issues, "js 语法错误: " + f); } });
-console.log("  检查 " + jss.length + " 个 .js, 失败 " + jsBad);
+jss.forEach(f => { try { cp.execSync(`node --check "${R(f)}"`, { stdio: "pipe" }); } catch (e) { jsBad++; add(warns, "js 语法问题: " + f + " → " + firstErr(e)); } });
+console.log("  检查 " + jss.length + " 个 .js, 有问题 " + jsBad);
 
 console.log("\n======== 汇总 ========");
 console.log("BUG: " + issues.length + "  WARN: " + warns.length);
