@@ -53,7 +53,7 @@ const document = {
 };
 const sandbox = {
   console, setTimeout, clearTimeout, setInterval, clearInterval,
-  document, localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+  document, localStorage: { getItem(k) { return (process.env.COVER === "1" && String(k).indexOf("kl8_cover") === 0) ? "1" : null; }, setItem() {}, removeItem() {} },
   navigator: { userAgent: "node", clipboard: { writeText() {} } }, location: { href: "http://x/", search: "", hash: "" },
   requestAnimationFrame(cb) { return 1; }, cancelAnimationFrame() {},
   getComputedStyle() { return { getPropertyValue() { return ""; } }; },
@@ -120,9 +120,11 @@ types.forEach(t => {
   const recHtml = elCache["enhancedRecs"] ? elCache["enhancedRecs"].innerHTML : "";
   const x7 = elCache["kl8_x7_dynamic"] ? elCache["kl8_x7_dynamic"].innerHTML : "";
   console.log("\n======== kl8 卡片渲染检查 (enhancedRecs " + recHtml.length + " 字符, x7动态 " + x7.length + " 字符) ========");
-  const required = ["1-15区间", "选八9码复式", "选九10码复式", "选十11码复式", "选五9码复式", "信号策略", "热度TOP10", "选三·每月追号", "选六·每月追号", "选二·每月追号"];
+  const required = ["1-15区间", "选八9码复式", "选九10码复式", "选十11码复式", "选五9码复式", "信号策略", "热度TOP10", "选三·每月追号", "选六·每月追号", "选二·每月追号", "选四·命中率优先"];
   required.forEach(r => console.log("  " + (recHtml.includes(r) ? "✓" : "✗") + " 含卡片: " + r));
   console.log("  " + (x7.includes("25码选七") ? "✓" : "✗") + " 含卡片: 25码选七·智能推荐");
+  console.log("  覆盖模式开关出现次数: " + (recHtml.match(/覆盖模式/g) || []).length + " (COVER=" + (process.env.COVER || "0") + ")");
+  console.log("  覆盖表(各注命中)出现: " + (recHtml.includes("各注命中") ? "是" : "否"));
   const dm = recHtml.match(/胆码:([\d,]+)/), tm = recHtml.match(/拖码:([\d,]+)/);
   console.log("  卡片1 渲染值 → 胆码:" + (dm ? dm[1] : "?") + " 拖码:" + (tm ? tm[1] : "?") + "  (期望 近5期口径, 数据止于" + emd[0].d + ")");
 
