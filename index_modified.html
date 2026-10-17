@@ -4367,7 +4367,7 @@ function renderRecommend(type, data) {
 
       window._kl8CoverToggle = _kl8CoverToggle;
 
-    /* ===== 选三·每月追号推荐（EMA评分+最优3区）===== */
+    /* ===== 选三·每月追号（选号方式由 _KL8_SELECT 决定）===== */
     (function() {
       if (cfg.type !== "keno") return;
       if (!_knEma || !_knFreq30 || !_knMom) return;
@@ -4537,7 +4537,7 @@ function renderRecommend(type, data) {
       _reHtml += '</div></div>';
     })();
 
-    /* ===== 选六·每月追号推荐（EMA评分总分Top6 + 翻倍追号）===== */
+    /* ===== 选六·每月追号（_KL8_SELECT + 递增加码）===== */
     (function() {
       if (cfg.type !== "keno") return;
       if (!_knEma || !_knFreq30 || !_knMom) return;
@@ -4708,7 +4708,7 @@ function renderRecommend(type, data) {
       _reHtml += '</div></div>';
     })();
 
-    /* ===== 选二·每月追号推荐（EMA评分+最优2区）===== */
+    /* ===== 选二·每月追号（选号方式由 _KL8_SELECT 决定）===== */
     (function() {
       if (cfg.type !== "keno") return;
       if (!_knEma || !_knFreq30 || !_knMom) return;
