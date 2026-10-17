@@ -124,7 +124,8 @@ types.forEach(t => {
   required.forEach(r => console.log("  " + (recHtml.includes(r) ? "✓" : "✗") + " 含卡片: " + r));
   console.log("  " + (x7.includes("25码选七") ? "✓" : "✗") + " 含卡片: 25码选七·智能推荐");
   console.log("  覆盖模式开关出现次数: " + (recHtml.match(/覆盖模式/g) || []).length + " (COVER=" + (process.env.COVER || "0") + ")");
-  console.log("  覆盖表(各注命中)出现: " + (recHtml.includes("各注命中") ? "是" : "否"));
+  console.log("  覆盖模式明细表: " + (recHtml.includes("本月明细 · ") ? "已渲染" : "未渲染"));
+  if (process.env.DUMP) { require("fs").writeFileSync(process.env.DUMP, recHtml); console.log("  已导出渲染结果 → " + process.env.DUMP); }
   const dm = recHtml.match(/胆码:([\d,]+)/), tm = recHtml.match(/拖码:([\d,]+)/);
   console.log("  卡片1 渲染值 → 胆码:" + (dm ? dm[1] : "?") + " 拖码:" + (tm ? tm[1] : "?") + "  (期望 近5期口径, 数据止于" + emd[0].d + ")");
 
