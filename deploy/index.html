@@ -4943,7 +4943,7 @@ function renderRecommend(type, data) {
       function _x4Prize(h) { return h >= 4 ? 93 : h === 3 ? 5 : h === 2 ? 3 : 0; }
 
       _reHtml += '<div class="rec-card" style="border-left-color:#00838f;background:linear-gradient(135deg,#e0f7fa,#b2ebf2)">';
-      _reHtml += '<div class="rec-header">🎯 选四·命中率优先（同价最高 25.89%/期）</div>';
+      _reHtml += '<div class="rec-header">🎯 选四·命中率优先（' + _kl8MethodName() + ' · 25.89%/期）</div>';
       _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
       _x4Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2, "0") + '</span>'; });
@@ -4954,6 +4954,7 @@ function renderRecommend(type, data) {
       _reHtml += '<span style="background:#fff3e0;padding:1px 6px;border-radius:4px;font-size:9px;color:#e65100">对比: 选二 6.0% / 选三 15.3% / 选六 16.2%</span>';
       _reHtml += '</div>';
       _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">命中率高≠更赚钱：任何玩法回收率都是 57%（每 60 元期望返 34 元）。此卡用"更频繁的小奖"换"更少的大奖"。</div>';
+      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x4', rate1: '26.1%', rate3: '61.2%', size: 4, scores: _kl8SelectScore(_x4Score), prize: { 4: 93, 3: 5, 2: 3 }, base: _x4Picks, data: data });
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x4Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
 
       /* 每日追号详情（localStorage，次月自动清零） */
