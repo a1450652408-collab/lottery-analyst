@@ -4155,6 +4155,9 @@ function renderRecommend(type, data) {
          'weighted' = 按权重抽样 —— 每月轮换更明显, 但稳定性下降
          'origin'   = 原复合评分(EMA+频率+动量) —— 动量项会导致每月几乎全换号 */
       var _KL8_SELECT = 'window';
+      /* 选六投注结构: false=平注2元/期(与选二/三/四一致) ; true=递增加码(+2/期,中奖重置,封顶50档)
+         递增不改变回收率(仍57%), 只把期望亏损放大 ~5 倍(实测: 月净 -25.8 -> -130.8) */
+      var _KL8_ESCALATE = false;
       var _KL8_WIN = 100;            /* 'window' 模式的回看期数 */
       function _kl8MonthWindow(dt, W) {
         var t = new Date();
@@ -4605,12 +4608,12 @@ function renderRecommend(type, data) {
       }
 
       _reHtml += '<div class="rec-card" style="border-left-color:#6a1b9a;background:linear-gradient(135deg,#f3e5f5,#e1bee7)">';
-      _reHtml += '<div class="rec-header">📅 选六·每月追号计划（' + _kl8MethodName() + ' + 递增加码）</div>';
+      _reHtml += '<div class="rec-header">📅 选六·每月追号计划（' + _kl8MethodName() + (_KL8_ESCALATE ? ' + 递增加码' : '') + '）</div>';
       _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
       _x6Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
       _reHtml += '</div>';
-      _reHtml += '<div style="margin:2px 0"><b>每期1注 · 不中下期+2元 · 中奖重置回2元</b></div>';
+      _reHtml += '<div style="margin:2px 0"><b>' + (_KL8_ESCALATE ? '每期1注 · 不中下期+2元 · 中奖重置回2元' : '每期1注 · 平注2元（与其余三卡一致）') + '</b></div>';
       _reHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0">';
       _reHtml += '<span style="background:#e8f5e9;padding:1px 6px;border-radius:4px;font-size:9px;color:#2e7d32">中3=3元</span>';
       _reHtml += '<span style="background:#e8f5e9;padding:1px 6px;border-radius:4px;font-size:9px;color:#2e7d32">中4=10元</span>';
@@ -4629,8 +4632,9 @@ function renderRecommend(type, data) {
 
         // 次月换号 或 号码变化 → 重置（追加档位回到第1档=2元）
         var _numsStr = _x6Picks.join(',');
-        if (!_chData || _chData.month !== _ym2 || _chData.numbers !== _numsStr) {
-          _chData = { month: _ym2, numbers: _numsStr, recs: {}, step: 1, cum: 0 };
+        var _mode6 = _KL8_ESCALATE ? 'esc' : 'flat';
+        if (!_chData || _chData.month !== _ym2 || _chData.numbers !== _numsStr || _chData.mode !== _mode6) {
+          _chData = { month: _ym2, numbers: _numsStr, recs: {}, step: 1, cum: 0, mode: _mode6 };
         }
         // step=档位，当期投入 = 2 × step（元）。不中则 step+1（即每期多花2元），中奖重置为1
         if (typeof _chData.step !== 'number' || _chData.step < 1) _chData.step = 1;
@@ -4659,12 +4663,12 @@ function renderRecommend(type, data) {
             if (_p.nums.indexOf(_x6Picks[_hi]) >= 0) { _hit++; _hitNs.push(_x6Picks[_hi]); }
           }
           var _prize = _x6Prize(_hit);
-          var _step = _chData.step;          // 当期档位
+          var _step = _KL8_ESCALATE ? _chData.step : 1;   // 平注恒为第1档
           var _cost = 2 * _step;             // 当期投入 = 2元 × 档位
           var _win = _prize * _step;         // 奖金同倍数放大
           _chData.cum += (_win - _cost);
           // 不中则档位+1（下一期比本期多花2元，封顶50档=100元）；中任意奖则重置回第1档
-          _chData.step = (_hit >= 3) ? 1 : Math.min(_chData.step + 1, 50);
+          _chData.step = !_KL8_ESCALATE ? 1 : ((_hit >= 3) ? 1 : Math.min(_chData.step + 1, 50));
           _chData.recs[_p.d] = { h: _hit, p: _win, c: _cost, m: _step, hn: _hitNs };
           _found++;
         }
@@ -4677,7 +4681,7 @@ function renderRecommend(type, data) {
         if (_dd.length > 0) {
           var _totCost = 0, _totWin = 0, _hit3 = 0, _hit4 = 0, _hit5 = 0, _hit6 = 0;
           _reHtml += '<div style="margin-top:5px;border-top:1px dashed #d1c4e9;padding-top:4px">';
-          _reHtml += '<div style="font-size:10px;font-weight:700;color:#6a1b9a;margin-bottom:2px">📋 本月追号详情（' + _ym2 + '）· 下期投入¥' + (2 * _chData.step) + '</div>';
+          _reHtml += '<div style="font-size:10px;font-weight:700;color:#6a1b9a;margin-bottom:2px">📋 本月追号详情（' + _ym2 + '）· 下期投入¥' + (2 * (_KL8_ESCALATE ? _chData.step : 1)) + '</div>';
           _reHtml += '<table style="width:100%;font-size:9px;border-collapse:collapse">';
           _reHtml += '<tr style="background:#f3e5f5"><th style="padding:1px 3px;text-align:left;width:34px">日期</th><th style="padding:1px 3px;text-align:center;width:22px">中</th><th style="padding:1px 3px;text-align:center;width:26px">投入</th><th style="padding:1px 3px;text-align:left">命中号码</th><th style="padding:1px 3px;text-align:right;width:34px">盈亏</th></tr>';
           for (var _di2 = 0; _di2 < _dd.length; _di2++) {
@@ -4699,7 +4703,7 @@ function renderRecommend(type, data) {
           _reHtml += '<td style="padding:2px 3px;color:#6a1b9a;font-size:8px">中3:' + _hit3 + ' 中4:' + _hit4 + ' 中5:' + _hit5 + ' 中6:' + _hit6 + '</td>';
           _reHtml += '<td style="padding:2px 3px;text-align:right;color:' + (_netAll >= 0 ? '#2e7d32' : '#c62828') + '">' + (_netAll >= 0 ? '+' : '') + _netAll + '</td></tr>';
           _reHtml += '</table>';
-          _reHtml += '<div style="font-size:8px;color:#999;margin-top:1px">投入¥' + _totCost + ' · 奖金¥' + _totWin + ' · 下期投入¥' + (2 * _chData.step) + '</div>';
+          _reHtml += '<div style="font-size:8px;color:#999;margin-top:1px">投入¥' + _totCost + ' · 奖金¥' + _totWin + ' · 下期投入¥' + (2 * (_KL8_ESCALATE ? _chData.step : 1)) + '</div>';
           _reHtml += '</div>';
         }
       })();
