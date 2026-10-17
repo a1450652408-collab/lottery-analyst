@@ -2230,9 +2230,21 @@ function renderAnalysis(type, data) {
   var useData = data.slice(0, period); /* 只用配置的期数 */
   document.getElementById("sTotal").textContent = period;
 
-  // 更新频率标签
+  // 更新频率标签 + 数据新鲜度（一眼看出数据是否滞后）
   var freqInfoEl = document.getElementById("freqInfo");
-  if (freqInfoEl) freqInfoEl.textContent = "近" + period + "期";
+  if (freqInfoEl) {
+    var _nw = (data[0] && data[0].d) ? String(data[0].d).slice(0, 10) : "";
+    var _dly = (cfg.type === "keno" || cfg.type === "digit");   // 每日开奖
+    var _lag = 0;
+    if (_nw) {
+      var _t0 = new Date();
+      var _today = _t0.getFullYear() + "-" + String(_t0.getMonth() + 1).padStart(2, "0") + "-" + String(_t0.getDate()).padStart(2, "0");
+      _lag = Math.round((new Date(_today) - new Date(_nw)) / 86400000);
+    }
+    var _stale = _nw && (_lag > (_dly ? 1 : 3));
+    freqInfoEl.innerHTML = "近" + period + "期 · 数据截至 <b>" + (_nw || "?") + "</b>"
+      + (_stale ? ' <span style="color:#e65100;font-weight:600">⚠️ 滞后 ' + _lag + " 天</span>" : "");
+  }
 
   // 最近开奖
   var recent = useData.slice(0, 10);
