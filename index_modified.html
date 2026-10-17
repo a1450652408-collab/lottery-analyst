@@ -4150,6 +4150,51 @@ function renderRecommend(type, data) {
       }
     })();
 
+      /* ===== 选号方式总开关 =====
+         'window'   = 近 N 期频率(确定性取前 k) —— 推荐: 月度稳定性最好(上月保留约1/3个号)
+         'weighted' = 按权重抽样 —— 每月轮换更明显, 但稳定性下降
+         'origin'   = 原复合评分(EMA+频率+动量) —— 动量项会导致每月几乎全换号 */
+      var _KL8_SELECT = 'window';
+      var _KL8_WIN = 100;            /* 'window' 模式的回看期数 */
+      function _kl8MonthWindow(dt, W) {
+        var t = new Date();
+        var ym = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0');
+        var out = [];
+        for (var i = 0; i < dt.length && out.length < W; i++) {
+          var it = dt[i];
+          if (!it || !it.d) continue;
+          if (String(it.d).slice(0, 7) < ym) out.push(it);
+        }
+        if (out.length < 20) out = dt.slice(0, Math.min(W, dt.length));
+        return out;
+      }
+      function _kl8FreqScore(win) {
+        var f = {}, j;
+        for (j = 1; j <= 80; j++) f[j] = 0;
+        for (j = 0; j < win.length; j++) {
+          var ns = getNums(win[j]);
+          for (var k = 0; k < ns.length; k++) { var v = Number(ns[k]); if (v >= 1 && v <= 80) f[v] = (f[v] || 0) + 1; }
+        }
+        return f;
+      }
+      function _kl8TopK(sc, k) {
+        return Object.keys(sc).map(Number).sort(function (a, b) { return (sc[b] || 0) - (sc[a] || 0) || a - b; }).slice(0, k).sort(function (a, b) { return a - b; });
+      }
+      function _kl8MethodName() {
+        if (_KL8_SELECT === 'window') return '近' + _KL8_WIN + '期频率';
+        if (_KL8_SELECT === 'weighted') return '按权重抽样';
+        return '复合评分';
+      }
+      function _kl8SelectScore(cardScore) {
+        return _KL8_SELECT === 'window' ? _kl8FreqScore(_kl8MonthWindow(data, _KL8_WIN)) : cardScore;
+      }
+      /* 返回 null 表示"沿用卡片原有逻辑"(origin) */
+      function _kl8ApplySelect(cardScore, k, tag) {
+        if (_KL8_SELECT === 'window') return _kl8TopK(_kl8FreqScore(_kl8MonthWindow(data, _KL8_WIN)), k);
+        if (_KL8_SELECT === 'weighted' && _kl8UseWeighted()) return _kl8WeightedPick(cardScore, k, tag + '|' + _kl8CurYm());
+        return null;
+      }
+
       /* ===== 按权重选号（可复现）=====
          与"取评分最高 N 个"的区别：每个号按 exp((score-min)/T) 的比例获得被选中概率，
          同月同卡用固定种子 → 月内号码不变，但每月自然分散，不会长期锁死在同一批号。
@@ -4397,10 +4442,11 @@ function renderRecommend(type, data) {
         }
         _x3Picks.push(_x3best);
       }
-      if (_kl8UseWeighted()) { _x3Picks = _kl8WeightedPick(_x3Score, 3, 'x3|' + _kl8CurYm()); }
+      var _sel_x3 = _kl8ApplySelect(_x3Score, 3, 'x3');
+      if (_sel_x3) { _x3Picks = _sel_x3; }
       
       _reHtml += '<div class="rec-card" style="border-left-color:#558b2f;background:linear-gradient(135deg,#f1f8e9,#dcedc8)">';
-      _reHtml += '<div class="rec-header">📅 选三·每月追号计划（EMA评分+最优3区）</div>';
+      _reHtml += '<div class="rec-header">📅 选三·每月追号计划（' + _kl8MethodName() + '）</div>';
       _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
       _x3Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
@@ -4411,7 +4457,7 @@ function renderRecommend(type, data) {
       _reHtml += '<span style="background:#e8f5e9;padding:1px 6px;border-radius:4px;font-size:9px;color:#2e7d32">✅ 月均中2=3.9次</span>';
       _reHtml += '<span style="background:#fff3e0;padding:1px 6px;border-radius:4px;font-size:9px;color:#e65100">月均中3=0.5次(53元)</span>';
       _reHtml += '</div>';
-      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率 | 每30天重算换号 | 追号请量力而行' + (_kl8UseWeighted() ? ' · 按权重抽样' : '') + '</div>';
+      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">每月1号重算换号（月内固定）| 追号请量力而行' + ' · ' + _kl8MethodName() + '</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x3Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
 
       /* ===== 每日追号详情（localStorage 持久化，次月自动清零）===== */
@@ -4487,7 +4533,7 @@ function renderRecommend(type, data) {
         }
       })();
 
-      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x3', rate1: '15.3%', rate3: '39.9%', size: 3, scores: _x3Score, prize: { 3: 52, 2: 3 }, base: _x3Picks, data: data });
+      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x3', rate1: '15.3%', rate3: '39.9%', size: 3, scores: _kl8SelectScore(_x3Score), prize: { 3: 52, 2: 3 }, base: _x3Picks, data: data });
       _reHtml += '</div></div>';
     })();
 
@@ -4550,7 +4596,8 @@ function renderRecommend(type, data) {
       for (var _x6n2 = 1; _x6n2 <= 80; _x6n2++) _x6Picks.push(_x6n2);
       _x6Picks.sort(function(a,b){ return (_x6Score[b]||0) - (_x6Score[a]||0); });
       _x6Picks = _x6Picks.slice(0, 6).sort(function(a,b){ return a-b; });
-      if (_kl8UseWeighted()) { _x6Picks = _kl8WeightedPick(_x6Score, 6, 'x6|' + _kl8CurYm()); }
+      var _sel_x6 = _kl8ApplySelect(_x6Score, 6, 'x6');
+      if (_sel_x6) { _x6Picks = _sel_x6; }
 
       // 快乐8「选六」官方奖金：中6=2880, 中5=30, 中4=10, 中3=3（单注2元）
       function _x6Prize(hit) {
@@ -4558,7 +4605,7 @@ function renderRecommend(type, data) {
       }
 
       _reHtml += '<div class="rec-card" style="border-left-color:#6a1b9a;background:linear-gradient(135deg,#f3e5f5,#e1bee7)">';
-      _reHtml += '<div class="rec-header">📅 选六·每月追号计划（EMA评分Top6 + 递增加码）</div>';
+      _reHtml += '<div class="rec-header">📅 选六·每月追号计划（' + _kl8MethodName() + ' + 递增加码）</div>';
       _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
       _x6Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
@@ -4570,7 +4617,7 @@ function renderRecommend(type, data) {
       _reHtml += '<span style="background:#fff3e0;padding:1px 6px;border-radius:4px;font-size:9px;color:#e65100">中5=30元</span>';
       _reHtml += '<span style="background:#fce4ec;padding:1px 6px;border-radius:4px;font-size:9px;color:#ad1457">中6=2880元</span>';
       _reHtml += '</div>';
-      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率（总分Top6）| 每30天重算换号 | 追号请量力而行' + (_kl8UseWeighted() ? ' · 按权重抽样' : '') + '</div>';
+      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">每月1号重算换号（月内固定, Top6）| 追号请量力而行' + ' · ' + _kl8MethodName() + '</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x6Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
 
       /* ===== 每日追号详情 + 翻倍追号（localStorage 持久化，次月自动清零）===== */
@@ -4657,7 +4704,7 @@ function renderRecommend(type, data) {
         }
       })();
 
-      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x6', rate1: '16.0%', rate3: '42.6%', size: 6, scores: _x6Score, prize: { 6: 2880, 5: 30, 4: 10, 3: 3 }, base: _x6Picks, data: data });
+      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x6', rate1: '16.0%', rate3: '42.6%', size: 6, scores: _kl8SelectScore(_x6Score), prize: { 6: 2880, 5: 30, 4: 10, 3: 3 }, base: _x6Picks, data: data });
       _reHtml += '</div></div>';
     })();
 
@@ -4737,10 +4784,11 @@ function renderRecommend(type, data) {
         _x2Picks.push(_x2best);
       }
       _x2Picks.sort(function(a,b){return a-b;});
-      if (_kl8UseWeighted()) { _x2Picks = _kl8WeightedPick(_x2Score, 2, 'x2|' + _kl8CurYm()); }
+      var _sel_x2 = _kl8ApplySelect(_x2Score, 2, 'x2');
+      if (_sel_x2) { _x2Picks = _sel_x2; }
 
       _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb)">';
-      _reHtml += '<div class="rec-header">🎯 选二·每月追号计划（EMA评分+最优2区）</div>';
+      _reHtml += '<div class="rec-header">🎯 选二·每月追号计划（' + _kl8MethodName() + '）</div>';
       _reHtml += '<div style="padding:4px 6px;font-size:10px;color:#333;line-height:1.6">';
       _reHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
       _x2Picks.forEach(function(n) { _reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>'; });
@@ -4750,7 +4798,7 @@ function renderRecommend(type, data) {
       _reHtml += '<span style="background:#e3f2fd;padding:1px 6px;border-radius:4px;font-size:9px;color:#1565c0">✅ 单注中2概率6.0%</span>';
       _reHtml += '<span style="background:#e3f2fd;padding:1px 6px;border-radius:4px;font-size:9px;color:#1565c0">✅ 理论月均中2=1.8次(34元)</span>';
       _reHtml += '</div>';
-      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">基于EMA评分+动量+频率 | 每30天重算换号 | 追号请量力而行' + (_kl8UseWeighted() ? ' · 按权重抽样' : '') + '</div>';
+      _reHtml += '<div style="font-size:9px;color:#999;margin-top:2px">每月1号重算换号（月内固定）| 追号请量力而行' + ' · ' + _kl8MethodName() + '</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _x2Picks.join(' ') + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
 
       /* ===== 每日追号详情（localStorage 持久化，次月自动清零）===== */
@@ -4819,7 +4867,7 @@ function renderRecommend(type, data) {
         }
       })();
 
-      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x2', rate1: '6.0%', rate3: '17.3%', size: 2, scores: _x2Score, prize: { 2: 19 }, base: _x2Picks, data: data });
+      _reHtml += _kl8CoverBlock({ key: 'kl8_cover_x2', rate1: '6.0%', rate3: '17.3%', size: 2, scores: _kl8SelectScore(_x2Score), prize: { 2: 19 }, base: _x2Picks, data: data });
       _reHtml += '</div></div>';
     })();
 
@@ -4888,7 +4936,8 @@ function renderRecommend(type, data) {
         _x4Picks.push(_best4);
       }
       _x4Picks.sort(function(a, b) { return a - b; });
-      if (_kl8UseWeighted()) { _x4Picks = _kl8WeightedPick(_x4Score, 4, 'x4|' + _kl8CurYm()); }
+      var _sel_x4 = _kl8ApplySelect(_x4Score, 4, 'x4');
+      if (_sel_x4) { _x4Picks = _sel_x4; }
 
       /* 快乐8「选四」官方奖金（1注2元）：中4=93, 中3=5, 中2=3 */
       function _x4Prize(h) { return h >= 4 ? 93 : h === 3 ? 5 : h === 2 ? 3 : 0; }
