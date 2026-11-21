@@ -273,4 +273,10 @@ def main(write_json=True):
 
 
 if __name__ == "__main__":
+    try:
+        if os.environ.get("LOTTERY_PROBE", "1") == "1":
+            import probe_sources
+            probe_sources.run()
+    except Exception as _e:
+        print(f"  probe skipped: {_e}")
     sys.exit(main(write_json="--no-json" not in sys.argv))
