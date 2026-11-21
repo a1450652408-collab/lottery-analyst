@@ -144,6 +144,94 @@ def _prepend_official(out, t, items, src):
     print(f"  {t}: {src} {new_latest} ({items[0]['d']}) {len(items)}条 [{old_latest or '无'} → {tag}]")
 
 
+# ===== 源 A: 中彩网(zhcw) 福彩 4 种 —— 境外/机房 IP 可访问，GitHub Actions 可用 =====
+ZHCW = "https://jc.zhcw.com/port/client_json.php"
+ZHCW_LID = {"ssq": 1, "fc3d": 2, "qlc": 3, "kl8": 6}
+ZHCW_COUNT = 50
+
+
+def fetch_zhcw(lid, count=ZHCW_COUNT):
+    url = (f"{ZHCW}?transactionType=10001001&lotteryId={lid}"
+           f"&issueCount={count}&type=0&pageNum=1&pageSize={count}")
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.zhcw.com/kjxx/kl8/"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        j = json.loads(resp.read().decode("utf-8"))
+    rows = j.get("data") or []
+    if not rows:
+        raise RuntimeError(f"empty data resCode={j.get('resCode')}")
+    return rows
+
+
+def parse_zhcw(t, item):
+    front = [int(x) for x in str(item.get("frontWinningNum", "")).split() if x]
+    back = [int(x) for x in str(item.get("backWinningNum", "")).split() if x]
+    e = {"p": str(item.get("issue", "")), "d": str(item.get("openTime", ""))[:10]}
+    if t == "ssq":
+        if len(front) != 6 or not back:
+            raise ValueError("ssq 号码非法")
+        e["r"] = sorted(front)
+        e["b"] = back[0]
+    elif t == "qlc":
+        if len(front) != 7:
+            raise ValueError("qlc 号码非法")
+        e["r"] = sorted(front)
+        if back:
+            e["b"] = back[0]
+    elif t == "fc3d":
+        if len(front) != 3:
+            raise ValueError("fc3d 号码非法")
+        e["n"] = front                      # 位序号, 不能排序
+    else:                                   # kl8
+        if len(front) != 20:
+            raise ValueError("kl8 号码非法")
+        e["n"] = sorted(front)
+    return e
+
+
+# ===== 源 B: 500.com XML 体彩 4 种 —— 境外可访问 =====
+X500 = "https://kaijiang.500.com/static/info/kaijiang/xml/{}/list.xml"
+X500_CODE = {"dlt": "dlt", "pl3": "pls", "pl5": "plw", "qxc": "qxc"}
+X500_NEED = {"pl3": 3, "pl5": 5, "qxc": 7}
+
+
+def fetch_500(code):
+    req = urllib.request.Request(X500.format(code), headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=40) as resp:
+        return resp.read().decode("utf-8", "ignore")
+
+
+def parse_500(t, xml_text, cap):
+    out = []
+    for m in re.finditer(r"<row\b[^>]*>", xml_text):
+        attrs = dict(re.findall(r'(\w+)="([^"]*)"', m.group(0)))
+        p, code, tm = attrs.get("expect"), attrs.get("opencode"), attrs.get("opentime", "")
+        if not p or not code:
+            continue
+        try:
+            if t == "dlt":
+                red_s, blue_s = code.split("|")
+                red = [int(x) for x in red_s.split(",")]
+                blue = [int(x) for x in blue_s.split(",")]
+                if len(red) != 5 or len(blue) != 2:
+                    continue
+                e = {"p": p, "d": tm[:10], "r": sorted(red), "b": sorted(blue)}
+            else:
+                nums = [int(x) for x in code.split(",")]
+                if len(nums) != X500_NEED[t]:
+                    continue
+                e = {"p": p, "d": tm[:10], "n": nums}
+        except Exception:
+            continue
+        out.append(e)
+        if len(out) >= cap:
+            break
+    if not out:
+        raise RuntimeError("no valid rows")
+    return out
+
+
 def fetch_all():
     """抓取所有彩种; 返回 {type_key: [条目]}(官方条目排在前面, 优先入库)"""
     out = {}
@@ -173,6 +261,20 @@ def fetch_all():
             _prepend_official(out, t, [parse_sporttery(t, i) for i in fetch_sporttery(g)], "体彩网")
         except Exception as e:
             print(f"  {t}: 体彩网兜底跳过 ({e})")
+    # --- 源 A: 中彩网(福彩 4 种)。机房 IP 可访问, 云端主力 ---
+    for t, lid in ZHCW_LID.items():
+        try:
+            _prepend_official(out, t, [parse_zhcw(t, i) for i in fetch_zhcw(lid)], "中彩网")
+        except Exception as e:
+            print(f"  {t}: 中彩网跳过 ({e})")
+        time.sleep(1)
+
+    # --- 源 B: 500.com XML(体彩 4 种)。机房 IP 可访问, 云端主力 ---
+    for t, code in X500_CODE.items():
+        try:
+            _prepend_official(out, t, parse_500(t, fetch_500(code), _cap_of(t)), "500彩票")
+        except Exception as e:
+            print(f"  {t}: 500彩票跳过 ({e})")
         time.sleep(1)
     return out
 
@@ -273,10 +375,4 @@ def main(write_json=True):
 
 
 if __name__ == "__main__":
-    try:
-        if os.environ.get("LOTTERY_PROBE", "1") == "1":
-            import probe_sources
-            probe_sources.run()
-    except Exception as _e:
-        print(f"  probe skipped: {_e}")
     sys.exit(main(write_json="--no-json" not in sys.argv))
