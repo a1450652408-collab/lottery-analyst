@@ -190,15 +190,24 @@ def parse_zhcw(t, item):
     return e
 
 
-# ===== 源 B: 500.com XML 体彩 4 种 —— 境外可访问 =====
+# ===== 源 B: 500.com XML —— 覆盖全部 8 彩种，境外/机房 IP 可访问 =====
 X500 = "https://kaijiang.500.com/static/info/kaijiang/xml/{}/list.xml"
-X500_CODE = {"dlt": "dlt", "pl3": "pls", "pl5": "plw", "qxc": "qxc"}
-X500_NEED = {"pl3": 3, "pl5": 5, "qxc": 7}
+X500_CODE = {"ssq": "ssq", "dlt": "dlt", "qlc": "qlc", "kl8": "kl8",
+             "fc3d": "sd", "pl3": "pls", "pl5": "plw", "qxc": "qxc"}
+X500_NEED = {"pl3": 3, "pl5": 5, "qxc": 7, "fc3d": 3}
+
+
+def _norm_p(t, p):
+    """500 的期号: ssq/qlc 是 5 位(26133), 其余 5 位本就对齐; kl8/fc3d 是 7 位。
+       本站口径: ssq/qlc/fc3d/kl8 为 7 位, dlt/pl3/pl5/qxc 为 5 位。"""
+    if t in ("ssq", "qlc", "fc3d") and len(p) == 5:
+        return "20" + p
+    return p
 
 
 def fetch_500(code):
     req = urllib.request.Request(X500.format(code), headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=40) as resp:
+    with urllib.request.urlopen(req, timeout=45) as resp:
         return resp.read().decode("utf-8", "ignore")
 
 
@@ -210,18 +219,28 @@ def parse_500(t, xml_text, cap):
         if not p or not code:
             continue
         try:
-            if t == "dlt":
+            p = _norm_p(t, p)
+            if t in ("ssq", "qlc", "dlt"):
                 red_s, blue_s = code.split("|")
                 red = [int(x) for x in red_s.split(",")]
                 blue = [int(x) for x in blue_s.split(",")]
-                if len(red) != 5 or len(blue) != 2:
+                need_r, need_b = (6, 1) if t == "ssq" else ((7, 1) if t == "qlc" else (5, 2))
+                if len(red) != need_r or len(blue) != need_b:
                     continue
-                e = {"p": p, "d": tm[:10], "r": sorted(red), "b": sorted(blue)}
+                if t == "dlt":
+                    e = {"p": p, "d": tm[:10], "r": sorted(red), "b": sorted(blue)}
+                else:
+                    e = {"p": p, "d": tm[:10], "r": sorted(red), "b": blue[0]}
             else:
                 nums = [int(x) for x in code.split(",")]
-                if len(nums) != X500_NEED[t]:
-                    continue
-                e = {"p": p, "d": tm[:10], "n": nums}
+                if t == "kl8":
+                    if len(nums) != 20:
+                        continue
+                    e = {"p": p, "d": tm[:10], "n": sorted(nums)}
+                else:
+                    if len(nums) != X500_NEED[t]:
+                        continue
+                    e = {"p": p, "d": tm[:10], "n": nums}
         except Exception:
             continue
         out.append(e)
@@ -269,7 +288,7 @@ def fetch_all():
             print(f"  {t}: 中彩网跳过 ({e})")
         time.sleep(1)
 
-    # --- 源 B: 500.com XML(体彩 4 种)。机房 IP 可访问, 云端主力 ---
+    # --- 源 B: 500.com XML(全 8 彩种)。机房 IP 可访问, 云端主力源 ---
     for t, code in X500_CODE.items():
         try:
             _prepend_official(out, t, parse_500(t, fetch_500(code), _cap_of(t)), "500彩票")
