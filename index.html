@@ -3796,98 +3796,92 @@ function renderRecommend(type, data) {
       }
     })();
 
-    /* ===== 快乐8 1-15区间·选五3胆7拖（三区均衡法） ===== */
+    /* ===== 快乐8 1-21·选五「3胆4拖」×3池（三分池） ===== */
     (function() {
       if (cfg.type !== "keno") return;
-      
-      var _ztZ15 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-      var _ztWin = 50;
-      /* data[0] 为最新一期(最新在前): 取最近50期窗口, 下方 slice(0,5)/slice(0,10) 即"近5期/近10期" */
-      var _ztData = data.slice(0, Math.min(_ztWin, data.length));
-      
-      // 近5期频次统计
-      var _ztFreq5 = {};
-      _ztZ15.forEach(function(n) { _ztFreq5[n] = 0; });
-      _ztData.slice(0, 5).forEach(function(d) {
-        getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq5[x]++; });
+
+      /* 三个互不重叠的 7 码池: 1-7 / 8-14 / 15-21
+         每池取近5期最热3码做胆、其余4码做拖 → C(4,2)=6注
+         3池合计 18注 = 36元/期
+         为什么分池: 单池3胆是硬约束(3胆全灭则整池归零)，
+         拆成3个独立池后"任一中奖即收"，有奖率 21.5% → 53.8% */
+      var _sfRanges = [[1,7],[8,14],[15,21]];
+      var _sfF5 = {}, _sfF10 = {};
+      var _sfWin = data.slice(0, Math.min(50, data.length));   /* data 最新在前 */
+      _sfRanges.forEach(function(rg) {
+        for (var n = rg[0]; n <= rg[1]; n++) { _sfF5[n] = 0; _sfF10[n] = 0; }
       });
-      
-      // 三区均衡法: 1-5, 6-10, 11-15 各取最热号做胆
-      var _ztZones = [[1,5],[6,10],[11,15]];
-      var _ztDan = [];
-      _ztZones.forEach(function(zone) {
-        var lo = zone[0], hi = zone[1];
+      _sfWin.slice(0, 5).forEach(function(it) {
+        getNums(it).forEach(function(x) { if (_sfF5[x] !== undefined) _sfF5[x]++; });
+      });
+      _sfWin.slice(0, 10).forEach(function(it) {
+        getNums(it).forEach(function(x) { if (_sfF10[x] !== undefined) _sfF10[x]++; });
+      });
+
+      var _sfDan = [], _sfTuo = [];
+      _sfRanges.forEach(function(rg) {
         var nums = [];
-        for (var n = lo; n <= hi; n++) nums.push(n);
-        nums.sort(function(a,b){ return (_ztFreq5[b]||0) - (_ztFreq5[a]||0); });
-        _ztDan.push(nums[0]);
+        for (var n = rg[0]; n <= rg[1]; n++) nums.push(n);
+        nums.sort(function(a,b){ return ((_sfF5[b]||0)-(_sfF5[a]||0)) || (a-b); });
+        _sfDan.push(nums.slice(0,3).sort(function(a,b){return a-b;}));
+        var rest = nums.slice(3);
+        rest.sort(function(a,b){ return ((_sfF10[b]||0)-(_sfF10[a]||0)) || (a-b); });
+        _sfTuo.push(rest.slice(0,4).sort(function(a,b){return a-b;}));
       });
-      _ztDan.sort(function(a,b){return a-b;});
-      
-      // 拖码: 剩下的1-15里去胆, 按近10期频次排前7
-      var _ztFreq10 = {};
-      _ztZ15.forEach(function(n) { _ztFreq10[n] = 0; });
-      _ztData.slice(0, 10).forEach(function(d) {
-        getNums(d).forEach(function(x) { if (x >= 1 && x <= 15) _ztFreq10[x]++; });
-      });
-      var _ztTuo = _ztZ15.filter(function(n){ return _ztDan.indexOf(n) < 0; })
-                         .sort(function(a,b){ return (_ztFreq10[b]||0) - (_ztFreq10[a]||0); })
-                         .slice(0, 7)
-                         .sort(function(a,b){return a-b;});
-      
-      // 显示胆码频率统计
-      var _ztDanFreqStr = '';
-      _ztDan.forEach(function(n) {
-        var c = _ztFreq5[n] || 0;
-        _ztDanFreqStr += String(n).padStart(2,'0') + '(' + c + ')' + ' ';
-      });
-      
-      // 渲染卡片
-      var _ztCost = 21 * 2; // C(7,2)=21注=42元
+
+      var _sfPad = function(n){ return String(n).padStart(2,"0"); };
+      var _sfBets = 18;                     /* 3池 × C(4,2)=6 */
+      var _sfCost = _sfBets * 2;            /* 36 元 */
+      var _sfMark = ['①','②','③'];
+      var _sfCol  = [['#e8f5e9','#1b5e20'],['#fff3e0','#e65100'],['#e3f2fd','#0d47a1']];
+
       _reHtml += '<div class="rec-card" style="border-left-color:#1b5e20;background:linear-gradient(135deg,#e8f5e9,#f1f8e9)">';
-      _reHtml += '<div class="rec-header">🌲 1-15区间·选五3胆7拖（三区均衡法）</div>';
-      _reHtml += '<div style="font-size:10px;color:#888;margin-bottom:4px">每5期滚动更新 | 1-5/6-10/11-15各取热号做胆 | C(7,2)=21注=' + _ztCost + '元/期 | 回测ROI +1023%</div>';
-      
-      // 胆码
-      _reHtml += '<div style="margin: 6px 0 4px 0"><span style="font-size:10px;color:#666">胆码(近5期频次) </span>';
-      _ztDan.forEach(function(n) {
-        var c = _ztFreq5[n] || 0;
-        var bar = '';
-        for (var b = 0; b < c; b++) bar += '▮';
-        _reHtml += '<span style="display:inline-block;background:#1b5e20;color:#fff;width:28px;height:28px;line-height:28px;border-radius:50%;text-align:center;font-weight:700;font-size:13px;margin:0 1px">' + String(n).padStart(2,'0') + '</span>';
-        _reHtml += '<span style="font-size:9px;color:#1b5e20;margin-right:4px">' + c + '次' + bar + '</span>';
+      _reHtml += '<div class="rec-header">🌲 1-21区间·选五「3胆4拖」×3池（三分池）</div>';
+      _reHtml += '<div style="font-size:10px;color:#888;margin-bottom:4px">每期滚动更新(最近5期) | 1-7 / 8-14 / 15-21 各成独立池 | 每池 C(4,2)=6注 | 3池 ' + _sfBets + '注=' + _sfCost + '元/期</div>';
+
+      /* 三池逐行 */
+      _sfRanges.forEach(function(rg, pi) {
+        var dan = _sfDan[pi], tuo = _sfTuo[pi];
+        _reHtml += '<div style="margin:5px 0 3px 0;padding:4px 6px;background:' + _sfCol[pi][0] + ';border-radius:4px">';
+        _reHtml += '<span style="font-size:10px;color:' + _sfCol[pi][1] + ';font-weight:700">池' + _sfMark[pi] + ' ' + rg[0] + '-' + rg[1] + '　胆</span> ';
+        dan.forEach(function(n) {
+          var c = _sfF5[n] || 0, bar = '';
+          for (var b = 0; b < c; b++) bar += '▮';
+          _reHtml += '<span style="display:inline-block;background:' + _sfCol[pi][1] + ';color:#fff;width:26px;height:26px;line-height:26px;border-radius:50%;text-align:center;font-weight:700;font-size:12px">' + _sfPad(n) + '</span>';
+          _reHtml += '<span style="font-size:9px;color:' + _sfCol[pi][1] + ';margin:0 3px 0 1px">' + c + bar + '</span>';
+        });
+        _reHtml += '<span style="font-size:10px;color:#666;margin-left:2px">拖</span> ';
+        tuo.forEach(function(n) {
+          _reHtml += '<span style="display:inline-block;background:#fff;border:1px solid ' + _sfCol[pi][1] + ';color:' + _sfCol[pi][1] + ';width:24px;height:24px;line-height:22px;border-radius:50%;text-align:center;font-weight:600;font-size:11px;margin:0 1px">' + _sfPad(n) + '</span>';
+        });
+        _reHtml += '<span style="font-size:9px;color:#999;margin-left:4px">6注</span>';
+        _reHtml += '</div>';
       });
-      _reHtml += '</div>';
-      
-      // 拖码
-      _reHtml += '<div style="margin:4px 0"><span style="font-size:10px;color:#666">拖码(近10期频次) </span>';
-      _ztTuo.forEach(function(n) {
-        var c = _ztFreq10[n] || 0;
-        _reHtml += '<span style="display:inline-block;background:#81c784;color:#1b5e20;width:24px;height:24px;line-height:24px;border-radius:50%;text-align:center;font-weight:600;font-size:11px;margin:0 1px">' + String(n).padStart(2,'0') + '</span>';
+
+      /* 完整列表 + 复制 */
+      var _sfLines = [];
+      _sfRanges.forEach(function(rg, pi) {
+        _sfLines.push('池' + (pi+1) + '(' + rg[0] + '-' + rg[1] + ') 胆:' + _sfDan[pi].join(',') + ' 拖:' + _sfTuo[pi].join(','));
       });
+      var _sfPlain = _sfLines.join(' | ');
+      _reHtml += '<div style="margin-top:4px;padding:4px 6px;background:#fff;border-radius:4px;font-size:10px;color:#666;line-height:1.6">';
+      _sfLines.forEach(function(l){ _reHtml += l + '<br>'; });
+      _reHtml += '共3池×6注=' + _sfBets + '注=' + _sfCost + '元';
+      _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'' + _sfPlain + '\')" style="display:inline-block;margin-left:8px">📋复制</span>';
       _reHtml += '</div>';
-      
-      // 完整列表
-      _reHtml += '<div style="margin-top:4px;padding:4px 6px;background:#fff;border-radius:4px;font-size:10px;color:#666">';
-      _reHtml += '胆码:' + _ztDan.join(',') + ' | 拖码:' + _ztTuo.join(',') + ' | C(7,2)=21注=42元';
-      _reHtml += '<span class="rec-row-copy" onclick="navigator.clipboard.writeText(\'胆码:' + _ztDan.join(',') + ' | 拖码:' + _ztTuo.join(',') + '\')" style="display:inline-block;margin-left:8px">📋复制</span>';
-      _reHtml += '</div>';
-      
-      // 三区显示
-      var _ztZoneLabels = [['1-5区', '#e8f5e9'], ['6-10区', '#fff3e0'], ['11-15区', '#e3f2fd']];
+
+      /* 三池概览条 */
       _reHtml += '<div style="margin-top:4px;display:flex;gap:4px">';
-      _ztZones.forEach(function(zone, zi) {
-        var lo = zone[0], hi = zone[1];
-        var nums = [];
-        for (var n = lo; n <= hi; n++) nums.push(n);
-        var hot = _ztDan.filter(function(dn){ return dn >= lo && dn <= hi; })[0] || '?';
-        _reHtml += '<div style="flex:1;background:' + _ztZoneLabels[zi][1] + ';border-radius:4px;padding:3px 4px;text-align:center;font-size:9px;color:#666">';
-        _reHtml += _ztZoneLabels[zi][0] + ' → <b>' + String(hot).padStart(2,'0') + '</b>';
+      _sfRanges.forEach(function(rg, pi) {
+        _reHtml += '<div style="flex:1;background:' + _sfCol[pi][0] + ';border-radius:4px;padding:3px 4px;text-align:center;font-size:9px;color:#666">';
+        _reHtml += rg[0] + '-' + rg[1] + ' → 胆 <b>' + _sfDan[pi].map(_sfPad).join(' ') + '</b>';
         _reHtml += '</div>';
       });
       _reHtml += '</div>';
-      
-      _reHtml += '<div class="rec-reason">三区分胆·热点跟踪 | 每5期自动更新 | 胆不对时拖来补 | 实测ROI +1023% ·有奖率34% | 代替原来4组(胆88%白给)</div></div>';
+
+      _reHtml += '<div class="rec-reason">三分池·任一中奖即收 | 单池有奖率21.5% → 三池并集53.8% | 1489期实测有奖率55.2%·中5十四次 | 18注=36元·期望返奖57.5%</div>';
+      _reHtml += '<div style="font-size:10px;color:#c62828;margin-top:3px">⚠️ 分池只提高中奖频率、不改变期望：每36元期望回20.7元，长期为负期望。热号选号与随机选号的历史命中无统计学差异</div>';
+      _reHtml += '</div>';
     })();
     
     /* ===== 快乐8 固定组合（每日参考，守号用） ===== */
@@ -4013,7 +4007,7 @@ function renderRecommend(type, data) {
       // 信号强度卡片
       _reHtml += '<div class="rec-card" style="border-left-color:' + signalColor + ';background:' + signalBg + '">';
       _reHtml += '<div class="rec-header">📡 信号策略 · ' + signalText + '</div>';
-      _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">最近5期 1-20+60-80 最热5号累计出现 <strong>' + top5Sum + '</strong> 次 (阈值≥18出手) | 历史5.5年出手72次净+446万·ROI 170.8%</div>';
+      _reHtml += '<div style="font-size:10px;color:#666;margin-bottom:4px">最近5期 1-20+60-80 最热5号累计出现 <strong>' + top5Sum + '</strong> 次 (阈值≥18出手) | 实测4.3年1500期触发42次·净−3.55万·ROI −42.2%</div>';
       _reHtml += '<div style="font-size:10px;margin-bottom:6px">热号TOP5: ';
       top5Nums.forEach(function(n,idx) {
         var c = freq[n]||0;
@@ -4030,12 +4024,13 @@ function renderRecommend(type, data) {
         _reHtml += '<div class="rec-balls">';
         picks14.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
         _reHtml += '</div>';
-        _reHtml += '<div class="rec-reason">📡 Top5∑=' + top5Sum + '≥18 信号触发 | C(14,10)=1,001注=2,002元 | 中10=500万·中9=8,000·中8=800 | 回测5.5年净+6.5万·ROI 144.8%·中9一次</div>';
+        _reHtml += '<div class="rec-reason">📡 Top5∑=' + top5Sum + '≥18 信号触发 | C(14,10)=1,001注=2,002元 | 复式实际奖金：中10≈557.5万·中9=14.3万·中8=2.79万 | 实测42次最高中8码·命中均值3.50(理论3.5)</div>';
+        _reHtml += '<div style="font-size:10px;color:#c62828;margin-top:4px">⚠️ 该策略历史表现与随机选号无统计学差异。快乐8选十理论返奖率57.53%，每次2002元期望亏约850元，长期为负期望</div>';
         _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s14Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div>';
       } else {
         // 弱信号：显示等待提示
         _reHtml += '<div style="text-align:center;padding:12px 0;color:#999;font-size:13px">📊 当前信号偏弱 (Top5∑=' + top5Sum + ')，建议等待热号聚集再出手</div>';
-        _reHtml += '<div style="font-size:10px;color:#999;text-align:center">信号历史: 平均每月触发约1次，每次成本2,002元，耐心等待是核心</div>';
+        _reHtml += '<div style="font-size:10px;color:#999;text-align:center">信号历史: 4.3年触发42次(约每月0.8次)，每次成本2,002元，实测ROI −42.2%，等待改变不了负期望</div>';
       }
       _reHtml += '</div>';
       
@@ -4050,7 +4045,7 @@ function renderRecommend(type, data) {
       _reHtml += '<div class="rec-balls">';
       picks10.forEach(function(n){_reHtml += '<span class="ball r">' + String(n).padStart(2,"0") + '</span>';});
       _reHtml += '</div>';
-      _reHtml += '<div class="rec-reason">看最近5期频率排序 | 信号策略不自作主张，只在信号触发时按照此排名取前14码出击 | 回测5.5年·选十14码复式·每次2,002元</div>';
+      _reHtml += '<div class="rec-reason">看最近5期频率排序 | 信号策略不自作主张，只在信号触发时按照此排名取前14码出击 | 实测4.3年1500期·选十14码复式·每次2,002元·ROI −42.2%</div>';
       _reHtml += '<div class="rec-copy" onclick="navigator.clipboard.writeText(\'' + _s10Str + '\')" style="text-align:right;font-size:10px;cursor:pointer;color:#999;padding:2px 4px;user-select:none">📋复制</div></div>';
     })();
     

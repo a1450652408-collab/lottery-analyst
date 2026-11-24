@@ -120,14 +120,16 @@ types.forEach(t => {
   const recHtml = elCache["enhancedRecs"] ? elCache["enhancedRecs"].innerHTML : "";
   const x7 = elCache["kl8_x7_dynamic"] ? elCache["kl8_x7_dynamic"].innerHTML : "";
   console.log("\n======== kl8 卡片渲染检查 (enhancedRecs " + recHtml.length + " 字符, x7动态 " + x7.length + " 字符) ========");
-  const required = ["1-15区间", "选八9码复式", "选九10码复式", "选十11码复式", "选五9码复式", "信号策略", "热度TOP10", "选三·每月追号", "选六·每月追号", "选二·每月追号", "选四·命中率优先"];
+  const required = ["三分池", "选八9码复式", "选九10码复式", "选十11码复式", "选五9码复式", "信号策略", "热度TOP10", "选三·每月追号", "选六·每月追号", "选二·每月追号", "选四·命中率优先"];
   required.forEach(r => console.log("  " + (recHtml.includes(r) ? "✓" : "✗") + " 含卡片: " + r));
   console.log("  " + (x7.includes("25码选七") ? "✓" : "✗") + " 含卡片: 25码选七·智能推荐");
   console.log("  覆盖模式开关出现次数: " + (recHtml.match(/覆盖模式/g) || []).length + " (COVER=" + (process.env.COVER || "0") + ")");
   console.log("  覆盖模式明细表: " + (recHtml.includes("本月明细 · ") ? "已渲染" : "未渲染"));
   if (process.env.DUMP) { require("fs").writeFileSync(process.env.DUMP, recHtml); console.log("  已导出渲染结果 → " + process.env.DUMP); }
-  const dm = recHtml.match(/胆码:([\d,]+)/), tm = recHtml.match(/拖码:([\d,]+)/);
-  console.log("  卡片1 渲染值 → 胆码:" + (dm ? dm[1] : "?") + " 拖码:" + (tm ? tm[1] : "?") + "  (期望 近5期口径, 数据止于" + emd[0].d + ")");
+  const poolRe = /池1\(1-7\) 胆:([\d,]+) 拖:([\d,]+)/g;
+  const poolM = recHtml ? recHtml.match(poolRe) : null;
+  console.log("  卡片1(三分池) 渲染值 → 池1 " + (poolM ? poolM[0] : "?") + "  (数据止于" + emd[0].d + ")");
+  console.log("  三分池 : 池行数 = " + (recHtml.match(/池[①②③] /g) || []).length + " (期望3)  注数文案 = " + ((recHtml.match(/18注=36元/) || []).length ? "有" : "缺"));
 
   console.log("\n======== 汇总 ========");
   console.log("彩种流程失败: " + fail + "/" + types.length);
