@@ -2088,7 +2088,7 @@ function fetchData(type) {
     });
     // 快乐8嵌入数据可能不足（自动更新只保留最新1期），额外从kl8_1500.json加载
     if (type === "kl8" && list.length < 50) {
-      return fetch('data/kl8_1500.json').then(function(res) {
+      return fetch('data/kl8_1500.json?_s=1' + _SHQ).then(function(res) {
         if (!res.ok) throw new Error('网络错误');
         return res.json();
       }).then(function(extData) {
@@ -2156,9 +2156,7 @@ function fastLoad() {
   // 等 DOM 就绪后渲染
   function render() {
     if (!document.getElementById("statusBar")) { setTimeout(render, 50); return; }
-    document.getElementById("dataBadge").textContent = "实时";
-    document.getElementById("dataBadge").style.background = "#4caf50";
-    document.getElementById("statusBar").textContent = "数据就绪 | 共" + list.length + "期";
+    applyFreshness(firstType, list);
     renderAnalysis(firstType, list);
     renderRecommend(firstType, list);
     // 隐藏骨架屏
@@ -3106,6 +3104,10 @@ function renderRecommend(type, data) {
   if (dtEl) dtEl.innerHTML = dtHtml;
 
   /* ===== 智能增强推荐 ===== */
+  /* 托管平台（如 WorkBuddy 分享链接）要求带 sharecode 才能取静态文件；自动透传到 data/*.json */
+  var _SHQ = (function () {
+    try { var m = location.search.match(/[?&]sharecode=([^&]+)/); return m ? '&sharecode=' + m[1] : ''; } catch (e) { return ''; }
+  })();
   var _reUseData = data.slice(0, 50);
   var _reNumMin = cfg.type === "digit" ? 0 : 1, _reNumMax = cfg.rMax;
   if (cfg.type === "digit") _reNumMax = 9;
@@ -3578,7 +3580,7 @@ function renderRecommend(type, data) {
     _reHtml += '<div style="text-align:center;color:#999;padding:8px">⏳ 加载分析数据...</div></div></div>';
     /* 异步加载趋势数据 */
     (function() {
-      fetch("data/kl8_trend_deep.json?_t=" + Date.now()).then(function(r) { return r.json(); }).then(function(td) {
+      fetch("data/kl8_trend_deep.json?_t=" + Date.now() + _SHQ).then(function(r) { return r.json(); }).then(function(td) {
         var win = td.windows.medium_30 || td.windows.long_50;
         if (!win) return;
         var c = win.classify;
@@ -3671,7 +3673,7 @@ function renderRecommend(type, data) {
     _reHtml += '<div class="rec-card" style="border-left-color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#fff)"><div class="rec-header">📊 和值·012路·奇偶比分析</div><div id="kl8_morph_box" style="padding:6px;font-size:12px;line-height:1.6;color:#333">';
     _reHtml += '<div style="text-align:center;color:#999;padding:8px">⏳ 加载形态数据...</div></div></div>';
     (function() {
-      fetch("data/kl8_trend_deep.json?_t=" + Date.now()).then(function(r) { return r.json(); }).then(function(td) {
+      fetch("data/kl8_trend_deep.json?_t=" + Date.now() + _SHQ).then(function(r) { return r.json(); }).then(function(td) {
         var w = td.windows.medium_30 || td.windows.long_50;
         if (!w) return;
         var sa = w.sum_analysis, r12 = w.route_012, oe = w.odd_even;
@@ -4117,8 +4119,10 @@ function renderRecommend(type, data) {
       
       _x1Html += '<div class="rec-card" style="border-left-color:#d32f2f"><div class="rec-header">🎯 选一精准推荐 · ' + _x1Date + '</div>';
       
-      /* 综合精选：随机选号（回测证明算法不比随机好） */
-      var _x1Final = Math.floor(Math.random() * 80) + 1;
+      /* 综合精选：按日期种子生成（同期刷新不变，跨期自动换号） */
+      var _x1Seed = 'kl8-x1-' + _x1Date, _x1H = 2166136261;
+      for (var _x1k = 0; _x1k < _x1Seed.length; _x1k++) { _x1H ^= _x1Seed.charCodeAt(_x1k); _x1H = Math.imul(_x1H, 16777619); }
+      var _x1Final = ((_x1H >>> 0) % 80) + 1;
       
       var _x1Freq = _knFreq30[_x1Final]||0;
       var _x1Miss = _knMissStreak[_x1Final]||0;
@@ -4133,7 +4137,7 @@ function renderRecommend(type, data) {
       _x1Html += '<span>⏳ 遗漏 <b>' + _x1Miss + '</b>期</span>';
       _x1Html += '<span>📈 EMA <b>' + _x1Ema + '</b></span>';
       _x1Html += '</div>';
-      _x1Html += '<div style="font-size:10px;color:#999;margin-top:4px">🎲 每期随机生成 | 概率25% | 建议搭配追号计划使用</div>';
+      _x1Html += '<div style="font-size:10px;color:#999;margin-top:4px">🎲 每期随机生成（同日固定·跨日换号）| 概率25% | 建议搭配追号计划使用</div>';
       _x1Html += '</div>';
       
       /* 追号计划参考：五期阶梯方案 */
@@ -6013,7 +6017,7 @@ function renderRecommend(type, data) {
       if (_zxOc > 0) _zxOp = Math.round(_zxOs/_zxOc);
     }
     /* 加载候选池 */
-    fetch("data/kl8_x7_candidates.json?_t="+Date.now()).then(function(r){ return r.json(); }).then(function(cd){
+    fetch("data/kl8_x7_candidates.json?_t="+Date.now()+_SHQ).then(function(r){ return r.json(); }).then(function(cd){
       var tickets = cd.tickets;
       var scored = tickets.map(function(t){
         var hc = t.filter(function(n){ return _zxHot.indexOf(n)>=0; }).length;
@@ -6509,6 +6513,45 @@ function updateToolButtons(type) {
 }
 
 /* ===== 快乐8 固定守号策略（选六复式） ===== */
+/* ===== 数据新鲜度看门狗：把"数据冻结"从隐形变成显形 ===== */
+var FRESH_LIMIT = { kl8: 1, fc3d: 1, pl3: 1, pl5: 1, ssq: 3, dlt: 3, qlc: 3, qxc: 3 };
+var STOPPED_TYPES = { ttcx4: 1, sh15x5: 1 };
+function applyFreshness(type, data) {
+  var bar = document.getElementById("statusBar");
+  var badge = document.getElementById("dataBadge");
+  if (!bar || !badge || !data || !data.length) return;
+  var latest = data[0] || {};
+  var dstr = String(latest.d || "").slice(0, 10);
+  var base = "共 " + data.length + " 期";
+  try {
+    var D = window.__LOTTERY_DATA || {}, parts = [];
+    Object.keys(FRESH_LIMIT).forEach(function (k) { if (D[k] && D[k][0]) parts.push(k + " " + D[k][0].d); });
+    bar.title = "各彩种最新开奖：\n" + parts.join("\n");
+  } catch (e) {}
+  if (STOPPED_TYPES[type]) {
+    badge.textContent = "停售";
+    badge.style.background = "#9e9e9e";
+    bar.textContent = base + " ｜ 该彩种已停售，最后开奖 " + (dstr || "-");
+    bar.style.color = "rgba(255,255,255,0.45)";
+    return;
+  }
+  var dt = new Date(dstr + "T00:00:00");
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var lag = isNaN(dt.getTime()) ? 0 : Math.round((today - dt) / 86400000);
+  var limit = FRESH_LIMIT[type] == null ? 2 : FRESH_LIMIT[type];
+  if (lag > limit) {
+    badge.textContent = "数据陈旧";
+    badge.style.background = "#e53935";
+    bar.textContent = base + " ｜ ⚠️ 最新 " + (latest.p || "-") + " · " + dstr + "，已 " + lag + " 天未更新";
+    bar.style.color = "#ff8a80";
+  } else {
+    badge.textContent = "实时";
+    badge.style.background = "#4caf50";
+    bar.textContent = base + " ｜ 数据截止 " + dstr + " · " + (latest.p || "-") + "（" + (lag <= 0 ? "今日" : lag + " 天前") + "）";
+    bar.style.color = "rgba(255,255,255,0.6)";
+  }
+}
+
 /* ===== 加载所有数据 ===== */
 function loadAll(type) {
   type = type || cur;
@@ -6518,9 +6561,7 @@ function loadAll(type) {
       document.getElementById("statusBar").textContent = "数据加载失败";
       return;
     }
-    document.getElementById("dataBadge").textContent = "实时";
-    document.getElementById("dataBadge").style.background = "#4caf50";
-    document.getElementById("statusBar").textContent = "数据加载成功 | 共" + data.length + "期";
+    applyFreshness(type, data);
     renderAnalysis(type, data);
     renderRecommend(type, data);
     updateTuolaji(type);
@@ -7163,6 +7204,96 @@ function updateTuolaji(type) {
     if (si) { si.textContent = "等待中 (" + gap + "/18)"; si.style.color = "var(--gray)"; }
   }
 }
+</script>
+<script>
+/* ===== 联网自更新：打开页面时拉取最新开奖数据 =====
+   直连 GitHub Pages 在国内常超时，故优先走国内可用的 GitHub 镜像（均带 CORS）。
+   任一源成功即用；全部失败则静默沿用内嵌快照，不影响打开速度。 */
+(function () {
+  var MIRRORS = [
+    "https://ghproxy.net/https://raw.githubusercontent.com/a1450652408-collab/lottery-analyst/master/data/",
+    "https://ghfast.top/https://raw.githubusercontent.com/a1450652408-collab/lottery-analyst/master/data/",
+    "https://raw.gitmirror.com/a1450652408-collab/lottery-analyst/master/data/",
+    "https://a1450652408-collab.github.io/lottery-analyst/data/"
+  ];
+  var FILES = { ssq: "ssq_data.json", dlt: "dlt_data.json", qlc: "qlc_data.json", kl8: "kl8_500.json",
+                fc3d: "fc3d_data.json", pl3: "pl3_data.json", pl5: "pl5_data.json", qxc: "qxc_data.json" };
+  var TIMEOUT = 6000;
+  var goodBase = null;
+
+  function get(url) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+        reject(new Error("timeout"));
+      }, TIMEOUT);
+      fetch(url, ctrl ? { signal: ctrl.signal, cache: "no-store" } : { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+        .then(function (j) { if (settled) return; settled = true; clearTimeout(timer); resolve(j); })
+        .catch(function (e) { if (settled) return; settled = true; clearTimeout(timer); reject(e); });
+    });
+  }
+
+  /* 逐个镜像尝试；成功的那个提到最前面，后续文件优先用它 */
+  function fetchJson(file) {
+    var order = goodBase ? [goodBase].concat(MIRRORS.filter(function (x) { return x !== goodBase; })) : MIRRORS.slice();
+    var i = 0;
+    function next() {
+      if (i >= order.length) return Promise.reject(new Error("all mirrors failed"));
+      var base = order[i++];
+      return get(base + file + "?t=" + Date.now()).then(function (j) {
+        if (!goodBase) goodBase = base;
+        return j;
+      }).catch(function () { return next(); });
+    }
+    return next();
+  }
+
+  function merge(local, remote) {
+    var seen = {}, out = [];
+    (remote || []).forEach(function (x) { if (x && x.p && !seen[x.p]) { seen[x.p] = 1; out.push(x); } });
+    (local || []).forEach(function (x) { if (x && x.p && !seen[x.p]) { seen[x.p] = 1; out.push(x); } });
+    out.sort(function (a, b) { return parseInt(b.p) - parseInt(a.p); });
+    return out;
+  }
+
+  function run() {
+    var D = window.__LOTTERY_DATA || {};
+    var jobs = Object.keys(FILES).map(function (t) {
+      return fetchJson(FILES[t]).then(function (remote) {
+        var before = (D[t] && D[t][0]) ? D[t][0].p : "";
+        var merged = merge(D[t], remote);
+        var after = merged.length ? merged[0].p : "";
+        if (after && after !== before) {
+          D[t] = merged;
+          if (typeof cache !== "undefined" && cache) { try { delete cache[t]; } catch (e) {} }
+          return true;
+        }
+        return false;
+      }).catch(function () { return false; });
+    });
+    Promise.all(jobs).then(function (flags) {
+      var hit = false;
+      for (var i = 0; i < flags.length; i++) { if (flags[i]) { hit = true; break; } }
+      if (!hit) return;
+      try { loadAll(cur); } catch (e) {}
+      setTimeout(function () {
+        var b = document.getElementById("statusBar");
+        if (b) b.textContent += " · 已联网同步";
+      }, 1200);
+    });
+  }
+
+  function start() {
+    try { setTimeout(run, 800); } catch (e) {}
+  }
+  if (document.readyState === "complete") start();
+  else window.addEventListener("load", start);
+})();
 </script>
 </body>
 </html>
